@@ -308,10 +308,16 @@
 
         if(data && data.status === 'OK'){
           showMsg(msgOk, 'Bem-vindo, ' + (data.nome || inputUser.value.trim()) + '! Redirecionando em 2 segundos...');
+
+          // ✅ SALVA SESSÃO (para o seletor_lotes.html identificar o usuário)
+          localStorage.setItem('PAVI_FAST_USER', inputUser.value.trim());
+          localStorage.setItem('PAVI_FAST_NAME', (data.nome || inputUser.value.trim()));
+
           // Redireciona após 2 segundos
           setTimeout(() => {
             window.location.href = 'seletor_lotes.html';
           }, 2000);
+
           form.reset();
         }else{
           throw new Error(data?.mensagem || 'Usuário ou senha inválidos.');
