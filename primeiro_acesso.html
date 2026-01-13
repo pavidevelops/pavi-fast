@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Primeiro Acesso</title>
+  <style>
+    :root{
+      --bg:#f8fdf9;        /* verde muito suave de fundo */
+      --card:#ffffff;      /* card branco */
+      --text:#1a472a;      /* verde escuro para texto principal */
+      --muted:#5d7a6d;     /* verde acinzentado para texto auxiliar */
+      --primary:#10b981;   /* verde principal */
+      --primary-600:#0da271;
+      --primary-700:#0b8c61;
+      --border:#d1fae5;    /* borda verde muito suave */
+      --ok-bg:#ecfdf5; --ok:#065f46; --ok-br:#a7f3d0;
+      --err-bg:#fef2f2; --err:#991b1b; --err-br:#fecaca;
+    }
+    *{ box-sizing:border-box }
+    body{
+      margin:0; 
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      min-height:100vh; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      padding:24px;
+      color:var(--text);
+      letter-spacing: -0.01em;
+    }
+    .container{
+      width:100%; 
+      max-width:440px; 
+      background:var(--card);
+      border-radius:20px; 
+      box-shadow:0 15px 35px rgba(16, 185, 129, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+      padding:36px 32px; 
+      border:1px solid var(--border);
+      transition: transform 0.3s ease;
+    }
+    .container:hover {
+      transform: translateY(-2px);
+    }
+    h2{ 
+      text-align:center; 
+      margin-bottom:24px; 
+      color:#0f5132;
+      font-size:28px;
+      font-weight:700;
+      letter-spacing: -0.02em;
+      position: relative;
+      padding-bottom: 12px;
+    }
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-600));
+      border-radius: 2px;
+    }
+    label{ 
+      display:block; 
+      margin:14px 0 8px; 
+      color:#1a472a;
+      font-size:14px;
+      font-weight:600;
+    }
+    input{
+      width:100%; 
+      padding:14px 16px; 
+      margin-bottom:18px; 
+      border:2px solid var(--border);
+      border-radius:12px;
+      outline:none; 
+      background:#f8fdf9; 
+      color:var(--text);
+      transition:all 0.25s ease;
+      font-size:16px;
+      font-family: inherit;
+    }
+    input:focus{ 
+      border-color:var(--primary); 
+      background:#ffffff;
+      box-shadow:0 0 0 4px rgba(16, 185, 129, 0.15), 0 2px 8px rgba(16, 185, 129, 0.1);
+      transform: translateY(-1px);
+    }
+    button{
+      width:100%; 
+      padding:16px; 
+      margin:8px 0 16px;
+      background:linear-gradient(135deg, var(--primary), var(--primary-600));
+      color:#fff; 
+      border:none; 
+      border-radius:14px;
+      cursor:pointer; 
+      font-weight:700;
+      font-size:16px;
+      transition:all 0.25s ease;
+      font-family: inherit;
+      letter-spacing: 0.02em;
+      box-shadow:0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+    button:hover{ 
+      background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); 
+      box-shadow:0 12px 28px rgba(16, 185, 129, 0.4);
+      transform: translateY(-2px);
+    }
+    button:active{ 
+      transform:translateY(0px);
+      box-shadow:0 8px 20px rgba(16, 185, 129, 0.25);
+    }
+    .error-message{ 
+      color:#dc2626; 
+      font-size:14px; 
+      display:none; 
+      margin:-12px 0 16px 0;
+      padding:8px 12px;
+      background:#fef2f2;
+      border-radius:8px;
+      border-left:3px solid #dc2626;
+    }
+    .success-message{ 
+      color:#065f46; 
+      text-align:center; 
+      display:none; 
+      margin:12px 0 20px;
+      padding:14px 16px;
+      background:#ecfdf5;
+      border-radius:12px;
+      border:2px solid #a7f3d0;
+      font-weight:500;
+    }
+    
+    /* Estilo do botão Início */
+    .home-button {
+      display:block;
+      width:100%;
+      padding:14px;
+      background:#f0fdf9;
+      color:#0b8c61;
+      text-align:center;
+      text-decoration:none;
+      border:2px solid #d1fae5;
+      border-radius:12px;
+      font-weight:600;
+      font-size:16px;
+      transition:all 0.25s ease;
+      margin-top:20px;
+      font-family: inherit;
+    }
+    .home-button:hover {
+      background:#e5f7ef;
+      border-color:var(--primary);
+      color:var(--primary-700);
+      transform: translateY(-2px);
+      box-shadow:0 5px 15px rgba(16, 185, 129, 0.1);
+    }
+    
+    /* Animação sutil para os campos */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    form > * {
+      animation: fadeIn 0.4s ease forwards;
+      opacity: 0;
+    }
+    
+    form > *:nth-child(1) { animation-delay: 0.1s; }
+    form > *:nth-child(2) { animation-delay: 0.15s; }
+    form > *:nth-child(3) { animation-delay: 0.2s; }
+    form > *:nth-child(4) { animation-delay: 0.25s; }
+    form > *:nth-child(5) { animation-delay: 0.3s; }
+    form > *:nth-child(6) { animation-delay: 0.35s; }
+    form > *:nth-child(7) { animation-delay: 0.4s; }
+    form > *:nth-child(8) { animation-delay: 0.45s; }
+    .home-button { animation-delay: 0.5s; }
+    
+    /* Ícones nos campos */
+    .input-icon {
+      position: relative;
+    }
+    .input-icon i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      z-index: 1;
+    }
+    .input-icon input {
+      padding-left: 45px;
+    }
+    
+    /* Ajuste para o título */
+    .title-container {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .title-container i {
+      font-size: 32px;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title-container">
+      <i class="fas fa-user-plus"></i>
+      <h2>Primeiro Acesso</h2>
+      <p style="color: var(--muted); font-size: 15px; margin-top: 4px;">Crie sua conta para acessar o sistema</p>
+    </div>
+    
+    <form id="registrationForm">
+      <div class="input-icon">
+        <i class="fas fa-user"></i>
+        <label for="fullName">Nome completo</label>
+        <input type="text" id="fullName" name="fullName" placeholder="Digite seu nome completo" required>
+      </div>
+
+      <div class="input-icon">
+        <i class="fas fa-envelope"></i>
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+      </div>
+
+      <div class="input-icon">
+        <i class="fas fa-lock"></i>
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+
+      <div class="input-icon">
+        <i class="fas fa-lock"></i>
+        <label for="confirmPassword">Confirmar senha</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+      </div>
+      
+      <div class="error-message" id="passwordError">
+        <i class="fas fa-exclamation-circle"></i> As senhas não coincidem.
+      </div>
+
+      <button type="submit">
+        <i class="fas fa-check-circle"></i> Finalizar Cadastro
+      </button>
+      
+      <div class="success-message" id="successMessage">
+        <i class="fas fa-check"></i> Cadastro realizado com sucesso! Redirecionando...
+      </div>
+    </form>
+    
+    <!-- BOTÃO INÍCIO -->
+    <a href="login.html" class="home-button">
+      <i class="fas fa-arrow-left"></i> Voltar para Login
+    </a>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registrationForm');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const passwordError = document.getElementById('passwordError');
+    const successMessage = document.getElementById('successMessage');
+
+    // 🔗 URL da implantação do seu Apps Script (Web App) — precisa ser /exec
+    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzrhlcJXYD_V19BC1scpM5eGUUo3SOyc_k4scIcd4vg4Ii3szlWqjFYsyjwi4B9SkpU0w/exec';
+
+    // Adicionar ícones via JS para não precisar do Font Awesome CDN
+    function addIcons() {
+      const style = document.createElement('style');
+      style.textContent = `
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+      `;
+      document.head.appendChild(style);
+    }
+    addIcons();
+
+    // Validação em tempo real das senhas
+    confirmPasswordInput.addEventListener('input', function() {
+      if (passwordInput.value !== confirmPasswordInput.value && confirmPasswordInput.value.length > 0) {
+        passwordError.style.display = 'block';
+      } else {
+        passwordError.style.display = 'none';
+      }
+    });
+
+    passwordInput.addEventListener('input', function() {
+      if (passwordInput.value !== confirmPasswordInput.value && confirmPasswordInput.value.length > 0) {
+        passwordError.style.display = 'block';
+      } else {
+        passwordError.style.display = 'none';
+      }
+    });
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (passwordInput.value !== confirmPasswordInput.value) {
+        passwordError.style.display = 'block';
+        confirmPasswordInput.focus();
+        return;
+      }
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = passwordInput.value;
+
+      // Validações básicas
+      if (!fullName || !email || !password) {
+        passwordError.textContent = 'Por favor, preencha todos os campos.';
+        passwordError.style.display = 'block';
+        return;
+      }
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+      submitBtn.disabled = true;
+
+      try {
+        const body = new URLSearchParams({
+          action: 'register',
+          nome: fullName,
+          usuario: email,
+          senha: password
+        });
+
+        const resp = await fetch(WEBAPP_URL, {
+          method: 'POST',
+          body
+        });
+
+        let json;
+        const text = await resp.text();
+        try { json = JSON.parse(text); } catch { json = null; }
+
+        if (!resp.ok) {
+          throw new Error(json?.mensagem || text || ('HTTP ' + resp.status));
+        }
+
+        if (json && json.status === 'OK') {
+          successMessage.style.display = 'block';
+          form.reset();
+          
+          // Redireciona para login.html após 2 segundos
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 2000);
+        } else {
+          throw new Error(json?.mensagem || 'Erro ao cadastrar.');
+        }
+      } catch (err) {
+        passwordError.textContent = 'Erro: ' + err.message;
+        passwordError.style.display = 'block';
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  });
+  </script>
+</body>
+</html>
