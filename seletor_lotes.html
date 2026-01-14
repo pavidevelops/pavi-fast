@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PAVI Fast</title>
+
+  <!-- ✅ Roboto (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --bg:#f8fdf9;
@@ -20,7 +26,7 @@
       --warn-bg:#fff7ed; --warn:#9a3412; --warn-br:#fed7aa;
       --radius:18px;
     }
-    *{ box-sizing:border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    *{ box-sizing:border-box; font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Arial; }
     body{
       margin:0; background:var(--bg); color:var(--text);
       min-height:100vh;
@@ -562,7 +568,7 @@ async function sendOne(rec){
       prazoDe: rec.prazoDe || '',
       prazoAte: rec.prazoAte || '',
       total: String(rec.totalBR || rec.total || ''),
-      trecho: rec.trecho || '',         // ✅ NOVO
+      trecho: rec.trecho || '',
       foto: rec.photoDataUrl
     });
 
@@ -669,7 +675,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const nome = localStorage.getItem(LS_NAME) || usuario;
 
   const atividade = $('#atividade').value.trim();
-  const trecho = $('#trecho').value.trim();          // ✅ NOVO
+  const trecho = $('#trecho').value.trim();
   const rodovia = $('#rodovia').value.trim();
   const totalBR = $('#total').value.trim();
   const prazoDe = $('#prazoDe').value;
@@ -695,7 +701,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
       status: 'PENDING',
       errorMsg: '',
       usuario, nome,
-      atividade, trecho,                         // ✅ NOVO
+      atividade, trecho,
       rodovia,
       prazoDe, prazoAte,
       total, totalBR,
@@ -707,7 +713,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
     // limpa
     $('#atividade').value='';
-    $('#trecho').value='';                       // ✅ NOVO
+    $('#trecho').value='';
     $('#rodovia').value='';
     $('#total').value='';
     $('#prazoDe').value='';
