@@ -7,44 +7,24 @@
 
   <style>
     /* ==========================================================
-       ✅ FUNNEL SANS (LOCAL .TTF — funciona no GitHub Pages e no celular)
-       Coloque os arquivos .ttf na mesma pasta deste HTML (raiz do repo)
+       FUNNEL SANS — LOCAL (.ttf)
+       Coloque os arquivos .ttf na mesma pasta deste HTML:
+       - FunnelSans-Regular.ttf
+       - FunnelSans-Medium.ttf
+       - FunnelSans-SemiBold.ttf
+       - FunnelSans-Bold.ttf
+       - FunnelSans-Italic.ttf
+       - FunnelSans-BoldItalic.ttf
     ========================================================== */
-    @font-face{
-      font-family: 'FunnelSans';
-      src: url('FunnelSans-Regular.ttf') format('truetype');
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face{
-      font-family: 'FunnelSans';
-      src: url('FunnelSans-Medium.ttf') format('truetype');
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face{
-      font-family: 'FunnelSans';
-      src: url('FunnelSans-Bold.ttf') format('truetype');
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face{
-      font-family: 'FunnelSans';
-      src: url('FunnelSans-Italic.ttf') format('truetype');
-      font-weight: 400;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face{
-      font-family: 'FunnelSans';
-      src: url('FunnelSans-BoldItalic.ttf') format('truetype');
-      font-weight: 700;
-      font-style: italic;
-      font-display: swap;
-    }
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap;}
+
+    /* Força a fonte SOMENTE neste HTML (sem mudar layout) */
+    html, body, * { font-family:'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important; }
 
     :root{
       --bg:#f8fdf9;
@@ -62,11 +42,7 @@
       --radius:18px;
     }
 
-    /* ✅ Troca global de fonte (sem alterar o resto) */
-    *{
-      box-sizing:border-box;
-      font-family: 'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-    }
+    *{ box-sizing:border-box; }
 
     body{
       margin:0; background:var(--bg); color:var(--text);
@@ -260,7 +236,6 @@
 
   <div class="wrap">
 
-    <!-- KPI (somente Usuário) -->
     <div class="panel">
       <div class="kpis">
         <div class="kpi">
@@ -272,7 +247,6 @@
 
     <div style="height:12px"></div>
 
-    <!-- VIEW: NOVO REGISTRO -->
     <div class="panel view active" id="viewNovo">
       <div class="row">
         <div>
@@ -285,7 +259,6 @@
         </div>
       </div>
 
-      <!-- ✅ TRECHO -->
       <div class="row">
         <div>
           <label>Trecho</label>
@@ -333,7 +306,6 @@
       <div class="hint" id="saveMsg"></div>
     </div>
 
-    <!-- VIEW: MEUS ENVIOS -->
     <div class="panel view" id="viewMeus">
       <div class="row">
         <button class="btn secondary" id="btnRefreshList">Atualizar lista</button>
@@ -351,10 +323,8 @@
 ========================================================== */
 const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-// (interno) cache de atividades p/ offline — sem mostrar nada na UI
 const CACHE_ACTIVITIES_KEY = 'PAVI_FAST_ACTIVIDADES_CACHE_V1';
 
-// sessão simples (salva no login)
 const LS_USER = 'PAVI_FAST_USER';
 const LS_NAME = 'PAVI_FAST_NAME';
 
@@ -465,7 +435,7 @@ async function idbDel(id){
 }
 
 /* ==========================================================
-   Catálogo de atividades (carrega automaticamente ao abrir)
+   Catálogo de atividades
 ========================================================== */
 let activities = [];
 
@@ -558,7 +528,7 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
 });
 
 /* ==========================================================
-   Foto: compressão para base64 JPEG
+   Foto
 ========================================================== */
 async function compressToDataURL(file, maxW=1280, quality=0.75){
   const img = await new Promise((res, rej)=>{
@@ -583,7 +553,7 @@ async function compressToDataURL(file, maxW=1280, quality=0.75){
 }
 
 /* ==========================================================
-   Envio (submit) para Apps Script
+   Envio
 ========================================================== */
 async function sendOne(rec){
   if(!navigator.onLine){
@@ -631,7 +601,7 @@ async function resendAll(){
 }
 
 /* ==========================================================
-   Lista (Meus envios)
+   Lista
 ========================================================== */
 async function renderQueue(){
   const list = $('#list');
@@ -697,7 +667,7 @@ async function renderQueue(){
 }
 
 /* ==========================================================
-   Botões da tela "Meus envios"
+   Botões
 ========================================================== */
 $('#btnResend').addEventListener('click', async ()=>{ await resendAll(); await renderQueue(); });
 $('#btnRefreshList').addEventListener('click', async ()=>{ await renderQueue(); });
