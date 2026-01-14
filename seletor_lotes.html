@@ -564,9 +564,8 @@ function renderAtvList(list){
   list.forEach((it)=>{
     const div = document.createElement('div');
     div.className = 'atvItem';
-    div.innerHTML = `
-      ${it.atividade || '—'}
-      ${it.rodovia ? `<small>Rodovia: ${it.rodovia}</small>` : `<small>—</small>`}
+    div.innerHTML = `${it.atividade || '—'}`;
+
     `;
     div.addEventListener('click', ()=>{
       $('#atividade').value = it.atividade || '';
