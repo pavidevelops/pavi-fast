@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- ✅ Ajuste mobile-safe: evita zoom/bug de foco no WebView -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
   <title>PAVI Fast</title>
 
   <style>
@@ -44,9 +45,23 @@
 
     *{ box-sizing:border-box; }
 
+    /* ✅ Ajustes mobile-safe SEM alterar visual */
+    html{
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      scroll-padding-top: 72px; /* topbar */
+    }
+
     body{
       margin:0; background:var(--bg); color:var(--text);
       min-height:100vh;
+      /* ✅ Em mobile moderno (teclado/viewport dinâmico) */
+      min-height:100dvh;
+      /* ✅ evita “cortar” conteúdo com teclado */
+      padding-bottom: 120px;
+      /* ✅ melhora sensação ao focar campos (sem pular estranho) */
+      scroll-behavior: smooth;
+      touch-action: manipulation;
     }
 
     .topbar{
@@ -81,6 +96,8 @@
     .row{ display:flex; gap:10px; flex-wrap:wrap; }
     .row > *{ flex:1; min-width:160px; }
     label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; font-weight:700; }
+
+    /* ✅ IMPORTANTÍSSIMO: 16px evita zoom automático do Chrome/WebView */
     input, select, button, textarea{
       width:100%;
       padding:14px 14px;
@@ -89,8 +106,9 @@
       outline:none;
       background:#f8fdf9;
       color:var(--text);
-      font-size:15px;
+      font-size:16px; /* <- era 15px */
     }
+
     textarea{ min-height:52px; resize:vertical; }
     input:focus, select:focus, textarea:focus{
       border-color: rgba(16,185,129,.55);
