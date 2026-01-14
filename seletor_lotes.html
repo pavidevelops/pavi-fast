@@ -58,7 +58,7 @@
     .row{ display:flex; gap:10px; flex-wrap:wrap; }
     .row > *{ flex:1; min-width:160px; }
     label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; font-weight:700; }
-    input, select, button{
+    input, select, button, textarea{
       width:100%;
       padding:14px 14px;
       border-radius:14px;
@@ -68,7 +68,8 @@
       color:var(--text);
       font-size:15px;
     }
-    input:focus, select:focus{
+    textarea{ min-height:52px; resize:vertical; }
+    input:focus, select:focus, textarea:focus{
       border-color: rgba(16,185,129,.55);
       box-shadow:0 0 0 4px rgba(16,185,129,.14);
       background:#fff;
@@ -134,8 +135,8 @@
       display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
     .meta{ font-size:12px; color:var(--muted); margin-top:6px; }
-    .actions{ display:flex; gap:10px; margin-top:10px; }
-    .actions button{ padding:12px; border-radius:14px; }
+    .actions{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+    .actions button{ padding:12px; border-radius:14px; min-width:120px; }
 
     /* Drawer */
     .backdrop{
@@ -176,7 +177,6 @@
     .view{ display:none; }
     .view.active{ display:block; }
 
-    /* Mobile tweak */
     @media (max-width:520px){
       .wrap{ padding:10px; }
       .row > *{ min-width:140px; }
@@ -213,7 +213,7 @@
 
   <div class="wrap">
 
-    <!-- KPIs (apenas Usuário) -->
+    <!-- KPI (somente Usuário) -->
     <div class="panel">
       <div class="kpis">
         <div class="kpi">
@@ -235,6 +235,15 @@
           <div class="hint" id="hintNew" style="display:none">
             Não encontrou? <a href="#" id="btnAddAtv">➕ Incluir novo</a>
           </div>
+        </div>
+      </div>
+
+      <!-- ✅ NOVO: TRECHO -->
+      <div class="row">
+        <div>
+          <label>Trecho</label>
+          <input id="trecho" placeholder="Ex.: km 12+300 ao km 13+050 (lado direito)..." />
+          <div class="hint">Campo de observação do local/trecho executado.</div>
         </div>
       </div>
 
@@ -295,7 +304,7 @@
 ========================================================== */
 const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-// cache invisível (para funcionar offline)
+// (interno) cache de atividades p/ offline — sem mostrar nada na UI
 const CACHE_ACTIVITIES_KEY = 'PAVI_FAST_ACTIVIDADES_CACHE_V1';
 
 // sessão simples (salva no login)
@@ -451,11 +460,11 @@ async function fetchActivities(){
 }
 
 async function loadActivitiesOnOpen(){
-  // 1) carrega cache silencioso (para offline)
+  // 1) carrega cache silencioso (offline)
   activities = loadActivitiesCache();
   fillDatalist(activities);
 
-  // 2) tenta atualizar silenciosamente quando houver internet
+  // 2) tenta atualizar silenciosamente (online)
   if(navigator.onLine){
     try{
       const list = await fetchActivities();
@@ -463,7 +472,6 @@ async function loadActivitiesOnOpen(){
       saveActivitiesCache(list);
       fillDatalist(list);
     }catch(err){
-      // sem avisos na tela (como você pediu)
       console.warn('Falha ao atualizar atividades:', err);
     }
   }
@@ -501,7 +509,7 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
     if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
     if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao incluir');
 
-    // após incluir, recarrega automaticamente (silencioso)
+    // recarrega silencioso
     await loadActivitiesOnOpen();
   }catch(err){
     toast('Erro: ' + err.message);
@@ -554,6 +562,7 @@ async function sendOne(rec){
       prazoDe: rec.prazoDe || '',
       prazoAte: rec.prazoAte || '',
       total: String(rec.totalBR || rec.total || ''),
+      trecho: rec.trecho || '',         // ✅ NOVO
       foto: rec.photoDataUrl
     });
 
@@ -578,11 +587,6 @@ async function resendAll(){
     await sendOne(rec);
   }
   toast('Reenvio concluído.');
-}
-
-async function getPendingCount(){
-  const all = await idbGetAll();
-  return all.length;
 }
 
 /* ==========================================================
@@ -612,6 +616,7 @@ async function renderQueue(){
         </div>
         <span class="pill ${pillClass}">${pillLabel}</span>
       </div>
+      <div class="meta">Trecho: ${rec.trecho || '—'}</div>
       <div class="meta">Rodovia: ${rec.rodovia || '—'} • Prazo: ${rec.prazoDe || '—'} → ${rec.prazoAte || '—'}</div>
       ${rec.errorMsg ? `<div class="meta" style="color:#991b1b;font-weight:800;margin-top:6px">Erro: ${rec.errorMsg}</div>` : ``}
       <div class="actions">
@@ -633,7 +638,7 @@ async function renderQueue(){
 
       if(act==='detail'){
         toast(
-          `Atividade: ${rec.atividade}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`
+          `Atividade: ${rec.atividade}\nTrecho: ${rec.trecho || '—'}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`
         );
       }
       if(act==='send'){
@@ -664,6 +669,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const nome = localStorage.getItem(LS_NAME) || usuario;
 
   const atividade = $('#atividade').value.trim();
+  const trecho = $('#trecho').value.trim();          // ✅ NOVO
   const rodovia = $('#rodovia').value.trim();
   const totalBR = $('#total').value.trim();
   const prazoDe = $('#prazoDe').value;
@@ -689,7 +695,8 @@ $('#btnSalvar').addEventListener('click', async ()=>{
       status: 'PENDING',
       errorMsg: '',
       usuario, nome,
-      atividade, rodovia,
+      atividade, trecho,                         // ✅ NOVO
+      rodovia,
       prazoDe, prazoAte,
       total, totalBR,
       unidade: 'm',
@@ -700,12 +707,12 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
     // limpa
     $('#atividade').value='';
+    $('#trecho').value='';                       // ✅ NOVO
     $('#rodovia').value='';
     $('#total').value='';
     $('#prazoDe').value='';
     $('#prazoAte').value='';
     $('#foto').value='';
-
     $('#saveMsg').textContent = '';
 
     // tenta enviar já (se online)
@@ -724,7 +731,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
    Init
 ========================================================== */
 (async function init(){
-  // sessão mínima
   const usuario = localStorage.getItem(LS_USER);
   const nome = localStorage.getItem(LS_NAME) || usuario;
 
@@ -738,7 +744,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
   setOnlineBadge();
 
-  // carrega atividades automaticamente ao abrir (sem botão)
+  // ✅ carrega atividades automaticamente ao abrir
   await loadActivitiesOnOpen();
 })();
 </script>
