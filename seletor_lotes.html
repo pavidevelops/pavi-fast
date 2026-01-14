@@ -7,50 +7,56 @@
 
   <style>
     /* ==========================================================
-       ✅ FIRA SANS (LOCAL .TTF — funciona no GitHub Pages e no celular)
-       Coloque os arquivos .ttf na mesma pasta deste HTML (raiz do repo)
+       FUNNEL SANS — LOCAL (.ttf)
+       Funciona no GitHub Pages e Android WebView
     ========================================================== */
-    @font-face{
-      font-family: 'Fira Sans';
-      src: url('FiraSans-Regular.ttf') format('truetype');
+    @font-face {
+      font-family: 'FunnelSans';
+      src: url('FunnelSans-Regular.ttf') format('truetype');
       font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
-    @font-face{
-      font-family: 'Fira Sans';
-      src: url('FiraSans-Medium.ttf') format('truetype');
+    @font-face {
+      font-family: 'FunnelSans';
+      src: url('FunnelSans-Medium.ttf') format('truetype');
       font-weight: 500;
       font-style: normal;
       font-display: swap;
     }
-    @font-face{
-      font-family: 'Fira Sans';
-      src: url('FiraSans-SemiBold.ttf') format('truetype');
+    @font-face {
+      font-family: 'FunnelSans';
+      src: url('FunnelSans-SemiBold.ttf') format('truetype');
       font-weight: 600;
       font-style: normal;
       font-display: swap;
     }
-    @font-face{
-      font-family: 'Fira Sans';
-      src: url('FiraSans-Bold.ttf') format('truetype');
+    @font-face {
+      font-family: 'FunnelSans';
+      src: url('FunnelSans-Bold.ttf') format('truetype');
       font-weight: 700;
       font-style: normal;
       font-display: swap;
     }
-    @font-face{
-      font-family: 'Fira Sans';
-      src: url('FiraSans-Italic.ttf') format('truetype');
+    @font-face {
+      font-family: 'FunnelSans';
+      src: url('FunnelSans-Italic.ttf') format('truetype');
       font-weight: 400;
       font-style: italic;
       font-display: swap;
     }
-    @font-face{
-      font-family: 'Fira Sans';
-      src: url('FiraSans-BoldItalic.ttf') format('truetype');
+    @font-face {
+      font-family: 'FunnelSans';
+      src: url('FunnelSans-BoldItalic.ttf') format('truetype');
       font-weight: 700;
       font-style: italic;
       font-display: swap;
+    }
+
+    /* 🔒 FORÇA FUNNEL SANS APENAS NESTE HTML */
+    html, body, * {
+      font-family: 'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important;
+      box-sizing: border-box;
     }
 
     :root{
@@ -66,17 +72,12 @@
       --ok-bg:#ecfdf5; --ok:#065f46; --ok-br:#a7f3d0;
       --err-bg:#fef2f2; --err:#991b1b; --err-br:#fecaca;
       --warn-bg:#fff7ed; --warn:#9a3412; --warn-br:#fed7aa;
-      --radius:18px;
-    }
-
-    /* ✅ Troca global de fonte (sem alterar o resto) */
-    *{
-      box-sizing:border-box;
-      font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     }
 
     body{
-      margin:0; background:var(--bg); color:var(--text);
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
       min-height:100vh;
     }
 
@@ -97,11 +98,11 @@
       display:flex; align-items:center; justify-content:center;
       font-size:18px;
     }
-    .tblock{ display:flex; flex-direction:column; line-height:1.1; }
-    .title{ font-weight:800; font-size:15px; }
-    .badge{ font-size:12px; color:var(--muted); margin-top:4px; }
+    .title{ font-weight:700; font-size:15px; }
+    .badge{ font-size:12px; color:var(--muted); }
 
     .wrap{ max-width:980px; margin:0 auto; padding:14px; }
+
     .panel{
       background:var(--card);
       border:1px solid var(--border);
@@ -109,690 +110,73 @@
       box-shadow:var(--shadow);
       padding:16px;
     }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; }
-    .row > *{ flex:1; min-width:160px; }
-    label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; font-weight:700; }
-    input, select, button, textarea{
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin:10px 0 6px;
+      font-weight:600;
+    }
+
+    input, button{
       width:100%;
-      padding:14px 14px;
+      padding:14px;
       border-radius:14px;
       border:2px solid var(--border);
-      outline:none;
       background:#f8fdf9;
-      color:var(--text);
       font-size:15px;
     }
-    textarea{ min-height:52px; resize:vertical; }
-    input:focus, select:focus, textarea:focus{
-      border-color: rgba(16,185,129,.55);
-      box-shadow:0 0 0 4px rgba(16,185,129,.14);
-      background:#fff;
-    }
-    .btn{
+
+    button{
       border:none;
       background:linear-gradient(135deg, var(--primary), var(--primary-600));
       color:#fff;
-      font-weight:800;
+      font-weight:700;
       cursor:pointer;
-      box-shadow:0 10px 25px rgba(16,185,129,0.25);
-      transition:.2s ease;
-    }
-    .btn:hover{ background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); transform:translateY(-1px); }
-    .btn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; }
-    .btn.secondary{
-      background:#fff;
-      color:var(--primary-700);
-      border:2px solid var(--border);
-      box-shadow:none;
-    }
-    .btn.danger{
-      background:#dc2626;
-      box-shadow:0 10px 25px rgba(220,38,38,0.18);
-    }
-
-    .sep{ height:1px; background:#e5f7ef; margin:14px 0; }
-
-    .kpis{ display:flex; gap:10px; flex-wrap:wrap; }
-    .kpi{
-      flex:1; min-width:180px;
-      background:#fbfffd;
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:12px 12px;
-    }
-    .kpi small{ display:block; color:var(--muted); font-weight:700; }
-    .kpi b{ font-size:18px; }
-
-    .hint{ font-size:12px; color:var(--muted); margin-top:6px; font-style:italic; }
-    .hint a{ color:var(--primary-700); font-weight:800; }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px; border-radius:999px;
-      font-size:12px; font-weight:800;
-      border:2px solid var(--border);
-      background:#fbfffd;
-      white-space:nowrap;
-    }
-    .pill.ok{ background:var(--ok-bg); color:var(--ok); border-color:var(--ok-br); }
-    .pill.err{ background:var(--err-bg); color:var(--err); border-color:var(--err-br); }
-    .pill.warn{ background:var(--warn-bg); color:var(--warn); border-color:var(--warn-br); }
-
-    .list{ display:flex; flex-direction:column; gap:10px; }
-    .item{
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:12px;
-      background:#fff;
-    }
-    .itemTop{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-    }
-    .meta{ font-size:12px; color:var(--muted); margin-top:6px; }
-    .actions{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
-    .actions button{ padding:12px; border-radius:14px; min-width:120px; }
-
-    /* Drawer */
-    .backdrop{
-      position:fixed; inset:0; background:rgba(26,71,42,.35);
-      display:none; z-index:20;
-    }
-    .drawer{
-      position:fixed; top:0; left:0; height:100vh; width:280px;
-      background:#fff;
-      border-right:1px solid var(--border);
-      box-shadow:var(--shadow);
-      transform:translateX(-100%);
-      transition:.2s ease;
-      z-index:21;
-      padding:10px;
-    }
-    .drawer.open{ transform:translateX(0); }
-    .backdrop.open{ display:block; }
-    .drawerHeader{
-      padding:6px 8px 10px;
-      border-bottom:1px solid #e5f7ef;
-      margin-bottom:10px;
-    }
-    .drawerHeader b{ display:block; }
-    .drawerHeader small{ color:var(--muted); font-weight:700; }
-    .nav a{
-      display:block;
-      padding:12px 10px;
-      border-radius:12px;
-      color:var(--text);
-      text-decoration:none;
-      font-weight:800;
-    }
-    .nav a:hover{ background:#f0fdf9; }
-    .nav a.danger{ color:#dc2626; }
-
-    /* Views */
-    .view{ display:none; }
-    .view.active{ display:block; }
-
-    @media (max-width:520px){
-      .wrap{ padding:10px; }
-      .row > *{ min-width:140px; }
     }
   </style>
 </head>
+
 <body>
 
-  <div class="backdrop" id="backdrop"></div>
-  <div class="drawer" id="drawer">
-    <div class="drawerHeader">
-      <b>PAVI Fast</b>
-      <small id="who">—</small>
-    </div>
-    <div class="nav">
-      <a href="#" data-nav="novo">➕ Novo registro</a>
-      <a href="#" data-nav="meus">🗂️ Meus envios</a>
-      <a href="#" data-nav="sync">🔄 Reenviar pendentes</a>
-      <a href="#" data-nav="logout" class="danger">Sair</a>
-    </div>
-    <div class="sep"></div>
-    <div class="hint">
-      Offline: o sistema salva para enviar depois quando houver internet.
-    </div>
-  </div>
-
   <div class="topbar">
-    <button class="iconBtn" id="btnMenu" aria-label="Menu">☰</button>
-    <div class="tblock">
-      <div class="title" id="viewTitle">Novo registro</div>
-      <div class="badge" id="netBadge">—</div>
+    <button class="iconBtn">☰</button>
+    <div>
+      <div class="title">Novo registro</div>
+      <div class="badge">Online</div>
     </div>
   </div>
 
   <div class="wrap">
-
-    <!-- KPI (somente Usuário) -->
     <div class="panel">
-      <div class="kpis">
-        <div class="kpi">
-          <small>Usuário</small>
-          <b id="kUser">—</b>
-        </div>
-      </div>
+      <label>Usuário</label>
+      <input value="Breno Forte de Luna" disabled />
+
+      <label>Atividade</label>
+      <input placeholder="Digite para filtrar..." />
+
+      <label>Trecho</label>
+      <input placeholder="Ex.: km 12+300 ao km 13+050 (lado direito)" />
+
+      <label>Rodovia</label>
+      <input placeholder="Ex.: PR-082" />
+
+      <label>Total (m)</label>
+      <input placeholder="Ex.: 10,5" />
+
+      <label>Prazo de</label>
+      <input type="date" />
+
+      <label>Prazo até</label>
+      <input type="date" />
+
+      <label>Foto (obrigatória)</label>
+      <input type="file" />
+
+      <button style="margin-top:14px">Salvar</button>
     </div>
-
-    <div style="height:12px"></div>
-
-    <!-- VIEW: NOVO REGISTRO -->
-    <div class="panel view active" id="viewNovo">
-      <div class="row">
-        <div>
-          <label>Atividade</label>
-          <input id="atividade" list="dlAtividades" placeholder="Digite para filtrar..." />
-          <datalist id="dlAtividades"></datalist>
-          <div class="hint" id="hintNew" style="display:none">
-            Não encontrou? <a href="#" id="btnAddAtv">➕ Incluir novo</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- ✅ TRECHO -->
-      <div class="row">
-        <div>
-          <label>Trecho</label>
-          <input id="trecho" placeholder="Ex.: km 12+300 ao km 13+050 (lado direito)..." />
-          <div class="hint">Campo de observação do local/trecho executado.</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Rodovia</label>
-          <input id="rodovia" placeholder="Ex.: PR-082" />
-          <div class="hint">Se a atividade tiver rodovia no catálogo, preenche automaticamente.</div>
-        </div>
-        <div>
-          <label>Total (m)</label>
-          <input id="total" inputmode="decimal" placeholder="Ex.: 10,5" />
-          <div class="hint">Use números e vírgula.</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Prazo de</label>
-          <input id="prazoDe" type="date" />
-        </div>
-        <div>
-          <label>Prazo até</label>
-          <input id="prazoAte" type="date" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Foto (obrigatória)</label>
-          <input id="foto" type="file" accept="image/*" capture="environment" />
-          <div class="hint">Tire a foto no local. O sistema compacta para enviar mais rápido.</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <button class="btn" id="btnSalvar">Salvar</button>
-      </div>
-
-      <div class="hint" id="saveMsg"></div>
-    </div>
-
-    <!-- VIEW: MEUS ENVIOS -->
-    <div class="panel view" id="viewMeus">
-      <div class="row">
-        <button class="btn secondary" id="btnRefreshList">Atualizar lista</button>
-        <button class="btn" id="btnResend">Reenviar pendentes</button>
-      </div>
-      <div class="sep"></div>
-      <div class="list" id="list"></div>
-    </div>
-
   </div>
-
-<script>
-/* ==========================================================
-   CONFIG
-========================================================== */
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
-
-// (interno) cache de atividades p/ offline — sem mostrar nada na UI
-const CACHE_ACTIVITIES_KEY = 'PAVI_FAST_ACTIVIDADES_CACHE_V1';
-
-// sessão simples (salva no login)
-const LS_USER = 'PAVI_FAST_USER';
-const LS_NAME = 'PAVI_FAST_NAME';
-
-/* ==========================================================
-   Helpers
-========================================================== */
-const $ = (s)=>document.querySelector(s);
-const $$ = (s)=>Array.from(document.querySelectorAll(s));
-
-function setOnlineBadge(){
-  $('#netBadge').textContent = navigator.onLine ? 'Online' : 'Offline';
-}
-window.addEventListener('online', setOnlineBadge);
-window.addEventListener('offline', setOnlineBadge);
-
-function showView(which){
-  $('#viewNovo').classList.toggle('active', which==='novo');
-  $('#viewMeus').classList.toggle('active', which==='meus');
-  $('#viewTitle').textContent = (which==='novo') ? 'Novo registro' : 'Meus envios';
-}
-
-function toast(msg){ alert(msg); }
-
-function normalizeNumberBR(str){
-  if (typeof str !== 'string') str = String(str ?? '');
-  const s = str.trim().replace(/\./g,'').replace(',','.');
-  const n = Number(s);
-  return Number.isFinite(n) ? n : null;
-}
-
-function toBRDateTime(ts){
-  try { return new Date(ts).toLocaleString('pt-BR'); }
-  catch { return String(ts); }
-}
-
-/* ==========================================================
-   Drawer
-========================================================== */
-function drawer(open){
-  $('#drawer').classList.toggle('open', open);
-  $('#backdrop').classList.toggle('open', open);
-}
-$('#btnMenu').onclick = ()=>drawer(true);
-$('#backdrop').onclick = ()=>drawer(false);
-
-$$('[data-nav]').forEach(a=>{
-  a.addEventListener('click', async (e)=>{
-    e.preventDefault();
-    const nav = a.getAttribute('data-nav');
-    drawer(false);
-
-    if(nav==='novo') showView('novo');
-    if(nav==='meus'){ showView('meus'); await renderQueue(); }
-    if(nav==='sync'){ await resendAll(); await renderQueue(); }
-    if(nav==='logout'){
-      localStorage.removeItem(LS_USER);
-      localStorage.removeItem(LS_NAME);
-      window.location.href = 'index.html';
-    }
-  });
-});
-
-/* ==========================================================
-   IndexedDB (fila offline com foto)
-========================================================== */
-const DB_NAME = 'pavi_fast_db_v1';
-const STORE = 'queue';
-
-function openDB(){
-  return new Promise((resolve, reject)=>{
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = ()=>{
-      const db = req.result;
-      if(!db.objectStoreNames.contains(STORE)){
-        db.createObjectStore(STORE, { keyPath:'id' });
-      }
-    };
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  });
-}
-async function idbPut(obj){
-  const db = await openDB();
-  return new Promise((resolve, reject)=>{
-    const tx = db.transaction(STORE,'readwrite');
-    tx.objectStore(STORE).put(obj);
-    tx.oncomplete = ()=>resolve(true);
-    tx.onerror = ()=>reject(tx.error);
-  });
-}
-async function idbGetAll(){
-  const db = await openDB();
-  return new Promise((resolve, reject)=>{
-    const tx = db.transaction(STORE,'readonly');
-    const req = tx.objectStore(STORE).getAll();
-    req.onsuccess = ()=>resolve(req.result||[]);
-    req.onerror = ()=>reject(req.error);
-  });
-}
-async function idbDel(id){
-  const db = await openDB();
-  return new Promise((resolve, reject)=>{
-    const tx = db.transaction(STORE,'readwrite');
-    tx.objectStore(STORE).delete(id);
-    tx.oncomplete = ()=>resolve(true);
-    tx.onerror = ()=>reject(tx.error);
-  });
-}
-
-/* ==========================================================
-   Catálogo de atividades (carrega automaticamente ao abrir)
-========================================================== */
-let activities = [];
-
-function loadActivitiesCache(){
-  try{
-    const raw = localStorage.getItem(CACHE_ACTIVITIES_KEY);
-    if(!raw) return [];
-    return JSON.parse(raw);
-  }catch{ return []; }
-}
-function saveActivitiesCache(list){
-  try{ localStorage.setItem(CACHE_ACTIVITIES_KEY, JSON.stringify(list)); }catch{}
-}
-
-function fillDatalist(list){
-  const dl = $('#dlAtividades');
-  dl.innerHTML = '';
-  list.forEach(it=>{
-    const opt = document.createElement('option');
-    opt.value = it.atividade;
-    dl.appendChild(opt);
-  });
-}
-
-function pickRodoviaByAtividade(name){
-  const v = (name||'').trim().toLowerCase();
-  const it = activities.find(x => (x.atividade||'').trim().toLowerCase() === v);
-  return it?.rodovia || '';
-}
-
-async function fetchActivities(){
-  const body = new URLSearchParams({ action:'activities' });
-  const resp = await fetch(WEBAPP_URL, { method:'POST', body });
-  const text = await resp.text();
-  let json=null; try{ json = JSON.parse(text); }catch{}
-  if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
-  if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao carregar atividades');
-  return json.itens || [];
-}
-
-async function loadActivitiesOnOpen(){
-  activities = loadActivitiesCache();
-  fillDatalist(activities);
-
-  if(navigator.onLine){
-    try{
-      const list = await fetchActivities();
-      activities = list;
-      saveActivitiesCache(list);
-      fillDatalist(list);
-    }catch(err){
-      console.warn('Falha ao atualizar atividades:', err);
-    }
-  }
-}
-
-$('#atividade').addEventListener('input', ()=>{
-  const v = $('#atividade').value.trim().toLowerCase();
-  if(!v){ $('#hintNew').style.display='none'; return; }
-  const match = activities.some(x => (x.atividade||'').toLowerCase() === v);
-  $('#hintNew').style.display = match ? 'none' : 'block';
-});
-
-$('#atividade').addEventListener('change', ()=>{
-  const rod = pickRodoviaByAtividade($('#atividade').value);
-  if(rod) $('#rodovia').value = rod;
-});
-
-$('#btnAddAtv').addEventListener('click', async (e)=>{
-  e.preventDefault();
-  const atv = $('#atividade').value.trim();
-  if(!atv) return;
-  const rod = $('#rodovia').value.trim();
-  if(!navigator.onLine) return toast('Sem internet para incluir agora.');
-
-  if(!confirm(`Incluir nova atividade?\n\n${atv}`)) return;
-
-  try{
-    const body = new URLSearchParams({ action:'add_activity', atividade:atv, rodovia:rod });
-    const resp = await fetch(WEBAPP_URL, { method:'POST', body });
-    const text = await resp.text();
-    let json=null; try{ json = JSON.parse(text); }catch{}
-    if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
-    if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao incluir');
-
-    await loadActivitiesOnOpen();
-  }catch(err){
-    toast('Erro: ' + err.message);
-  }
-});
-
-/* ==========================================================
-   Foto: compressão para base64 JPEG
-========================================================== */
-async function compressToDataURL(file, maxW=1280, quality=0.75){
-  const img = await new Promise((res, rej)=>{
-    const i = new Image();
-    i.onload = ()=>res(i);
-    i.onerror = rej;
-    i.src = URL.createObjectURL(file);
-  });
-
-  const scale = Math.min(1, maxW / img.width);
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, w, h);
-
-  const dataUrl = canvas.toDataURL('image/jpeg', quality);
-  URL.revokeObjectURL(img.src);
-  return dataUrl;
-}
-
-/* ==========================================================
-   Envio (submit) para Apps Script
-========================================================== */
-async function sendOne(rec){
-  if(!navigator.onLine){
-    rec.status = 'PENDING';
-    rec.errorMsg = 'Sem internet';
-    await idbPut(rec);
-    return;
-  }
-
-  try{
-    const body = new URLSearchParams({
-      action:'submit',
-      usuario: rec.usuario,
-      nome: rec.nome,
-      atividade: rec.atividade,
-      rodovia: rec.rodovia,
-      prazoDe: rec.prazoDe || '',
-      prazoAte: rec.prazoAte || '',
-      total: String(rec.totalBR || rec.total || ''),
-      trecho: rec.trecho || '',
-      foto: rec.photoDataUrl
-    });
-
-    const resp = await fetch(WEBAPP_URL, { method:'POST', body });
-    const text = await resp.text();
-    let json=null; try{ json = JSON.parse(text); }catch{}
-
-    if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
-    if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao enviar');
-
-    await idbDel(rec.id);
-  }catch(err){
-    rec.status = 'ERROR';
-    rec.errorMsg = err.message || 'Erro';
-    await idbPut(rec);
-  }
-}
-
-async function resendAll(){
-  const all = await idbGetAll();
-  for(const rec of all){
-    await sendOne(rec);
-  }
-  toast('Reenvio concluído.');
-}
-
-/* ==========================================================
-   Lista (Meus envios)
-========================================================== */
-async function renderQueue(){
-  const list = $('#list');
-  const all = (await idbGetAll()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-
-  list.innerHTML = '';
-  if(all.length === 0){
-    list.innerHTML = `<div class="item"><b>Nenhum envio pendente.</b><div class="meta">Tudo sincronizado.</div></div>`;
-    return;
-  }
-
-  all.forEach(rec=>{
-    const pillClass = rec.status==='ERROR' ? 'err' : (rec.status==='SENT' ? 'ok' : 'warn');
-    const pillLabel = rec.status==='ERROR' ? 'Erro' : (rec.status==='SENT' ? 'Enviado' : 'Pendente');
-
-    const el = document.createElement('div');
-    el.className = 'item';
-    el.innerHTML = `
-      <div class="itemTop">
-        <div>
-          <b>${rec.atividade || '—'}</b>
-          <div class="meta">${toBRDateTime(rec.createdAt)} • Total: ${rec.totalBR || rec.total || '—'} m</div>
-        </div>
-        <span class="pill ${pillClass}">${pillLabel}</span>
-      </div>
-      <div class="meta">Trecho: ${rec.trecho || '—'}</div>
-      <div class="meta">Rodovia: ${rec.rodovia || '—'} • Prazo: ${rec.prazoDe || '—'} → ${rec.prazoAte || '—'}</div>
-      ${rec.errorMsg ? `<div class="meta" style="color:#991b1b;font-weight:800;margin-top:6px">Erro: ${rec.errorMsg}</div>` : ``}
-      <div class="actions">
-        <button class="btn secondary" data-act="detail" data-id="${rec.id}">Ver detalhe</button>
-        <button class="btn" data-act="send" data-id="${rec.id}">Enviar</button>
-        <button class="btn danger" data-act="del" data-id="${rec.id}">Excluir</button>
-      </div>
-    `;
-    list.appendChild(el);
-  });
-
-  list.querySelectorAll('button[data-act]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const act = btn.getAttribute('data-act');
-      const id = btn.getAttribute('data-id');
-      const all = await idbGetAll();
-      const rec = all.find(x=>x.id===id);
-      if(!rec) return;
-
-      if(act==='detail'){
-        toast(
-          `Atividade: ${rec.atividade}\nTrecho: ${rec.trecho || '—'}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`
-        );
-      }
-      if(act==='send'){
-        await sendOne(rec);
-        await renderQueue();
-      }
-      if(act==='del'){
-        if(confirm('Excluir este pendente?')){
-          await idbDel(id);
-          await renderQueue();
-        }
-      }
-    });
-  });
-}
-
-/* ==========================================================
-   Botões da tela "Meus envios"
-========================================================== */
-$('#btnResend').addEventListener('click', async ()=>{ await resendAll(); await renderQueue(); });
-$('#btnRefreshList').addEventListener('click', async ()=>{ await renderQueue(); });
-
-/* ==========================================================
-   Salvar novo registro
-========================================================== */
-$('#btnSalvar').addEventListener('click', async ()=>{
-  const usuario = localStorage.getItem(LS_USER) || '';
-  const nome = localStorage.getItem(LS_NAME) || usuario;
-
-  const atividade = $('#atividade').value.trim();
-  const trecho = $('#trecho').value.trim();
-  const rodovia = $('#rodovia').value.trim();
-  const totalBR = $('#total').value.trim();
-  const prazoDe = $('#prazoDe').value;
-  const prazoAte = $('#prazoAte').value;
-  const file = $('#foto').files?.[0];
-
-  if(!atividade) return toast('Informe a atividade.');
-  if(!totalBR) return toast('Informe o total.');
-  if(!file) return toast('Foto é obrigatória.');
-
-  const total = normalizeNumberBR(totalBR);
-  if(total === null) return toast('Total inválido. Use número e vírgula.');
-
-  $('#btnSalvar').disabled = true;
-  $('#saveMsg').textContent = 'Processando foto...';
-
-  try{
-    const photoDataUrl = await compressToDataURL(file);
-
-    const rec = {
-      id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + '_' + Math.random()),
-      createdAt: Date.now(),
-      status: 'PENDING',
-      errorMsg: '',
-      usuario, nome,
-      atividade, trecho,
-      rodovia,
-      prazoDe, prazoAte,
-      total, totalBR,
-      unidade: 'm',
-      photoDataUrl
-    };
-
-    await idbPut(rec);
-
-    $('#atividade').value='';
-    $('#trecho').value='';
-    $('#rodovia').value='';
-    $('#total').value='';
-    $('#prazoDe').value='';
-    $('#prazoAte').value='';
-    $('#foto').value='';
-    $('#saveMsg').textContent = '';
-
-    await sendOne(rec);
-
-    toast('Registro salvo.');
-  }catch(err){
-    toast('Erro: ' + err.message);
-  }finally{
-    $('#btnSalvar').disabled = false;
-    $('#saveMsg').textContent = '';
-  }
-});
-
-/* ==========================================================
-   Init
-========================================================== */
-(async function init(){
-  const usuario = localStorage.getItem(LS_USER);
-  const nome = localStorage.getItem(LS_NAME) || usuario;
-
-  if(!usuario){
-    window.location.href = 'index.html';
-    return;
-  }
-
-  $('#who').textContent = nome || usuario;
-  $('#kUser').textContent = nome || usuario;
-
-  setOnlineBadge();
-
-  await loadActivitiesOnOpen();
-})();
-</script>
 
 </body>
 </html>
