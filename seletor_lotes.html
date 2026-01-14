@@ -206,9 +206,7 @@
     .view.active{ display:block; }
 
     /* ==========================================================
-       ✅ NOVO SELETOR DE ATIVIDADE (container + lista)
-       - Evita datalist nativo do Android
-       - Lista rolável filtrada
+       ✅ SELETOR DE ATIVIDADE (container + lista)
     ========================================================== */
     .atvBox{
       border:2px solid var(--border);
@@ -216,12 +214,8 @@
       background:#fbfffd;
       padding:12px;
     }
-    .atvTop{
-      display:flex; align-items:center; gap:10px;
-    }
-    .atvTop input{
-      background:#fff;
-    }
+    .atvTop{ display:flex; align-items:center; gap:10px; }
+    .atvTop input{ background:#fff; }
     .atvCount{
       font-size:12px;
       color:var(--muted);
@@ -259,54 +253,81 @@
       text-align:center;
     }
     .atvFooter{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      margin-top:8px;
-      flex-wrap:wrap;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-top:8px; flex-wrap:wrap;
     }
 
     /* ==========================================================
-       ✅ CAPTURA DE FOTO NA HORA (SEM "ESCOLHER ARQUIVO")
+       ✅ FOTO: Preview com ícone de câmera (no lugar do triângulo)
     ========================================================== */
-    .camBox{
+    .camCard{
       border:2px solid var(--border);
       border-radius:18px;
       background:#fbfffd;
       padding:12px;
     }
-    .camPreview{
-      width:100%;
+    .camFrame{
+      position:relative;
       border:2px solid var(--border);
-      border-radius:14px;
+      border-radius:16px;
       overflow:hidden;
-      background:#000;
-      aspect-ratio: 4 / 3;
+      background:#0b1f16;
+      aspect-ratio: 16 / 9;
+      width:100%;
       display:flex;
       align-items:center;
       justify-content:center;
     }
-    #camVideo, #camShot{
+    .camVideo, .camShot{
       width:100%;
       height:100%;
       object-fit:cover;
-      display:block;
+      display:none;
+    }
+    .camOverlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.25));
+      color:#eafff6;
+      text-align:center;
+      padding:18px;
+    }
+    .camOverlay b{ font-size:16px; }
+    .camIcon{
+      width:70px; height:70px;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+      opacity:0.95;
     }
     .camBtns{
       display:flex;
       gap:10px;
-      margin-top:10px;
+      margin-top:12px;
       flex-wrap:wrap;
     }
-    .camBtns button{
-      min-width:140px;
+    .camBtns button{ min-width:140px; }
+
+    .warnText{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:2px solid var(--warn-br);
+      background:var(--warn-bg);
+      color:var(--warn);
+      font-weight:800;
+      display:none;
+      font-size:13px;
     }
 
     @media (max-width:520px){
       .wrap{ padding:10px; }
       .row > *{ min-width:140px; }
       .atvList{ max-height:220px; }
+      .camBtns button{ min-width:0; flex:1; }
     }
   </style>
 </head>
@@ -406,27 +427,39 @@
         </div>
       </div>
 
-      <!-- ✅ FOTO: captura na hora (câmera) -->
+      <!-- ✅ FOTO (obrigatória) com ícone de câmera -->
       <div class="row">
         <div>
           <label>Foto (obrigatória)</label>
 
-          <div class="camBox" id="camBox">
-            <div class="camPreview">
-              <video id="camVideo" playsinline autoplay muted></video>
-              <canvas id="camCanvas" style="display:none;"></canvas>
-              <img id="camShot" alt="Foto capturada" style="display:none;" />
+          <div class="camCard">
+            <div class="camFrame" id="camFrame">
+              <video id="camVideo" class="camVideo" playsinline muted autoplay></video>
+              <img id="camShot" class="camShot" alt="Foto capturada" />
+
+              <!-- Overlay com ícone de câmera (substitui triângulo) -->
+              <div class="camOverlay" id="camOverlay">
+                <svg class="camIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 7l1.2-2.1c.2-.4.6-.6 1-.6h1.6c.4 0 .8.2 1 .6L15 7h2.2c1 0 1.8.8 1.8 1.8v9.4c0 1-.8 1.8-1.8 1.8H6.8c-1 0-1.8-.8-1.8-1.8V8.8C5 7.8 5.8 7 6.8 7H9z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M12 17.2a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2z" stroke="white" stroke-width="1.6"/>
+                  <path d="M17.6 9.5h.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <b>Pronto para capturar</b>
+                <div style="font-size:13px;opacity:.9">
+                  Toque em <b>Abrir câmera</b>, depois <b>Tirar foto</b>.
+                </div>
+              </div>
             </div>
 
             <div class="camBtns">
-              <button type="button" class="btn secondary" id="btnStartCam">Abrir câmera</button>
-              <button type="button" class="btn" id="btnSnap" disabled>Tirar foto</button>
-              <button type="button" class="btn secondary" id="btnRetake" style="display:none;">Refazer</button>
+              <button class="btn secondary" id="btnOpenCam" type="button">Abrir câmera</button>
+              <button class="btn" id="btnTakePhoto" type="button" disabled>Tirar foto</button>
             </div>
 
             <div class="hint">Tire a foto no local. O sistema compacta para enviar mais rápido.</div>
-            <div class="hint" id="camErr" style="display:none;color:#991b1b;font-weight:800;"></div>
+            <div class="warnText" id="camErr"></div>
           </div>
+
         </div>
       </div>
 
@@ -609,14 +642,10 @@ function renderAtvList(list){
   list.forEach((it)=>{
     const div = document.createElement('div');
     div.className = 'atvItem';
-
-    // ✅ Mostra SOMENTE a atividade (sem rodovia na lista)
-    div.textContent = (it.atividade || '—');
-
+    div.textContent = (it.atividade || '—'); // ✅ só atividade
     div.addEventListener('click', ()=>{
       $('#atividade').value = it.atividade || '';
 
-      // ✅ Mantém autopreenchimento da rodovia (não aparece na lista)
       const rod = it.rodovia || pickRodoviaByAtividade(it.atividade);
       if(rod) $('#rodovia').value = rod;
 
@@ -624,7 +653,6 @@ function renderAtvList(list){
       renderAtvList(filtered);
       $('#atividade').blur();
     });
-
     box.appendChild(div);
   });
 }
@@ -696,92 +724,142 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
 });
 
 /* ==========================================================
-   ✅ Foto (câmera na hora)
+   FOTO (CÂMERA AO VIVO)
 ========================================================== */
 let camStream = null;
-let photoDataUrlCurrent = ''; // foto capturada (base64 jpeg)
+let capturedDataUrl = ""; // ✅ substitui o antigo input file
 
-async function startCamera(){
-  $('#camErr').style.display = 'none';
-  $('#camErr').textContent = '';
+function showCamError(msg){
+  const box = $('#camErr');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+function clearCamError(){
+  const box = $('#camErr');
+  box.style.display = 'none';
+  box.textContent = '';
+}
 
-  try{
-    // tenta câmera traseira
-    camStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' } },
-      audio: false
-    });
+function setCamUI(state){
+  // state: idle | live | shot
+  const v = $('#camVideo');
+  const img = $('#camShot');
+  const ov = $('#camOverlay');
 
-    const video = $('#camVideo');
-    video.srcObject = camStream;
-
-    $('#btnSnap').disabled = false;
-    $('#btnStartCam').textContent = 'Câmera aberta';
-    $('#btnStartCam').disabled = true;
-  }catch(err){
-    $('#camErr').style.display = 'block';
-    $('#camErr').textContent =
-      'Não foi possível abrir a câmera. Verifique permissões e tente novamente. (' + (err?.message || err) + ')';
+  if(state === 'idle'){
+    v.style.display = 'none';
+    img.style.display = 'none';
+    ov.style.display = 'flex';
+    $('#btnTakePhoto').disabled = true;
+  }
+  if(state === 'live'){
+    v.style.display = 'block';
+    img.style.display = 'none';
+    ov.style.display = 'none';
+    $('#btnTakePhoto').disabled = false;
+  }
+  if(state === 'shot'){
+    v.style.display = 'none';
+    img.style.display = 'block';
+    ov.style.display = 'none';
+    $('#btnTakePhoto').disabled = true;
   }
 }
 
-function stopCamera(){
+async function stopCamera(){
   if(camStream){
-    camStream.getTracks().forEach(t=>t.stop());
+    camStream.getTracks().forEach(t => t.stop());
     camStream = null;
   }
+  const v = $('#camVideo');
+  v.srcObject = null;
 }
 
-async function snapPhoto(){
-  const video = $('#camVideo');
-  const canvas = $('#camCanvas');
-  const shot = $('#camShot');
+async function startCamera(){
+  clearCamError();
 
-  const vw = video.videoWidth || 1280;
-  const vh = video.videoHeight || 720;
+  // ✅ exige user-gesture (botão) — já está
+  if(!navigator.mediaDevices?.getUserMedia){
+    showCamError('Este dispositivo/navegador não suporta câmera.');
+    return;
+  }
 
-  canvas.width = vw;
-  canvas.height = vh;
+  // ✅ tenta traseira, se falhar tenta qualquer câmera
+  const tryConstraints = [
+    { video: { facingMode: { ideal: 'environment' } }, audio: false },
+    { video: true, audio: false }
+  ];
+
+  try{
+    await stopCamera();
+
+    let stream = null;
+    let lastErr = null;
+
+    for(const c of tryConstraints){
+      try{
+        stream = await navigator.mediaDevices.getUserMedia(c);
+        break;
+      }catch(err){
+        lastErr = err;
+      }
+    }
+
+    if(!stream){
+      throw lastErr || new Error('Could not start video source');
+    }
+
+    camStream = stream;
+
+    const v = $('#camVideo');
+    v.srcObject = stream;
+
+    // ajuda no Android/WebView
+    v.setAttribute('playsinline','true');
+    v.muted = true;
+
+    // garante start
+    await v.play();
+
+    setCamUI('live');
+  }catch(err){
+    setCamUI('idle');
+    showCamError('Não foi possível abrir a câmera. Verifique permissões e tente novamente. (' + (err?.message || 'erro') + ')');
+  }
+}
+
+async function takePhoto(){
+  clearCamError();
+  if(!camStream){
+    showCamError('Abra a câmera antes de tirar a foto.');
+    return;
+  }
+
+  const v = $('#camVideo');
+  const canvas = document.createElement('canvas');
+
+  const w = v.videoWidth || 1280;
+  const h = v.videoHeight || 720;
+
+  canvas.width = w;
+  canvas.height = h;
 
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, vw, vh);
+  ctx.drawImage(v, 0, 0, w, h);
 
-  // compressão
-  photoDataUrlCurrent = canvas.toDataURL('image/jpeg', 0.75);
+  // ✅ compacta direto para JPEG (como antes)
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+  capturedDataUrl = dataUrl;
 
-  // preview
-  shot.src = photoDataUrlCurrent;
-  shot.style.display = 'block';
-  video.style.display = 'none';
+  $('#camShot').src = dataUrl;
+  setCamUI('shot');
 
-  $('#btnRetake').style.display = 'inline-block';
-  $('#btnSnap').disabled = true;
-
-  // economiza bateria
-  stopCamera();
+  // opcional: para poupar bateria, parar stream após tirar
+  await stopCamera();
 }
 
-function retakePhoto(){
-  photoDataUrlCurrent = '';
-
-  $('#camShot').style.display = 'none';
-  $('#camVideo').style.display = 'block';
-
-  $('#btnSnap').disabled = true; // só libera quando abrir câmera
-  $('#btnRetake').style.display = 'none';
-
-  $('#btnStartCam').disabled = false;
-  $('#btnStartCam').textContent = 'Abrir câmera';
-}
-
-$('#btnStartCam').addEventListener('click', startCamera);
-$('#btnSnap').addEventListener('click', snapPhoto);
-$('#btnRetake').addEventListener('click', retakePhoto);
-
-window.addEventListener('beforeunload', stopCamera);
-document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden) stopCamera();
-});
+$('#btnOpenCam').addEventListener('click', startCamera);
+$('#btnTakePhoto').addEventListener('click', takePhoto);
 
 /* ==========================================================
    Envio
@@ -917,11 +995,12 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const prazoDe = $('#prazoDe').value;
   const prazoAte = $('#prazoAte').value;
 
+  // ✅ agora a foto vem do "capturedDataUrl"
+  const photoDataUrl = capturedDataUrl;
+
   if(!atividade) return toast('Informe a atividade.');
   if(!totalBR) return toast('Informe o total.');
-
-  // ✅ Obrigatório: foto do momento
-  if(!photoDataUrlCurrent) return toast('Tire a foto para continuar.');
+  if(!photoDataUrl) return toast('Foto é obrigatória. Abra a câmera e tire a foto.');
 
   const total = normalizeNumberBR(totalBR);
   if(total === null) return toast('Total inválido. Use número e vírgula.');
@@ -930,8 +1009,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   $('#saveMsg').textContent = 'Preparando envio...';
 
   try{
-    const photoDataUrl = photoDataUrlCurrent;
-
     const rec = {
       id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + '_' + Math.random()),
       createdAt: Date.now(),
@@ -948,17 +1025,18 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
     await idbPut(rec);
 
+    // limpa campos (mantém padrão)
     $('#atividade').value='';
     $('#trecho').value='';
     $('#rodovia').value='';
     $('#total').value='';
     $('#prazoDe').value='';
     $('#prazoAte').value='';
+    capturedDataUrl = '';
+    $('#camShot').src = '';
+    setCamUI('idle');
+    clearCamError();
     $('#saveMsg').textContent = '';
-
-    // limpa foto / UI
-    photoDataUrlCurrent = '';
-    retakePhoto();
 
     await sendOne(rec);
 
@@ -988,8 +1066,11 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
   setOnlineBadge();
 
-  // ✅ inicia com hint escondida até digitar
+  // inicia com hint escondida até digitar
   $('#hintNew').style.display = 'none';
+
+  // estado inicial da câmera
+  setCamUI('idle');
 
   await loadActivitiesOnOpen();
 })();
