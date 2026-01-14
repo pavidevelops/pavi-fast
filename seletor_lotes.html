@@ -267,6 +267,42 @@
       flex-wrap:wrap;
     }
 
+    /* ==========================================================
+       ✅ CAPTURA DE FOTO NA HORA (SEM "ESCOLHER ARQUIVO")
+    ========================================================== */
+    .camBox{
+      border:2px solid var(--border);
+      border-radius:18px;
+      background:#fbfffd;
+      padding:12px;
+    }
+    .camPreview{
+      width:100%;
+      border:2px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#000;
+      aspect-ratio: 4 / 3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    #camVideo, #camShot{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .camBtns{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    .camBtns button{
+      min-width:140px;
+    }
+
     @media (max-width:520px){
       .wrap{ padding:10px; }
       .row > *{ min-width:140px; }
@@ -370,11 +406,27 @@
         </div>
       </div>
 
+      <!-- ✅ FOTO: captura na hora (câmera) -->
       <div class="row">
         <div>
           <label>Foto (obrigatória)</label>
-          <input id="foto" type="file" accept="image/*" capture="environment" />
-          <div class="hint">Tire a foto no local. O sistema compacta para enviar mais rápido.</div>
+
+          <div class="camBox" id="camBox">
+            <div class="camPreview">
+              <video id="camVideo" playsinline autoplay muted></video>
+              <canvas id="camCanvas" style="display:none;"></canvas>
+              <img id="camShot" alt="Foto capturada" style="display:none;" />
+            </div>
+
+            <div class="camBtns">
+              <button type="button" class="btn secondary" id="btnStartCam">Abrir câmera</button>
+              <button type="button" class="btn" id="btnSnap" disabled>Tirar foto</button>
+              <button type="button" class="btn secondary" id="btnRetake" style="display:none;">Refazer</button>
+            </div>
+
+            <div class="hint">Tire a foto no local. O sistema compacta para enviar mais rápido.</div>
+            <div class="hint" id="camErr" style="display:none;color:#991b1b;font-weight:800;"></div>
+          </div>
         </div>
       </div>
 
@@ -644,29 +696,92 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
 });
 
 /* ==========================================================
-   Foto
+   ✅ Foto (câmera na hora)
 ========================================================== */
-async function compressToDataURL(file, maxW=1280, quality=0.75){
-  const img = await new Promise((res, rej)=>{
-    const i = new Image();
-    i.onload = ()=>res(i);
-    i.onerror = rej;
-    i.src = URL.createObjectURL(file);
-  });
+let camStream = null;
+let photoDataUrlCurrent = ''; // foto capturada (base64 jpeg)
 
-  const scale = Math.min(1, maxW / img.width);
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
+async function startCamera(){
+  $('#camErr').style.display = 'none';
+  $('#camErr').textContent = '';
 
-  const canvas = document.createElement('canvas');
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, w, h);
+  try{
+    // tenta câmera traseira
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false
+    });
 
-  const dataUrl = canvas.toDataURL('image/jpeg', quality);
-  URL.revokeObjectURL(img.src);
-  return dataUrl;
+    const video = $('#camVideo');
+    video.srcObject = camStream;
+
+    $('#btnSnap').disabled = false;
+    $('#btnStartCam').textContent = 'Câmera aberta';
+    $('#btnStartCam').disabled = true;
+  }catch(err){
+    $('#camErr').style.display = 'block';
+    $('#camErr').textContent =
+      'Não foi possível abrir a câmera. Verifique permissões e tente novamente. (' + (err?.message || err) + ')';
+  }
 }
+
+function stopCamera(){
+  if(camStream){
+    camStream.getTracks().forEach(t=>t.stop());
+    camStream = null;
+  }
+}
+
+async function snapPhoto(){
+  const video = $('#camVideo');
+  const canvas = $('#camCanvas');
+  const shot = $('#camShot');
+
+  const vw = video.videoWidth || 1280;
+  const vh = video.videoHeight || 720;
+
+  canvas.width = vw;
+  canvas.height = vh;
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, vw, vh);
+
+  // compressão
+  photoDataUrlCurrent = canvas.toDataURL('image/jpeg', 0.75);
+
+  // preview
+  shot.src = photoDataUrlCurrent;
+  shot.style.display = 'block';
+  video.style.display = 'none';
+
+  $('#btnRetake').style.display = 'inline-block';
+  $('#btnSnap').disabled = true;
+
+  // economiza bateria
+  stopCamera();
+}
+
+function retakePhoto(){
+  photoDataUrlCurrent = '';
+
+  $('#camShot').style.display = 'none';
+  $('#camVideo').style.display = 'block';
+
+  $('#btnSnap').disabled = true; // só libera quando abrir câmera
+  $('#btnRetake').style.display = 'none';
+
+  $('#btnStartCam').disabled = false;
+  $('#btnStartCam').textContent = 'Abrir câmera';
+}
+
+$('#btnStartCam').addEventListener('click', startCamera);
+$('#btnSnap').addEventListener('click', snapPhoto);
+$('#btnRetake').addEventListener('click', retakePhoto);
+
+window.addEventListener('beforeunload', stopCamera);
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) stopCamera();
+});
 
 /* ==========================================================
    Envio
@@ -801,20 +916,21 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const totalBR = $('#total').value.trim();
   const prazoDe = $('#prazoDe').value;
   const prazoAte = $('#prazoAte').value;
-  const file = $('#foto').files?.[0];
 
   if(!atividade) return toast('Informe a atividade.');
   if(!totalBR) return toast('Informe o total.');
-  if(!file) return toast('Foto é obrigatória.');
+
+  // ✅ Obrigatório: foto do momento
+  if(!photoDataUrlCurrent) return toast('Tire a foto para continuar.');
 
   const total = normalizeNumberBR(totalBR);
   if(total === null) return toast('Total inválido. Use número e vírgula.');
 
   $('#btnSalvar').disabled = true;
-  $('#saveMsg').textContent = 'Processando foto...';
+  $('#saveMsg').textContent = 'Preparando envio...';
 
   try{
-    const photoDataUrl = await compressToDataURL(file);
+    const photoDataUrl = photoDataUrlCurrent;
 
     const rec = {
       id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + '_' + Math.random()),
@@ -838,8 +954,11 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     $('#total').value='';
     $('#prazoDe').value='';
     $('#prazoAte').value='';
-    $('#foto').value='';
     $('#saveMsg').textContent = '';
+
+    // limpa foto / UI
+    photoDataUrlCurrent = '';
+    retakePhoto();
 
     await sendOne(rec);
 
