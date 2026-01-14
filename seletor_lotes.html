@@ -5,12 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PAVI Fast</title>
 
-  <!-- ✅ Roboto (Google Fonts) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap" rel="stylesheet">
-
   <style>
+    /* ==========================================================
+       ✅ FIRA SANS (LOCAL .TTF — funciona no GitHub Pages e no celular)
+       Coloque os arquivos .ttf na mesma pasta deste HTML (raiz do repo)
+    ========================================================== */
+    @font-face{
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Medium.ttf') format('truetype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: 'Fira Sans';
+      src: url('FiraSans-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: 'Fira Sans';
+      src: url('FiraSans-Italic.ttf') format('truetype');
+      font-weight: 400;
+      font-style: italic;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: 'Fira Sans';
+      src: url('FiraSans-BoldItalic.ttf') format('truetype');
+      font-weight: 700;
+      font-style: italic;
+      font-display: swap;
+    }
+
     :root{
       --bg:#f8fdf9;
       --card:#ffffff;
@@ -26,7 +68,13 @@
       --warn-bg:#fff7ed; --warn:#9a3412; --warn-br:#fed7aa;
       --radius:18px;
     }
-    *{ box-sizing:border-box; font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Arial; }
+
+    /* ✅ Troca global de fonte (sem alterar o resto) */
+    *{
+      box-sizing:border-box;
+      font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+    }
+
     body{
       margin:0; background:var(--bg); color:var(--text);
       min-height:100vh;
@@ -244,7 +292,7 @@
         </div>
       </div>
 
-      <!-- ✅ NOVO: TRECHO -->
+      <!-- ✅ TRECHO -->
       <div class="row">
         <div>
           <label>Trecho</label>
@@ -466,11 +514,9 @@ async function fetchActivities(){
 }
 
 async function loadActivitiesOnOpen(){
-  // 1) carrega cache silencioso (offline)
   activities = loadActivitiesCache();
   fillDatalist(activities);
 
-  // 2) tenta atualizar silenciosamente (online)
   if(navigator.onLine){
     try{
       const list = await fetchActivities();
@@ -483,7 +529,6 @@ async function loadActivitiesOnOpen(){
   }
 }
 
-// sugerir incluir novo
 $('#atividade').addEventListener('input', ()=>{
   const v = $('#atividade').value.trim().toLowerCase();
   if(!v){ $('#hintNew').style.display='none'; return; }
@@ -491,13 +536,11 @@ $('#atividade').addEventListener('input', ()=>{
   $('#hintNew').style.display = match ? 'none' : 'block';
 });
 
-// autopreenche rodovia
 $('#atividade').addEventListener('change', ()=>{
   const rod = pickRodoviaByAtividade($('#atividade').value);
   if(rod) $('#rodovia').value = rod;
 });
 
-// incluir novo (online)
 $('#btnAddAtv').addEventListener('click', async (e)=>{
   e.preventDefault();
   const atv = $('#atividade').value.trim();
@@ -515,7 +558,6 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
     if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
     if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao incluir');
 
-    // recarrega silencioso
     await loadActivitiesOnOpen();
   }catch(err){
     toast('Erro: ' + err.message);
@@ -711,7 +753,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
     await idbPut(rec);
 
-    // limpa
     $('#atividade').value='';
     $('#trecho').value='';
     $('#rodovia').value='';
@@ -721,7 +762,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     $('#foto').value='';
     $('#saveMsg').textContent = '';
 
-    // tenta enviar já (se online)
     await sendOne(rec);
 
     toast('Registro salvo.');
@@ -750,7 +790,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
   setOnlineBadge();
 
-  // ✅ carrega atividades automaticamente ao abrir
   await loadActivitiesOnOpen();
 })();
 </script>
