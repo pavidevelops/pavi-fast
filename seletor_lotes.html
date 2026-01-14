@@ -199,8 +199,7 @@
     </div>
     <div class="sep"></div>
     <div class="hint">
-      Catálogo de atividades: atualiza quando houver internet.<br>
-      Offline: salva pendentes e reenvia depois.
+      Offline: o sistema salva para enviar depois quando houver internet.
     </div>
   </div>
 
@@ -214,19 +213,12 @@
 
   <div class="wrap">
 
+    <!-- KPIs (apenas Usuário) -->
     <div class="panel">
       <div class="kpis">
         <div class="kpi">
           <small>Usuário</small>
           <b id="kUser">—</b>
-        </div>
-        <div class="kpi">
-          <small>Atividades no cache</small>
-          <b id="kAct">—</b>
-        </div>
-        <div class="kpi">
-          <small>Pendentes</small>
-          <b id="kPend">—</b>
         </div>
       </div>
     </div>
@@ -280,7 +272,6 @@
 
       <div class="row">
         <button class="btn" id="btnSalvar">Salvar</button>
-        <button class="btn secondary" id="btnAtualizarAtv">Atualizar atividades</button>
       </div>
 
       <div class="hint" id="saveMsg"></div>
@@ -300,11 +291,11 @@
 
 <script>
 /* ==========================================================
-   CONFIG (igual ao seu index.html / primeiro_acesso.html)
+   CONFIG
 ========================================================== */
 const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-// cache das atividades (texto) — offline rápido
+// cache invisível (para funcionar offline)
 const CACHE_ACTIVITIES_KEY = 'PAVI_FAST_ACTIVIDADES_CACHE_V1';
 
 // sessão simples (salva no login)
@@ -318,7 +309,7 @@ const $ = (s)=>document.querySelector(s);
 const $$ = (s)=>Array.from(document.querySelectorAll(s));
 
 function setOnlineBadge(){
-  $('#netBadge').textContent = navigator.onLine ? 'Online' : 'Offline (usando cache)';
+  $('#netBadge').textContent = navigator.onLine ? 'Online' : 'Offline';
 }
 window.addEventListener('online', setOnlineBadge);
 window.addEventListener('offline', setOnlineBadge);
@@ -418,9 +409,7 @@ async function idbDel(id){
 }
 
 /* ==========================================================
-   Catálogo de atividades (Sheets -> cache)
-   Esperado: { status:"OK", itens:[{atividade:"...", rodovia:"..."}] }
-   Se seu Apps Script devolver outro formato, me diga o JSON e eu ajusto em 2 min.
+   Catálogo de atividades (carrega automaticamente ao abrir)
 ========================================================== */
 let activities = [];
 
@@ -432,7 +421,7 @@ function loadActivitiesCache(){
   }catch{ return []; }
 }
 function saveActivitiesCache(list){
-  localStorage.setItem(CACHE_ACTIVITIES_KEY, JSON.stringify(list));
+  try{ localStorage.setItem(CACHE_ACTIVITIES_KEY, JSON.stringify(list)); }catch{}
 }
 
 function fillDatalist(list){
@@ -443,7 +432,6 @@ function fillDatalist(list){
     opt.value = it.atividade;
     dl.appendChild(opt);
   });
-  $('#kAct').textContent = String(list.length);
 }
 
 function pickRodoviaByAtividade(name){
@@ -453,28 +441,31 @@ function pickRodoviaByAtividade(name){
 }
 
 async function fetchActivities(){
-  // POST form-urlencoded (igual seu login, evita preflight)
   const body = new URLSearchParams({ action:'activities' });
   const resp = await fetch(WEBAPP_URL, { method:'POST', body });
   const text = await resp.text();
   let json=null; try{ json = JSON.parse(text); }catch{}
   if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
   if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao carregar atividades');
-  // json.itens: [{atividade, rodovia}]
   return json.itens || [];
 }
 
-async function refreshActivities(){
-  try{
-    const list = await fetchActivities();
-    activities = list;
-    saveActivitiesCache(list);
-    fillDatalist(list);
-    toast('Atividades atualizadas.');
-  }catch(err){
-    // se falhar, mantém cache
-    console.warn(err);
-    toast('Não foi possível atualizar agora. Usando cache.');
+async function loadActivitiesOnOpen(){
+  // 1) carrega cache silencioso (para offline)
+  activities = loadActivitiesCache();
+  fillDatalist(activities);
+
+  // 2) tenta atualizar silenciosamente quando houver internet
+  if(navigator.onLine){
+    try{
+      const list = await fetchActivities();
+      activities = list;
+      saveActivitiesCache(list);
+      fillDatalist(list);
+    }catch(err){
+      // sem avisos na tela (como você pediu)
+      console.warn('Falha ao atualizar atividades:', err);
+    }
   }
 }
 
@@ -509,7 +500,9 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
     let json=null; try{ json = JSON.parse(text); }catch{}
     if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
     if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao incluir');
-    await refreshActivities();
+
+    // após incluir, recarrega automaticamente (silencioso)
+    await loadActivitiesOnOpen();
   }catch(err){
     toast('Erro: ' + err.message);
   }
@@ -542,7 +535,6 @@ async function compressToDataURL(file, maxW=1280, quality=0.75){
 
 /* ==========================================================
    Envio (submit) para Apps Script
-   Esperado: { status:"OK" } quando gravar no Sheets
 ========================================================== */
 async function sendOne(rec){
   if(!navigator.onLine){
@@ -562,7 +554,7 @@ async function sendOne(rec){
       prazoDe: rec.prazoDe || '',
       prazoAte: rec.prazoAte || '',
       total: String(rec.totalBR || rec.total || ''),
-      foto: rec.photoDataUrl // base64 dataURL
+      foto: rec.photoDataUrl
     });
 
     const resp = await fetch(WEBAPP_URL, { method:'POST', body });
@@ -572,7 +564,6 @@ async function sendOne(rec){
     if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
     if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao enviar');
 
-    // enviado: remove da fila
     await idbDel(rec.id);
   }catch(err){
     rec.status = 'ERROR';
@@ -586,7 +577,7 @@ async function resendAll(){
   for(const rec of all){
     await sendOne(rec);
   }
-  toast('Reenvio concluído. Confira pendentes/erros.');
+  toast('Reenvio concluído.');
 }
 
 async function getPendingCount(){
@@ -600,7 +591,6 @@ async function getPendingCount(){
 async function renderQueue(){
   const list = $('#list');
   const all = (await idbGetAll()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  $('#kPend').textContent = String(all.length);
 
   list.innerHTML = '';
   if(all.length === 0){
@@ -661,12 +651,14 @@ async function renderQueue(){
 }
 
 /* ==========================================================
-   Eventos dos botões
+   Botões da tela "Meus envios"
 ========================================================== */
 $('#btnResend').addEventListener('click', async ()=>{ await resendAll(); await renderQueue(); });
 $('#btnRefreshList').addEventListener('click', async ()=>{ await renderQueue(); });
-$('#btnAtualizarAtv').addEventListener('click', async ()=>{ await refreshActivities(); });
 
+/* ==========================================================
+   Salvar novo registro
+========================================================== */
 $('#btnSalvar').addEventListener('click', async ()=>{
   const usuario = localStorage.getItem(LS_USER) || '';
   const nome = localStorage.getItem(LS_NAME) || usuario;
@@ -715,11 +707,9 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     $('#foto').value='';
 
     $('#saveMsg').textContent = '';
-    $('#kPend').textContent = String(await getPendingCount());
 
     // tenta enviar já (se online)
     await sendOne(rec);
-    $('#kPend').textContent = String(await getPendingCount());
 
     toast('Registro salvo.');
   }catch(err){
@@ -739,7 +729,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const nome = localStorage.getItem(LS_NAME) || usuario;
 
   if(!usuario){
-    // sem sessão: volta pro login
     window.location.href = 'index.html';
     return;
   }
@@ -749,16 +738,8 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
   setOnlineBadge();
 
-  // carrega cache instantâneo
-  activities = loadActivitiesCache();
-  fillDatalist(activities);
-
-  $('#kPend').textContent = String(await getPendingCount());
-
-  // sempre tenta atualizar ao abrir (se online)
-  if(navigator.onLine){
-    await refreshActivities();
-  }
+  // carrega atividades automaticamente ao abrir (sem botão)
+  await loadActivitiesOnOpen();
 })();
 </script>
 
