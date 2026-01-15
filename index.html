@@ -336,6 +336,13 @@
             ts: Date.now()
           }));
 
+          // ✅ ✅ ✅ GATILHO PARA O APP ANDROID (ATUALIZAR APÓS LOGIN)
+          try{
+            if(window.Android && typeof window.Android.loginOk === 'function'){
+              window.Android.loginOk();
+            }
+          }catch(e){}
+
           // ✅ Agora o fluxo vai para o pós-login
           setTimeout(() => {
             window.location.href = 'poslog.html';
