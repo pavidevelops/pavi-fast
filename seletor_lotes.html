@@ -430,13 +430,6 @@
           <small>Usuário</small>
           <b id="kUser">—</b>
         </div>
-        <div class="kpi">
-          <small>Lote (se houver)</small>
-          <b id="kLote">—</b>
-        </div>
-      </div>
-      <div class="hint" id="loteHint" style="display:none">
-        Lote não está definido. Você ainda pode enviar, mas o campo LOTE ficará vazio no relatório.
       </div>
     </div>
 
@@ -1255,10 +1248,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
   $('#who').textContent = nome || usuario;
   $('#kUser').textContent = nome || usuario;
-
-  const lote = getSelectedLote();
-  $('#kLote').textContent = lote || '—';
-  $('#loteHint').style.display = lote ? 'none' : 'block';
 
   setOnlineBadge();
   $('#hintNew').style.display = 'none';
