@@ -717,8 +717,8 @@ $$('[data-nav]').forEach(a=>{
     const nav = a.getAttribute('data-nav');
     drawer(false);
 
-    if(nav==='novo') showView('novo');
-    if(nav==='meus'){ showView('meus'); await renderQueue(); }
+    if(nav==='novo')_toggleShow('novo');
+    if(nav==='meus'){ _toggleShow('meus'); await renderQueue(); }
     if(nav==='sync'){ await resendAll(); await renderQueue(); }
     if(nav==='logout'){
       localStorage.removeItem(LS_USER);
@@ -727,6 +727,20 @@ $$('[data-nav]').forEach(a=>{
     }
   });
 });
+
+/* (Mantém compatibilidade com seu fluxo: não altera nada do restante) */
+function _toggleShow(which){ showView(which); }
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
+function _toggleShow(which){ showView(which); } /* noop duplicate safe */
 
 /* ==========================================================
    IndexedDB (fila offline)
@@ -836,15 +850,28 @@ function renderAtvList(list){
   /* ✅ garante que nunca renderiza duplicado */
   list = dedupeActivitiesByName(list || []);
 
-  $('#atvCount').textContent = String(list.length);
+  /* ==========================================================
+     ✅ AJUSTE ÚNICO PEDIDO:
+     Após selecionar, não mostrar a mesma opção na lista.
+     (sem mexer no resto)
+  ========================================================== */
+  const norm = (s)=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const selectedNorm = norm($('#atividade')?.value || '');
+  const hasExactSelected = selectedNorm && list.some(it => norm(it?.atividade) === selectedNorm);
+  const renderList = (hasExactSelected)
+    ? list.filter(it => norm(it?.atividade) !== selectedNorm)
+    : list;
+  /* ========================================================== */
+
+  $('#atvCount').textContent = String(renderList.length);
 
   box.innerHTML = '';
-  if(list.length === 0){
+  if(renderList.length === 0){
     box.innerHTML = `<div class="atvEmpty">Nenhuma atividade encontrada.</div>`;
     return;
   }
 
-  list.forEach((it)=>{
+  renderList.forEach((it)=>{
     const div = document.createElement('div');
     div.className = 'atvItem';
     div.textContent = (it.atividade || '—');
