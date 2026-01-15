@@ -3,614 +3,242 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
-  <title>PAVI Fast — Selecionar Lote</title>
+  <title>PAVI Fast — Pós-login</title>
 
-  <!-- Fonte local (mesmo padrão do projeto) -->
   <style>
-    @font-face{
-      font-family:'FunnelSans';
-      src:url('FunnelSans-Regular.ttf') format('truetype');
-      font-weight:400;
-      font-style:normal;
-      font-display:swap;
-    }
-    @font-face{
-      font-family:'FunnelSans';
-      src:url('FunnelSans-Medium.ttf') format('truetype');
-      font-weight:500;
-      font-style:normal;
-      font-display:swap;
-    }
-    @font-face{
-      font-family:'FunnelSans';
-      src:url('FunnelSans-SemiBold.ttf') format('truetype');
-      font-weight:600;
-      font-style:normal;
-      font-display:swap;
+    /* ==========================================================
+       FUNNEL SANS — LOCAL (.ttf)
+    ========================================================== */
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap;}
+
+    html, body, * {
+      font-family:'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important;
     }
 
     :root{
-      --bg:#f3f7f5;
+      --bg:#f8fdf9;
       --card:#ffffff;
-      --text:#0f1b16;
-      --muted:#5b6b63;
-
-      --green:#0f7a4a;
-      --green2:#16a34a;
-
-      --border:rgba(16,24,40,.10);
-      --shadow: 0 10px 30px rgba(16,24,40,.08);
+      --text:#1a472a;
+      --muted:#5d7a6d;
+      --primary:#10b981;
+      --primary-600:#0da271;
+      --primary-700:#0b8c61;
+      --border:#d1fae5;
+      --shadow:0 15px 35px rgba(16,185,129,0.10), 0 5px 15px rgba(0,0,0,0.06);
       --radius:18px;
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    *{ box-sizing:border-box; }
+
     body{
       margin:0;
-      font-family:'FunnelSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:linear-gradient(180deg, #eaf4ee 0%, var(--bg) 60%, #eef7f2 100%);
+      background:var(--bg);
       color:var(--text);
+      min-height:100vh;
+      min-height:100dvh;
+      padding-bottom:80px;
     }
 
-    /* Topbar */
+    /* ================= TOPBAR ================= */
     .topbar{
-      position:sticky; top:0; z-index:10;
-      background:rgba(255,255,255,.88);
-      backdrop-filter: blur(12px);
-      border-bottom:1px solid var(--border);
-    }
-    .topbar-inner{
-      max-width:1100px;
-      margin:0 auto;
-      padding:14px 16px;
+      position:sticky;
+      top:0;
+      z-index:10;
+      background:rgba(248,253,249,.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid #e5f7ef;
+      padding:10px 14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
     }
     .brand{
-      display:flex; align-items:center; gap:10px;
-      min-width:0;
+      display:flex;
+      flex-direction:column;
+      line-height:1.1;
     }
-    .logo-dot{
-      width:38px; height:38px; border-radius:12px;
-      background:linear-gradient(145deg, var(--green) 0%, var(--green2) 100%);
-      box-shadow: 0 10px 22px rgba(15,122,74,.22);
-      display:grid; place-items:center;
-      color:#fff; font-weight:700;
-      letter-spacing:.4px;
-      flex:0 0 auto;
-    }
-    .brand-title{
-      display:flex; flex-direction:column; gap:2px;
-      min-width:0;
-    }
-    .brand-title strong{
-      font-weight:700;
-      font-size:14px;
-      line-height:1.2;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .brand-title span{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+    .brand b{ font-size:15px; font-weight:800; }
+    .brand small{ font-size:12px; color:var(--muted); font-weight:700; }
 
-    .user-pill{
-      display:flex; align-items:center; gap:10px;
-      padding:10px 12px;
+    .userPill{
+      padding:8px 12px;
       border-radius:999px;
+      border:2px solid var(--border);
       background:#fff;
-      border:1px solid var(--border);
-      box-shadow: 0 8px 18px rgba(16,24,40,.06);
-      max-width:56%;
-    }
-    .avatar{
-      width:28px; height:28px; border-radius:10px;
-      background:rgba(15,122,74,.12);
-      color:var(--green);
-      display:grid; place-items:center;
-      font-weight:700;
-      flex:0 0 auto;
-    }
-    .user-meta{
-      min-width:0;
-      display:flex; flex-direction:column; gap:1px;
-    }
-    .user-meta b{
-      font-size:13px; font-weight:700;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .user-meta small{
-      font-size:11px; color:var(--muted);
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
     }
 
-    /* Conteúdo */
+    /* ================= CONTENT ================= */
     .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      padding:18px 16px 28px;
-    }
-
-    .hero{
-      margin-top:10px;
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-    .hero h1{
-      margin:0;
-      font-size:18px;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .hero p{
-      margin:6px 0 0 0;
-      color:var(--muted);
-      font-size:13px;
       max-width:720px;
+      margin:0 auto;
+      padding:16px;
     }
 
-    .tools{
-      display:flex; gap:10px; flex-wrap:wrap;
-      align-items:center;
-    }
-    .search{
-      position:relative;
-      min-width:260px;
-      flex:1 1 260px;
-    }
-    .search input{
-      width:100%;
-      padding:12px 14px 12px 38px;
-      border-radius:14px;
+    .panel{
+      background:var(--card);
       border:1px solid var(--border);
-      background:rgba(255,255,255,.92);
-      outline:none;
-      font-size:13px;
-      box-shadow: 0 8px 18px rgba(16,24,40,.05);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:18px;
     }
-    .search .icon{
-      position:absolute;
-      left:12px; top:50%;
-      transform:translateY(-50%);
+
+    h1{
+      margin:0;
+      font-size:20px;
+      font-weight:800;
+    }
+
+    p{
+      margin:8px 0 0;
       color:var(--muted);
       font-size:14px;
-      user-select:none;
+      line-height:1.4;
     }
 
-    /* Grid de cards */
-    .grid{
-      margin-top:16px;
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap:12px;
-    }
-    .card{
-      grid-column: span 12;
-      background:rgba(255,255,255,.92);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-    }
-    @media(min-width:720px){
-      .card{ grid-column: span 6; }
-    }
-    @media(min-width:1020px){
-      .card{ grid-column: span 4; }
+    .sep{
+      height:1px;
+      background:#e5f7ef;
+      margin:14px 0;
     }
 
-    .card-head{
-      padding:14px 14px 10px;
+    .lotes{
       display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
       gap:10px;
-    }
-    .badge{
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(15,122,74,.10);
-      color:var(--green);
-      font-weight:800;
-      font-size:12px;
-      letter-spacing:.3px;
-      flex:0 0 auto;
-      white-space:nowrap;
-    }
-    .meta{
-      display:flex; flex-direction:column; gap:4px;
-      min-width:0;
-      flex:1 1 auto;
-    }
-    .meta b{
-      font-size:14px;
-      font-weight:800;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .meta small{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .card-body{
-      padding:0 14px 14px;
-    }
-    .chips{
-      display:flex;
       flex-wrap:wrap;
-      gap:8px;
       margin-top:10px;
     }
-    .chip{
-      padding:7px 10px;
+
+    .pill{
+      padding:8px 12px;
       border-radius:999px;
-      background:#fff;
-      border:1px solid var(--border);
-      font-size:12px;
-      color:#22312a;
-    }
-    .chip.more{
-      color:var(--muted);
-      background:rgba(16,24,40,.03);
-    }
-
-    .card-actions{
-      margin-top:12px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .btn{
-      appearance:none;
-      border:none;
-      cursor:pointer;
-      border-radius:14px;
-      padding:12px 14px;
-      font-weight:800;
+      border:2px solid var(--border);
+      background:#fbfffd;
       font-size:13px;
-      letter-spacing:.2px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      width:100%;
+      font-weight:800;
+      white-space:nowrap;
     }
-    .btn.primary{
-      background:linear-gradient(145deg, var(--green) 0%, var(--green2) 100%);
-      color:#fff;
-      box-shadow: 0 14px 30px rgba(15,122,74,.20);
-    }
-    .btn.ghost{
-      background:rgba(16,24,40,.03);
-      color:#1f2c26;
-      border:1px solid var(--border);
-      width:auto;
-      padding:12px 12px;
-    }
-    .btn:active{ transform: translateY(1px); }
 
-    /* Rodapé */
-    .foot{
+    .actions{
       margin-top:18px;
       display:flex;
-      align-items:center;
-      justify-content:space-between;
       gap:10px;
-      color:var(--muted);
-      font-size:12px;
       flex-wrap:wrap;
     }
-    .pill{
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.85);
-      border:1px solid var(--border);
+
+    .btn{
+      flex:1;
+      min-width:180px;
+      padding:14px;
+      border-radius:16px;
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      font-size:15px;
+      background:linear-gradient(135deg, var(--primary), var(--primary-600));
+      color:#fff;
+      box-shadow:0 10px 25px rgba(16,185,129,0.25);
+      transition:.2s ease;
+    }
+    .btn:hover{
+      background:linear-gradient(135deg, var(--primary-600), var(--primary-700));
+      transform:translateY(-1px);
     }
 
-    /* Modal simples (prévia) */
-    .overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:50;
-    }
-    .modal{
-      width:min(520px, 100%);
+    .btn.secondary{
       background:#fff;
-      border-radius:20px;
-      border:1px solid var(--border);
-      box-shadow: 0 30px 80px rgba(0,0,0,.25);
-      overflow:hidden;
-    }
-    .modal-h{
-      padding:14px 16px;
-      border-bottom:1px solid var(--border);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .modal-h b{ font-size:14px; }
-    .modal-h button{
-      border:none;
-      background:transparent;
-      cursor:pointer;
-      font-size:18px;
-      line-height:1;
-      padding:4px 8px;
-      color:var(--muted);
-    }
-    .modal-b{
-      padding:14px 16px;
-      color:#22312a;
-      font-size:13px;
-    }
-    .list{
-      margin:10px 0 0 0;
-      padding:0;
-      list-style:none;
-      display:grid;
-      gap:8px;
-      max-height:260px;
-      overflow:auto;
-    }
-    .list li{
-      padding:10px 12px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background:rgba(16,24,40,.02);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      font-size:13px;
-    }
-    .list li span{
-      color:var(--muted);
-      font-size:12px;
+      color:var(--primary-700);
+      border:2px solid var(--border);
+      box-shadow:none;
     }
   </style>
 </head>
 
 <body>
-  <!-- TOPBAR -->
+
   <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <div class="logo-dot">P</div>
-        <div class="brand-title">
-          <strong>PAVI Fast</strong>
-          <span>Seleção de lote (pós-login)</span>
-        </div>
-      </div>
-
-      <!-- Usuário (prévia) -->
-      <div class="user-pill" title="Usuário logado">
-        <div class="avatar" id="avatar">B</div>
-        <div class="user-meta">
-          <b id="userName">Breno</b>
-          <small id="userEmail">breno@empresa.com</small>
-        </div>
-      </div>
+    <div class="brand">
+      <b>PAVI Fast</b>
+      <small>Pós-login</small>
     </div>
+    <div class="userPill" id="userName">—</div>
   </div>
 
-  <!-- CONTEÚDO -->
   <div class="wrap">
-    <div class="hero">
-      <div>
-        <h1>Escolha o lote para iniciar</h1>
-        <p>
-          Você verá apenas os <b>lotes</b> liberados para seu usuário. Depois de escolher o lote,
-          o formulário exibirá somente as <b>rodovias</b> desse lote.
-        </p>
+    <div class="panel">
+      <h1>Bem-vindo</h1>
+      <p>
+        Você verá somente os lotes e rodovias liberados para o seu usuário.
+        Na próxima etapa, selecione o lote em que irá trabalhar.
+      </p>
+
+      <div class="sep"></div>
+
+      <b style="font-size:14px">Lotes disponíveis</b>
+
+      <div class="lotes" id="lotesBox">
+        <!-- pills -->
       </div>
 
-      <div class="tools">
-        <div class="search">
-          <div class="icon">🔎</div>
-          <input id="q" placeholder="Buscar lote (ex.: 08) ou rodovia (ex.: PR-160)" />
-        </div>
-        <button class="btn ghost" id="btnLogout" type="button" title="Sair (prévia)">Sair</button>
-      </div>
-    </div>
-
-    <!-- GRID DE LOTES -->
-    <div class="grid" id="grid"></div>
-
-    <div class="foot">
-      <div class="pill" id="countInfo">Carregando lotes…</div>
-      <div class="pill">Dica: toque no card para ver mais rodovias</div>
-    </div>
-  </div>
-
-  <!-- MODAL: ver todas rodovias do lote -->
-  <div class="overlay" id="overlay">
-    <div class="modal">
-      <div class="modal-h">
-        <b id="modalTitle">Lote 00 — Rodovias</b>
-        <button id="modalClose" aria-label="Fechar">×</button>
-      </div>
-      <div class="modal-b">
-        <div style="color:var(--muted); font-size:12px;">
-          Prévia (no projeto final, isso virá do Sheets/Apps Script conforme o usuário logado).
-        </div>
-        <ul class="list" id="modalList"></ul>
+      <div class="actions">
+        <button class="btn secondary" id="btnLogout">Sair</button>
+        <button class="btn" id="btnContinue">Acessar meus lotes</button>
       </div>
     </div>
   </div>
 
-  <script>
-    // ==========================================================
-    // PRÉVIA (mock) — depois você troca para buscar no Apps Script
-    // ==========================================================
-    const mockUser = {
-      name: "Breno Forte de Luna",
-      email: "breno@empresa.com"
-    };
+<script>
+const SESSION_KEY = 'PAVI_FAST_SESSION';
 
-    // Lotes "permitidos" para este usuário (exemplo)
-    // ids como no Sheets: L1, L8, L24...
-    const mockAllowedLotes = [
-      { id: "L1",  rodovias: ["PR-340","PR-405","PR-410","PR-412","PR-807","PR-808"] },
-      { id: "L8",  rodovias: ["PR-160","PR-239","PR-340","PR-441","PR-487","PR-535","PR-816"] },
-      { id: "L24", rodovias: ["PR-082","PR-369","PR-455","PR-457","PR-462","PR-466","PR-546","PR-549","PR-558"] },
-      { id: "L35", rodovias: ["PR-180","PR-239","PR-317","PR-364","PR-467","PR-486","PR-574","PR-575","PR-581"] }
-    ];
+function formatLote(id){
+  const n = String(id||'').replace(/[^0-9]/g,'');
+  if(!n) return id;
+  return 'Lote ' + (n.length === 1 ? '0'+n : n);
+}
 
-    // ==========================================================
-    // Helpers de exibição
-    // ==========================================================
-    function loteLabel(loteId) {
-      // "L8" -> "Lote 08" | "L1" -> "Lote 01" | "L24" -> "Lote 24"
-      const n = String(loteId || "").replace(/[^0-9]/g, "");
-      if (!n) return "Lote";
-      const nn = n.length === 1 ? ("0" + n) : n;
-      return "Lote " + nn;
-    }
+const sessionRaw = localStorage.getItem(SESSION_KEY);
+if(!sessionRaw){
+  location.href = 'index.html';
+}
 
-    function avatarLetter(name) {
-      const t = (name || "").trim();
-      return t ? t[0].toUpperCase() : "U";
-    }
+const session = JSON.parse(sessionRaw);
+document.getElementById('userName').textContent = session.name || session.email;
 
-    function normalize(s) {
-      return (s || "")
-        .toString()
-        .trim()
-        .toUpperCase();
-    }
+const box = document.getElementById('lotesBox');
+const lotes = Array.isArray(session.allowedLotes) ? session.allowedLotes : [];
 
-    // ==========================================================
-    // Renderização
-    // ==========================================================
-    const grid = document.getElementById("grid");
-    const q = document.getElementById("q");
-    const countInfo = document.getElementById("countInfo");
+if(lotes.length === 0){
+  box.innerHTML = `<span class="pill">Nenhum lote liberado</span>`;
+  document.getElementById('btnContinue').disabled = true;
+  document.getElementById('btnContinue').style.opacity = '.6';
+}else{
+  lotes.forEach(l=>{
+    const s = document.createElement('span');
+    s.className = 'pill';
+    s.textContent = formatLote(l);
+    box.appendChild(s);
+  });
+}
 
-    function render(data, filterText="") {
-      const ft = normalize(filterText);
+document.getElementById('btnContinue').onclick = ()=>{
+  location.href = 'seletor_lotes.html';
+};
 
-      const filtered = data.filter(item => {
-        if (!ft) return true;
-        const inLote = normalize(loteLabel(item.id)).includes(ft) || normalize(item.id).includes(ft);
-        const inRod = (item.rodovias || []).some(r => normalize(r).includes(ft));
-        return inLote || inRod;
-      });
+document.getElementById('btnLogout').onclick = ()=>{
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('PAVI_FAST_USER');
+  localStorage.removeItem('PAVI_FAST_NAME');
+  location.href = 'index.html';
+};
+</script>
 
-      grid.innerHTML = filtered.map(item => {
-        const roads = item.rodovias || [];
-        const preview = roads.slice(0, 6);
-        const rest = Math.max(0, roads.length - preview.length);
-
-        return `
-          <div class="card" data-lote="${item.id}">
-            <div class="card-head">
-              <div class="meta">
-                <b>${loteLabel(item.id)}</b>
-                <small>${roads.length} rodovia(s) cadastrada(s)</small>
-              </div>
-              <div class="badge">${item.id}</div>
-            </div>
-
-            <div class="card-body">
-              <div class="chips">
-                ${preview.map(r => `<span class="chip">${r}</span>`).join("")}
-                ${rest > 0 ? `<span class="chip more">+${rest}</span>` : ``}
-              </div>
-
-              <div class="card-actions">
-                <button class="btn primary" type="button" data-action="open" data-lote="${item.id}">
-                  Acessar ${loteLabel(item.id)}
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      countInfo.textContent = `${filtered.length} lote(s) disponível(is)`;
-    }
-
-    // ==========================================================
-    // Modal "ver todas rodovias"
-    // ==========================================================
-    const overlay = document.getElementById("overlay");
-    const modalClose = document.getElementById("modalClose");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalList = document.getElementById("modalList");
-
-    function openModal(loteId) {
-      const item = mockAllowedLotes.find(x => x.id === loteId);
-      if (!item) return;
-      modalTitle.textContent = `${loteLabel(item.id)} — Rodovias`;
-      modalList.innerHTML = (item.rodovias || []).map((r, idx) => {
-        return `<li>${r} <span>#${String(idx+1).padStart(2,"0")}</span></li>`;
-      }).join("");
-      overlay.style.display = "flex";
-    }
-    function closeModal() {
-      overlay.style.display = "none";
-    }
-
-    // ==========================================================
-    // Interações (prévia)
-    // ==========================================================
-    document.getElementById("userName").textContent = mockUser.name;
-    document.getElementById("userEmail").textContent = mockUser.email;
-    document.getElementById("avatar").textContent = avatarLetter(mockUser.name);
-
-    render(mockAllowedLotes);
-
-    q.addEventListener("input", () => render(mockAllowedLotes, q.value));
-
-    // Clique no card -> abre modal com rodovias (prévia)
-    grid.addEventListener("click", (ev) => {
-      const btn = ev.target.closest("[data-action='open']");
-      const card = ev.target.closest(".card");
-      if (btn) {
-        const loteId = btn.getAttribute("data-lote");
-        // No projeto final: salvar lote selecionado e ir para o formulário.
-        // Aqui na prévia: abre modal para visualizar as rodovias.
-        openModal(loteId);
-        return;
-      }
-      if (card) {
-        openModal(card.getAttribute("data-lote"));
-      }
-    });
-
-    overlay.addEventListener("click", (ev) => {
-      if (ev.target === overlay) closeModal();
-    });
-    modalClose.addEventListener("click", closeModal);
-
-    // Logout (prévia)
-    document.getElementById("btnLogout").addEventListener("click", () => {
-      // No projeto final: limpar sessão/localStorage e voltar para login.html
-      alert("Prévia: aqui faria logout e voltaria para o login.");
-    });
-  </script>
 </body>
 </html>
