@@ -329,6 +329,74 @@
       .atvList{ max-height:220px; }
       .camBtns button{ min-width:0; flex:1; }
     }
+
+    /* ==========================================================
+       ✅ MODAL/TOAST CUSTOM (remove "GitHub diz...")
+    ========================================================== */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background:rgba(26,71,42,.35);
+      display:none;
+      z-index:9998;
+    }
+    .modalBackdrop.open{ display:block; }
+    .modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(520px, calc(100vw - 28px));
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      z-index:9999;
+      display:none;
+    }
+    .modal.open{ display:block; }
+    .modalTitle{
+      font-weight:900;
+      font-size:15px;
+      margin:4px 2px 8px;
+    }
+    .modalMsg{
+      color:var(--text);
+      font-weight:800;
+      font-size:14px;
+      white-space:pre-line;
+      line-height:1.35;
+      padding:10px 12px;
+      border-radius:14px;
+      border:2px solid var(--border);
+      background:#fbfffd;
+    }
+    .modalBtns{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .snackbar{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      width:min(560px, calc(100vw - 24px));
+      background:#0b1f16;
+      color:#eafff6;
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow:0 14px 28px rgba(0,0,0,.18);
+      border:1px solid rgba(209,250,229,.25);
+      z-index:9997;
+      display:none;
+      white-space:pre-line;
+      font-weight:800;
+      font-size:14px;
+    }
+    .snackbar.show{ display:block; }
   </style>
 </head>
 
@@ -481,6 +549,15 @@
 
   </div>
 
+  <!-- ✅ Modal/Toast custom (sem popups nativos) -->
+  <div class="modalBackdrop" id="mBackdrop"></div>
+  <div class="modal" id="mBox" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modalTitle" id="mTitle">Confirmação</div>
+    <div class="modalMsg" id="mMsg">—</div>
+    <div class="modalBtns" id="mBtns"></div>
+  </div>
+  <div class="snackbar" id="snack">—</div>
+
 <script>
 /* ==========================================================
    CONFIG
@@ -528,7 +605,81 @@ function showView(which){
   $('#viewTitle').textContent = (which==='novo') ? 'Novo registro' : 'Meus envios';
 }
 
-function toast(msg){ alert(msg); }
+/* ==========================================================
+   ✅ Toast + Confirm custom (sem alert/confirm nativos)
+========================================================== */
+let snackTimer = null;
+
+function toast(msg){
+  const el = document.getElementById('snack');
+  if(!el) return;
+
+  el.textContent = String(msg ?? '');
+  el.classList.add('show');
+
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(()=> el.classList.remove('show'), 2600);
+}
+
+function modalClose_(){
+  const bd = document.getElementById('mBackdrop');
+  const box = document.getElementById('mBox');
+  if(bd) bd.classList.remove('open');
+  if(box){
+    box.classList.remove('open');
+    box.setAttribute('aria-hidden','true');
+  }
+}
+
+function modalOpen_(title, message, buttons){
+  const bd = document.getElementById('mBackdrop');
+  const box = document.getElementById('mBox');
+  const t = document.getElementById('mTitle');
+  const m = document.getElementById('mMsg');
+  const btns = document.getElementById('mBtns');
+
+  if(t) t.textContent = title || 'Atenção';
+  if(m) m.textContent = message || '';
+  if(btns){
+    btns.innerHTML = '';
+    (buttons || []).forEach(b=>{
+      const bt = document.createElement('button');
+      bt.type = 'button';
+      bt.className = 'btn' + (b.variant ? ' ' + b.variant : '');
+      bt.textContent = b.label || 'OK';
+      bt.addEventListener('click', ()=>{
+        modalClose_();
+        try{ b.onClick && b.onClick(); }catch{}
+      });
+      btns.appendChild(bt);
+    });
+  }
+
+  if(bd) bd.classList.add('open');
+  if(box){
+    box.classList.add('open');
+    box.setAttribute('aria-hidden','false');
+  }
+}
+
+function alertModal(message, title='Atenção'){
+  return new Promise((resolve)=>{
+    modalOpen_(title, String(message ?? ''), [
+      { label:'OK', variant:'', onClick: ()=>resolve(true) }
+    ]);
+  });
+}
+
+function confirmModal(message, title='Confirmação'){
+  return new Promise((resolve)=>{
+    modalOpen_(title, String(message ?? ''), [
+      { label:'Cancelar', variant:'secondary', onClick: ()=>resolve(false) },
+      { label:'OK', variant:'', onClick: ()=>resolve(true) }
+    ]);
+  });
+}
+
+document.getElementById('mBackdrop').addEventListener('click', ()=>modalClose_());
 
 function normalizeNumberBR(str){
   if (typeof str !== 'string') str = String(str ?? '');
@@ -727,7 +878,7 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
   const rod = $('#rodovia').value.trim();
   if(!navigator.onLine) return toast('Sem internet para incluir agora.');
 
-  if(!confirm(`Incluir nova atividade?\n\n${atv}`)) return;
+  if(!await confirmModal(`Incluir nova atividade?\n\n${atv}`)) return;
 
   try{
     const body = new URLSearchParams({ action:'add_activity', atividade:atv, rodovia:rod });
@@ -986,7 +1137,7 @@ async function renderQueue(){
         await renderQueue();
       }
       if(act==='del'){
-        if(confirm('Excluir este pendente?')){
+        if(await confirmModal('Excluir este pendente?')){
           await idbDel(id);
           await renderQueue();
         }
