@@ -12,48 +12,42 @@
 
   <style>
     :root{
-      --bg:#f8fdf9;        /* verde muito suave de fundo */
-      --card:#ffffff;      /* card branco */
-      --text:#1a472a;      /* verde escuro para texto principal */
-      --muted:#5d7a6d;     /* verde acinzentado para texto auxiliar */
-      --primary:#10b981;   /* verde principal (como na imagem) */
+      --bg:#f8fdf9;
+      --card:#ffffff;
+      --text:#1a472a;
+      --muted:#5d7a6d;
+      --primary:#10b981;
       --primary-600:#0da271;
       --primary-700:#0b8c61;
-      --border:#d1fae5;    /* borda verde muito suave */
+      --border:#d1fae5;
       --ok-bg:#ecfdf5; --ok:#065f46; --ok-br:#a7f3d0;
       --err-bg:#fef2f2; --err:#991b1b; --err-br:#fecaca;
     }
     *{ box-sizing:border-box }
     body{
-      margin:0; 
+      margin:0;
       font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       background: var(--bg);
-      min-height:100vh; 
-      display:flex; 
-      align-items:center; 
-      justify-content:center; 
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       padding:24px;
       color:var(--text);
       letter-spacing: -0.01em;
     }
     .card{
-      width:100%; 
-      max-width:420px; 
+      width:100%;
+      max-width:420px;
       background:var(--card);
-      border-radius:20px; 
+      border-radius:20px;
       box-shadow:0 15px 35px rgba(16, 185, 129, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
-      padding:36px 32px; 
+      padding:36px 32px;
       border:1px solid var(--border);
       transition: transform 0.3s ease;
     }
-    .card:hover {
-      transform: translateY(-2px);
-    }
-    .logo {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
+    .card:hover { transform: translateY(-2px); }
+    .logo { display:flex; justify-content:center; margin-bottom:20px; }
     .logo img {
       width: 240px;
       height: auto;
@@ -61,156 +55,146 @@
       filter: brightness(1.05) contrast(1.1);
     }
     h1{
-      margin:0 0 8px; 
-      font-size:28px; 
-      font-weight:700; 
-      text-align:center; 
+      margin:0 0 8px;
+      font-size:28px;
+      font-weight:700;
+      text-align:center;
       color:#0f5132;
       letter-spacing: -0.02em;
     }
-    .subtitle{ 
-      text-align:center; 
-      color:var(--muted); 
-      font-size:15px; 
+    .subtitle{
+      text-align:center;
+      color:var(--muted);
+      font-size:15px;
       margin-bottom:24px;
       line-height: 1.5;
     }
-    label{ 
-      display:block; 
-      font-size:14px; 
+    label{
+      display:block;
+      font-size:14px;
       font-weight:600;
       margin:12px 0 8px;
       color:#1a472a;
     }
-    .field{
-      position:relative;
-    }
+    .field{ position:relative; }
     input{
-      width:100%; 
-      padding:14px 48px 14px 16px; 
+      width:100%;
+      padding:14px 48px 14px 16px;
       border-radius:12px;
-      border:2px solid var(--border); 
-      outline:none; 
-      background:#f8fdf9; 
+      border:2px solid var(--border);
+      outline:none;
+      background:#f8fdf9;
       color:var(--text);
       transition:all 0.25s ease;
       font-size:16px;
       font-family: inherit;
     }
-    input:focus{ 
-      border-color:var(--primary); 
+    input:focus{
+      border-color:var(--primary);
       background:#ffffff;
       box-shadow:0 0 0 4px rgba(16, 185, 129, 0.15), 0 2px 8px rgba(16, 185, 129, 0.1);
       transform: translateY(-1px);
     }
     .toggle-password{
-      position:absolute; 
-      right:12px; 
-      top:50%; 
+      position:absolute;
+      right:12px;
+      top:50%;
       transform:translateY(-50%);
-      border:0; 
-      background:transparent; 
-      cursor:pointer; 
+      border:0;
+      background:transparent;
+      cursor:pointer;
       font-size:20px;
-      color:#5d7a6d; 
-      padding:8px; 
+      color:#5d7a6d;
+      padding:8px;
       border-radius:10px;
       transition: all 0.2s ease;
     }
-    .toggle-password:hover{ 
-      background:#d1fae5; 
+    .toggle-password:hover{
+      background:#d1fae5;
       color:#0f5132;
     }
     .btn{
-      width:100%; 
-      margin-top:16px; 
-      padding:16px; 
-      border:0; 
+      width:100%;
+      margin-top:16px;
+      padding:16px;
+      border:0;
       border-radius:14px;
       background:linear-gradient(135deg, var(--primary), var(--primary-600));
-      color:#fff; 
-      font-weight:700; 
-      font-size:16px; 
+      color:#fff;
+      font-weight:700;
+      font-size:16px;
       cursor:pointer;
-      box-shadow:0 10px 25px rgba(16, 185, 129, 0.3); 
+      box-shadow:0 10px 25px rgba(16, 185, 129, 0.3);
       transition:all 0.25s ease;
       font-family: inherit;
       letter-spacing: 0.02em;
     }
-    .btn:hover{ 
-      background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); 
+    .btn:hover{
+      background:linear-gradient(135deg, var(--primary-600), var(--primary-700));
       box-shadow:0 12px 28px rgba(16, 185, 129, 0.4);
       transform: translateY(-2px);
     }
-    .btn:active{ 
+    .btn:active{
       transform:translateY(0px);
       box-shadow:0 8px 20px rgba(16, 185, 129, 0.25);
     }
-    .btn[disabled]{ 
-      opacity:.7; 
-      cursor:not-allowed; 
+    .btn[disabled]{
+      opacity:.7;
+      cursor:not-allowed;
       box-shadow:none;
       transform: none !important;
     }
-    .row{ 
-      margin-bottom:18px;
-    }
+    .row{ margin-bottom:18px; }
     .link{
-      text-align:center; 
+      text-align:center;
       margin-top:20px;
       padding-top:16px;
       border-top: 1px solid #e5f7ef;
     }
-    .link a{ 
-      color:var(--primary-700); 
-      text-decoration:none; 
+    .link a{
+      color:var(--primary-700);
+      text-decoration:none;
       font-weight:600;
       transition: all 0.2s ease;
       display: inline-block;
       padding: 4px 8px;
       border-radius: 6px;
     }
-    .link a:hover{ 
+    .link a:hover{
       color:#0da271;
       background: #f0fdf9;
       text-decoration: underline;
     }
-    .msg{ 
-      display:none; 
-      margin-top:16px; 
-      padding:14px 16px; 
-      border-radius:12px; 
+    .msg{
+      display:none;
+      margin-top:16px;
+      padding:14px 16px;
+      border-radius:12px;
       font-size:14px;
       font-weight: 500;
     }
-    .msg.ok{ 
-      background:var(--ok-bg); 
-      color:var(--ok); 
+    .msg.ok{
+      background:var(--ok-bg);
+      color:var(--ok);
       border:2px solid var(--ok-br);
     }
-    .msg.err{ 
-      background:var(--err-bg); 
-      color:var(--err); 
+    .msg.err{
+      background:var(--err-bg);
+      color:var(--err);
       border:2px solid var(--err-br);
     }
-    .hint{ 
-      color:var(--muted); 
-      font-size:12px; 
+    .hint{
+      color:var(--muted);
+      font-size:12px;
       margin-top:8px;
       font-style: italic;
       padding-left: 4px;
     }
-    
-    /* Animação sutil para os campos */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    .row {
-      animation: fadeIn 0.4s ease forwards;
-    }
-    
+    .row { animation: fadeIn 0.4s ease forwards; }
     .row:nth-child(1) { animation-delay: 0.1s; }
     .row:nth-child(2) { animation-delay: 0.2s; }
     .btn { animation: fadeIn 0.4s ease 0.3s forwards; opacity: 0; }
@@ -264,21 +248,21 @@
     const msgErr = document.getElementById('msgErr');
     const firstAccess = document.getElementById('firstAccess');
 
-    // 🔗 Cole a URL /exec da implantação do seu Apps Script
+    // 🔗 URL /exec do seu Apps Script
     const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-    // Util: exibe mensagem
+    // Sessão nova (para poslog / seletor)
+    const SESSION_KEY = 'PAVI_FAST_SESSION';
+
     function showMsg(el, text){ el.textContent = text; el.style.display = 'block'; }
     function hideMsgs(){ msgOk.style.display = 'none'; msgErr.style.display = 'none'; }
 
-    // Alternar visibilidade da senha
     toggleBtn.addEventListener('click', () => {
       const isPwd = inputPass.type === 'password';
       inputPass.type = isPwd ? 'text' : 'password';
       toggleBtn.textContent = isPwd ? '🔒' : '👁️';
     });
 
-    // Validação rápida no cliente
     function validate(){
       hideMsgs();
       const u = inputUser.value.trim();
@@ -288,7 +272,17 @@
       return true;
     }
 
-    // Submit com form-urlencoded (evita preflight/CORS)
+    function normalizeLotes(lotes){
+      // Esperado do backend: array ["L1","L8"].
+      // Aceita também string "L1,L8" (caso você use assim em algum momento).
+      if(Array.isArray(lotes)){
+        return lotes.map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
+      }
+      const s = String(lotes||'').trim();
+      if(!s) return [];
+      return s.split(',').map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if(!validate()) return;
@@ -297,32 +291,55 @@
       submitBtn.textContent = 'Entrando...';
 
       try{
+        const userEmail = inputUser.value.trim().toLowerCase();
+
         const body = new URLSearchParams({
           action: 'login',
-          usuario: inputUser.value.trim(),
+          usuario: userEmail,
           senha: inputPass.value
         });
 
         const resp = await fetch(WEBAPP_URL, { method:'POST', body });
         const text = await resp.text();
         let data;
-        try{ data = JSON.parse(text); } catch{ data = null; }
+        try{ data = JSON.parse(text); } catch { data = null; }
 
         if(!resp.ok){
           throw new Error(data?.mensagem || text || 'Falha na solicitação.');
         }
 
         if(data && data.status === 'OK'){
-          showMsg(msgOk, 'Bem-vindo, ' + (data.nome || inputUser.value.trim()) + '! Redirecionando em 2 segundos...');
+          const nome = (data.nome || userEmail);
+          const email = (data.email || userEmail);
+          const allowedLotes = normalizeLotes(data.lotes);
 
-          // ✅ SALVA SESSÃO (para o seletor_lotes.html identificar o usuário)
-          localStorage.setItem('PAVI_FAST_USER', inputUser.value.trim());
-          localStorage.setItem('PAVI_FAST_NAME', (data.nome || inputUser.value.trim()));
+          // ✅ Se login OK mas sem lote definido → mensagem e não redireciona
+          if(!allowedLotes.length){
+            showMsg(msgErr, 'Sem lote definido, entre em contato com suporte.');
+            // opcional: limpa qualquer sessão antiga
+            localStorage.removeItem(SESSION_KEY);
+            return;
+          }
 
-          // Redireciona após 2 segundos
+          // ✅ Mensagem OK
+          showMsg(msgOk, 'Bem-vindo, ' + nome + '! Redirecionando...');
+
+          // ✅ Mantém compatibilidade com o que você já tinha
+          localStorage.setItem('PAVI_FAST_USER', email);
+          localStorage.setItem('PAVI_FAST_NAME', nome);
+
+          // ✅ Sessão nova (usada pelo poslog.html e seletor_lotes.html)
+          localStorage.setItem(SESSION_KEY, JSON.stringify({
+            name: nome,
+            email: email,
+            allowedLotes: allowedLotes,
+            ts: Date.now()
+          }));
+
+          // ✅ Agora o fluxo vai para o pós-login
           setTimeout(() => {
-            window.location.href = 'seletor_lotes.html';
-          }, 2000);
+            window.location.href = 'poslog.html';
+          }, 800);
 
           form.reset();
         }else{
@@ -336,7 +353,6 @@
       }
     });
 
-    // Link "Primeiro acesso"
     firstAccess.addEventListener('click', (e) => {
       e.preventDefault();
       window.location.href = 'primeiro_acesso.html';
