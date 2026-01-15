@@ -430,7 +430,16 @@
           <small>Usuário</small>
           <b id="kUser">—</b>
         </div>
-       
+        <div class="kpi">
+          <small>Lote (se houver)</small>
+          <b id="kLote">—</b>
+        </div>
+      </div>
+      <div class="hint" id="loteHint" style="display:none">
+        Lote não está definido. Você ainda pode enviar, mas o campo LOTE ficará vazio no relatório.
+      </div>
+    </div>
+
     <div style="height:12px"></div>
 
     <div class="panel view active" id="viewNovo">
@@ -446,7 +455,10 @@
           <div class="atvEmpty">Carregando atividades…</div>
         </div>
 
-       
+        <div class="atvFooter">
+          <div class="hint" style="margin:0" id="hintNew">
+            Não encontrou? <a href="#" id="btnAddAtv">➕ Incluir novo</a>
+          </div>
           <div class="hint" style="margin:0">
             Toque em uma opção para selecionar.
           </div>
