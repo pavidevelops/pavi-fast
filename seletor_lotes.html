@@ -491,6 +491,26 @@ const LS_USER = 'PAVI_FAST_USER';
 const LS_NAME = 'PAVI_FAST_NAME';
 
 /* ==========================================================
+   ✅ Pré-seleção de Rodovia vinda do poslog.html
+   - Se existir PAVI_FAST_RODOVIA_PRESELECT, preenche #rodovia
+   - Depois remove a chave (para não "grudar")
+========================================================== */
+(function applyPreselectedRodovia(){
+  const key = 'PAVI_FAST_RODOVIA_PRESELECT';
+  const pre = (localStorage.getItem(key) || '').trim();
+  if(!pre) return;
+
+  const el = document.getElementById('rodovia');
+  if(el){
+    el.value = pre;
+    el.dispatchEvent(new Event('input', { bubbles:true }));
+    el.dispatchEvent(new Event('change', { bubbles:true }));
+  }
+
+  localStorage.removeItem(key);
+})();
+
+/* ==========================================================
    Helpers
 ========================================================== */
 const $ = (s)=>document.querySelector(s);
