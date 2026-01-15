@@ -717,8 +717,8 @@ $$('[data-nav]').forEach(a=>{
     const nav = a.getAttribute('data-nav');
     drawer(false);
 
-    if(nav==='novo')_toggleShow('novo');
-    if(nav==='meus'){ _toggleShow('meus'); await renderQueue(); }
+    if(nav==='novo') showView('novo');
+    if(nav==='meus'){ showView('meus'); await renderQueue(); }
     if(nav==='sync'){ await resendAll(); await renderQueue(); }
     if(nav==='logout'){
       localStorage.removeItem(LS_USER);
@@ -727,20 +727,6 @@ $$('[data-nav]').forEach(a=>{
     }
   });
 });
-
-/* (Mantém compatibilidade com seu fluxo: não altera nada do restante) */
-function _toggleShow(which){ showView(which); }
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
-function _toggleShow(which){ showView(which); } /* noop duplicate safe */
 
 /* ==========================================================
    IndexedDB (fila offline)
@@ -794,6 +780,25 @@ async function idbDel(id){
 ========================================================== */
 let activities = [];
 let filtered = [];
+
+/* ✅ CONTROLE: atividade selecionada (pra não mostrar "nenhuma" depois de selecionar) */
+let selectedAtvKey = '';
+
+function normText(s){
+  return String(s ?? '')
+    .trim()
+    .replace(/\s+/g,' ')
+    .toLowerCase();
+}
+
+function showAtvList(){
+  const box = $('#atvList');
+  if(box) box.style.display = 'block';
+}
+function hideAtvList(){
+  const box = $('#atvList');
+  if(box) box.style.display = 'none';
+}
 
 function loadActivitiesCache(){
   try{
@@ -850,28 +855,27 @@ function renderAtvList(list){
   /* ✅ garante que nunca renderiza duplicado */
   list = dedupeActivitiesByName(list || []);
 
-  /* ==========================================================
-     ✅ AJUSTE ÚNICO PEDIDO:
-     Após selecionar, não mostrar a mesma opção na lista.
-     (sem mexer no resto)
-  ========================================================== */
-  const norm = (s)=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
-  const selectedNorm = norm($('#atividade')?.value || '');
-  const hasExactSelected = selectedNorm && list.some(it => norm(it?.atividade) === selectedNorm);
-  const renderList = (hasExactSelected)
-    ? list.filter(it => norm(it?.atividade) !== selectedNorm)
-    : list;
-  /* ========================================================== */
+  $('#atvCount').textContent = String(list.length);
 
-  $('#atvCount').textContent = String(renderList.length);
+  // ✅ Se a atividade já está selecionada e o filtro ficou 0, não mostra "nenhuma atividade encontrada".
+  const currentKey = normText($('#atividade').value);
+  if(list.length === 0 && selectedAtvKey && currentKey === selectedAtvKey){
+    // esconde a lista por estética (fica só o selecionado no input)
+    box.innerHTML = '';
+    hideAtvList();
+    return;
+  }
+
+  // ✅ Se o usuário apagou/alterou o texto, volta a mostrar lista normalmente
+  showAtvList();
 
   box.innerHTML = '';
-  if(renderList.length === 0){
+  if(list.length === 0){
     box.innerHTML = `<div class="atvEmpty">Nenhuma atividade encontrada.</div>`;
     return;
   }
 
-  renderList.forEach((it)=>{
+  list.forEach((it)=>{
     const div = document.createElement('div');
     div.className = 'atvItem';
     div.textContent = (it.atividade || '—');
@@ -879,11 +883,19 @@ function renderAtvList(list){
     div.addEventListener('click', ()=>{
       $('#atividade').value = it.atividade || '';
 
+      // ✅ marca selecionada (para esconder a lista depois)
+      selectedAtvKey = normText(it.atividade || '');
+
       const rod = it.rodovia || pickRodoviaByAtividade(it.atividade);
       if(rod) $('#rodovia').value = rod;
 
+      // ✅ após selecionar: esconde a lista (não exibe "nenhuma...")
+      hideAtvList();
+
+      // mantém consistência interna (se alguém voltar a digitar, a lista retorna)
       filtered = filterActivities($('#atividade').value);
-      renderAtvList(filtered);
+      $('#atvCount').textContent = String(filtered.length);
+
       $('#atividade').blur();
     });
 
@@ -921,7 +933,19 @@ async function loadActivitiesOnOpen(){
 }
 
 $('#atividade').addEventListener('input', ()=>{
+  // ✅ ao digitar, se mudou do selecionado, libera lista novamente
+  const key = normText($('#atividade').value);
+  if(selectedAtvKey && key !== selectedAtvKey){
+    // o usuário alterou o texto após selecionar -> volta modo busca
+  }
   filtered = filterActivities($('#atividade').value);
+  renderAtvList(filtered);
+});
+
+$('#atividade').addEventListener('focus', ()=>{
+  // ✅ ao tocar no campo, mostra lista e filtra (permite trocar)
+  filtered = filterActivities($('#atividade').value);
+  showAtvList();
   renderAtvList(filtered);
 });
 
@@ -1120,9 +1144,6 @@ async function resendAll(){
   toast('Reenvio concluído.');
 }
 
-/* ==========================================================
-   Lista
-========================================================== */
 async function renderQueue(){
   const list = $('#list');
   const all = (await idbGetAll()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -1245,6 +1266,8 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
     // limpa campos
     $('#atividade').value='';
+    selectedAtvKey = '';      // ✅ limpa seleção de atividade também
+    showAtvList();            // ✅ volta lista pro estado padrão
     $('#trecho').value='';
     $('#rodovia').value='';
     $('#total').value='';
