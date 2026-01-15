@@ -84,7 +84,6 @@
 
     label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; font-weight:700; }
 
-    /* 16px evita zoom do Chrome/WebView */
     input, select, button, textarea{
       width:100%;
       padding:14px 14px;
@@ -205,9 +204,7 @@
     .view{ display:none; }
     .view.active{ display:block; }
 
-    /* ==========================================================
-       ✅ SELETOR DE ATIVIDADE (container + lista)
-    ========================================================== */
+    /* Seletor de atividade */
     .atvBox{
       border:2px solid var(--border);
       border-radius:18px;
@@ -257,9 +254,7 @@
       margin-top:8px; flex-wrap:wrap;
     }
 
-    /* ==========================================================
-       ✅ FOTO: Preview com ícone de câmera (no lugar do triângulo)
-    ========================================================== */
+    /* Foto */
     .camCard{
       border:2px solid var(--border);
       border-radius:18px;
@@ -331,7 +326,7 @@
     }
 
     /* ==========================================================
-       ✅ MODAL/TOAST CUSTOM (remove "GitHub diz...")
+       MODAL/TOAST CUSTOM (sem "GitHub diz")
     ========================================================== */
     .modalBackdrop{
       position:fixed; inset:0;
@@ -435,6 +430,13 @@
           <small>Usuário</small>
           <b id="kUser">—</b>
         </div>
+        <div class="kpi">
+          <small>Lote (se houver)</small>
+          <b id="kLote">—</b>
+        </div>
+      </div>
+      <div class="hint" id="loteHint" style="display:none">
+        Lote não está definido. Você ainda pode enviar, mas o campo LOTE ficará vazio no relatório.
       </div>
     </div>
 
@@ -454,12 +456,12 @@
         </div>
 
         <div class="atvFooter">
-          <div class="hint" style="margin:0" id="hintNew">
+         /* <div class="hint" style="margin:0" id="hintNew">
             Não encontrou? <a href="#" id="btnAddAtv">➕ Incluir novo</a>
           </div>
           <div class="hint" style="margin:0">
             Toque em uma opção para selecionar.
-          </div>
+          </div>*/
         </div>
       </div>
 
@@ -495,17 +497,16 @@
         </div>
       </div>
 
-      <!-- ✅ FOTO (obrigatória) com ícone de câmera -->
+      <!-- FOTO (agora opcional) -->
       <div class="row">
         <div>
-          <label>Foto (obrigatória)</label>
+          <label>Foto (opcional)</label>
 
           <div class="camCard">
             <div class="camFrame" id="camFrame">
               <video id="camVideo" class="camVideo" playsinline muted autoplay></video>
               <img id="camShot" class="camShot" alt="Foto capturada" />
 
-              <!-- Overlay com ícone de câmera (substitui triângulo) -->
               <div class="camOverlay" id="camOverlay">
                 <svg class="camIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M9 7l1.2-2.1c.2-.4.6-.6 1-.6h1.6c.4 0 .8.2 1 .6L15 7h2.2c1 0 1.8.8 1.8 1.8v9.4c0 1-.8 1.8-1.8 1.8H6.8c-1 0-1.8-.8-1.8-1.8V8.8C5 7.8 5.8 7 6.8 7H9z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
@@ -524,7 +525,7 @@
               <button class="btn" id="btnTakePhoto" type="button" disabled>Tirar foto</button>
             </div>
 
-            <div class="hint">Tire a foto no local. O sistema compacta para enviar mais rápido.</div>
+            <div class="hint">Se não tirar foto, o envio será feito normalmente (sem imagem).</div>
             <div class="warnText" id="camErr"></div>
           </div>
 
@@ -549,7 +550,7 @@
 
   </div>
 
-  <!-- ✅ Modal/Toast custom (sem popups nativos) -->
+  <!-- Modal/Toast custom -->
   <div class="modalBackdrop" id="mBackdrop"></div>
   <div class="modal" id="mBox" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modalTitle" id="mTitle">Confirmação</div>
@@ -567,10 +568,12 @@ const CACHE_ACTIVITIES_KEY = 'PAVI_FAST_ACTIVIDADES_CACHE_V1';
 const LS_USER = 'PAVI_FAST_USER';
 const LS_NAME = 'PAVI_FAST_NAME';
 
+// ✅ Lote selecionado (poslog pode gravar em qualquer uma destas chaves)
+const LS_LOTE_A = 'PAVI_FAST_LOTE';
+const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
+
 /* ==========================================================
-   ✅ Pré-seleção de Rodovia vinda do poslog.html
-   - Se existir PAVI_FAST_RODOVIA_PRESELECT, preenche #rodovia
-   - Depois remove a chave (para não "grudar")
+   Pré-seleção de Rodovia vinda do poslog.html
 ========================================================== */
 (function applyPreselectedRodovia(){
   const key = 'PAVI_FAST_RODOVIA_PRESELECT';
@@ -606,7 +609,7 @@ function showView(which){
 }
 
 /* ==========================================================
-   ✅ Toast + Confirm custom (sem alert/confirm nativos)
+   Toast + Confirm (sem popups nativos)
 ========================================================== */
 let snackTimer = null;
 
@@ -693,6 +696,13 @@ function toBRDateTime(ts){
   catch { return String(ts); }
 }
 
+function getSelectedLote(){
+  const a = (localStorage.getItem(LS_LOTE_A) || '').trim();
+  const b = (localStorage.getItem(LS_LOTE_B) || '').trim();
+  const v = (a || b || '').trim();
+  return v ? v.toUpperCase() : '';
+}
+
 /* ==========================================================
    Drawer
 ========================================================== */
@@ -721,7 +731,7 @@ $$('[data-nav]').forEach(a=>{
 });
 
 /* ==========================================================
-   IndexedDB (fila offline com foto)
+   IndexedDB (fila offline)
 ========================================================== */
 const DB_NAME = 'pavi_fast_db_v1';
 const STORE = 'queue';
@@ -768,7 +778,7 @@ async function idbDel(id){
 }
 
 /* ==========================================================
-   Catálogo de atividades (lista custom)
+   Catálogo de atividades
 ========================================================== */
 let activities = [];
 let filtered = [];
@@ -813,7 +823,7 @@ function renderAtvList(list){
   list.forEach((it)=>{
     const div = document.createElement('div');
     div.className = 'atvItem';
-    div.textContent = (it.atividade || '—'); // ✅ só atividade
+    div.textContent = (it.atividade || '—');
     div.addEventListener('click', ()=>{
       $('#atividade').value = it.atividade || '';
 
@@ -878,7 +888,8 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
   const rod = $('#rodovia').value.trim();
   if(!navigator.onLine) return toast('Sem internet para incluir agora.');
 
-  if(!await confirmModal(`Incluir nova atividade?\n\n${atv}`)) return;
+  const ok = await confirmModal(`Incluir nova atividade?\n\n${atv}`, 'Confirmar');
+  if(!ok) return;
 
   try{
     const body = new URLSearchParams({ action:'add_activity', atividade:atv, rodovia:rod });
@@ -889,16 +900,17 @@ $('#btnAddAtv').addEventListener('click', async (e)=>{
     if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao incluir');
 
     await loadActivitiesOnOpen();
+    toast('Atividade incluída.');
   }catch(err){
-    toast('Erro: ' + err.message);
+    await alertModal('Erro: ' + err.message, 'Falha');
   }
 });
 
 /* ==========================================================
-   FOTO (CÂMERA AO VIVO)
+   FOTO (CÂMERA)
 ========================================================== */
 let camStream = null;
-let capturedDataUrl = ""; // ✅ substitui o antigo input file
+let capturedDataUrl = ""; // opcional agora
 
 function showCamError(msg){
   const box = $('#camErr');
@@ -912,7 +924,6 @@ function clearCamError(){
 }
 
 function setCamUI(state){
-  // state: idle | live | shot
   const v = $('#camVideo');
   const img = $('#camShot');
   const ov = $('#camOverlay');
@@ -949,13 +960,11 @@ async function stopCamera(){
 async function startCamera(){
   clearCamError();
 
-  // ✅ exige user-gesture (botão) — já está
   if(!navigator.mediaDevices?.getUserMedia){
     showCamError('Este dispositivo/navegador não suporta câmera.');
     return;
   }
 
-  // ✅ tenta traseira, se falhar tenta qualquer câmera
   const tryConstraints = [
     { video: { facingMode: { ideal: 'environment' } }, audio: false },
     { video: true, audio: false }
@@ -984,14 +993,10 @@ async function startCamera(){
 
     const v = $('#camVideo');
     v.srcObject = stream;
-
-    // ajuda no Android/WebView
     v.setAttribute('playsinline','true');
     v.muted = true;
 
-    // garante start
     await v.play();
-
     setCamUI('live');
   }catch(err){
     setCamUI('idle');
@@ -1018,14 +1023,12 @@ async function takePhoto(){
   const ctx = canvas.getContext('2d');
   ctx.drawImage(v, 0, 0, w, h);
 
-  // ✅ compacta direto para JPEG (como antes)
   const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
   capturedDataUrl = dataUrl;
 
   $('#camShot').src = dataUrl;
   setCamUI('shot');
 
-  // opcional: para poupar bateria, parar stream após tirar
   await stopCamera();
 }
 
@@ -1044,18 +1047,25 @@ async function sendOne(rec){
   }
 
   try{
-    const body = new URLSearchParams({
+    const params = {
       action:'submit',
       usuario: rec.usuario,
       nome: rec.nome,
+      lote: rec.lote || '',                // ✅ lote opcional
       atividade: rec.atividade,
       rodovia: rec.rodovia,
       prazoDe: rec.prazoDe || '',
       prazoAte: rec.prazoAte || '',
       total: String(rec.totalBR || rec.total || ''),
-      trecho: rec.trecho || '',
-      foto: rec.photoDataUrl
-    });
+      trecho: rec.trecho || ''
+    };
+
+    // ✅ foto opcional: só envia se existir
+    if(rec.photoDataUrl && String(rec.photoDataUrl).startsWith('data:image/')){
+      params.foto = rec.photoDataUrl;
+    }
+
+    const body = new URLSearchParams(params);
 
     const resp = await fetch(WEBAPP_URL, { method:'POST', body });
     const text = await resp.text();
@@ -1064,6 +1074,8 @@ async function sendOne(rec){
     if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
     if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao enviar');
 
+    rec.status = 'SENT';
+    rec.errorMsg = '';
     await idbDel(rec.id);
   }catch(err){
     rec.status = 'ERROR';
@@ -1109,6 +1121,7 @@ async function renderQueue(){
       </div>
       <div class="meta">Trecho: ${rec.trecho || '—'}</div>
       <div class="meta">Rodovia: ${rec.rodovia || '—'} • Prazo: ${rec.prazoDe || '—'} → ${rec.prazoAte || '—'}</div>
+      <div class="meta">Lote: ${rec.lote || '—'}</div>
       ${rec.errorMsg ? `<div class="meta" style="color:#991b1b;font-weight:800;margin-top:6px">Erro: ${rec.errorMsg}</div>` : ``}
       <div class="actions">
         <button class="btn secondary" data-act="detail" data-id="${rec.id}">Ver detalhe</button>
@@ -1128,18 +1141,22 @@ async function renderQueue(){
       if(!rec) return;
 
       if(act==='detail'){
-        toast(
-          `Atividade: ${rec.atividade}\nTrecho: ${rec.trecho || '—'}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`
+        await alertModal(
+          `Atividade: ${rec.atividade}\nTrecho: ${rec.trecho || '—'}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nLote: ${rec.lote || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`,
+          'Detalhe'
         );
       }
       if(act==='send'){
         await sendOne(rec);
         await renderQueue();
+        toast('Tentativa de envio concluída.');
       }
       if(act==='del'){
-        if(await confirmModal('Excluir este pendente?')){
+        const ok = await confirmModal('Excluir este pendente?', 'Confirmar');
+        if(ok){
           await idbDel(id);
           await renderQueue();
+          toast('Excluído.');
         }
       }
     });
@@ -1159,6 +1176,8 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const usuario = localStorage.getItem(LS_USER) || '';
   const nome = localStorage.getItem(LS_NAME) || usuario;
 
+  const lote = getSelectedLote(); // ✅ pode ser vazio
+
   const atividade = $('#atividade').value.trim();
   const trecho = $('#trecho').value.trim();
   const rodovia = $('#rodovia').value.trim();
@@ -1166,12 +1185,12 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const prazoDe = $('#prazoDe').value;
   const prazoAte = $('#prazoAte').value;
 
-  // ✅ agora a foto vem do "capturedDataUrl"
+  // ✅ foto opcional
   const photoDataUrl = capturedDataUrl;
 
   if(!atividade) return toast('Informe a atividade.');
+  if(!rodovia) return toast('Informe a rodovia.');
   if(!totalBR) return toast('Informe o total.');
-  if(!photoDataUrl) return toast('Foto é obrigatória. Abra a câmera e tire a foto.');
 
   const total = normalizeNumberBR(totalBR);
   if(total === null) return toast('Total inválido. Use número e vírgula.');
@@ -1186,17 +1205,18 @@ $('#btnSalvar').addEventListener('click', async ()=>{
       status: 'PENDING',
       errorMsg: '',
       usuario, nome,
+      lote,                 // ✅ salva lote (pode ser vazio)
       atividade, trecho,
       rodovia,
       prazoDe, prazoAte,
       total, totalBR,
       unidade: 'm',
-      photoDataUrl
+      photoDataUrl: photoDataUrl || '' // ✅ pode ser vazio
     };
 
     await idbPut(rec);
 
-    // limpa campos (mantém padrão)
+    // limpa campos
     $('#atividade').value='';
     $('#trecho').value='';
     $('#rodovia').value='';
@@ -1211,9 +1231,10 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 
     await sendOne(rec);
 
+    // se deu erro, aparece em "Meus envios"
     toast('Registro salvo.');
   }catch(err){
-    toast('Erro: ' + err.message);
+    await alertModal('Erro: ' + err.message, 'Falha');
   }finally{
     $('#btnSalvar').disabled = false;
     $('#saveMsg').textContent = '';
@@ -1235,12 +1256,12 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   $('#who').textContent = nome || usuario;
   $('#kUser').textContent = nome || usuario;
 
+  const lote = getSelectedLote();
+  $('#kLote').textContent = lote || '—';
+  $('#loteHint').style.display = lote ? 'none' : 'block';
+
   setOnlineBadge();
-
-  // inicia com hint escondida até digitar
   $('#hintNew').style.display = 'none';
-
-  // estado inicial da câmera
   setCamUI('idle');
 
   await loadActivitiesOnOpen();
