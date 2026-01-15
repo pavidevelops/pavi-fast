@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
-  <title>PAVI Fast — Sala de Estar</title>
+  <title>PAVI Fast — Pós-login</title>
 
   <style>
     /* ==========================================================
@@ -16,9 +16,7 @@
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap;}
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap;}
 
-    html, body, * {
-      font-family:'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important;
-    }
+    html, body, * { font-family:'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important; }
 
     :root{
       --bg:#f8fdf9;
@@ -30,215 +28,437 @@
       --primary-700:#0b8c61;
       --border:#d1fae5;
       --shadow:0 15px 35px rgba(16,185,129,0.10), 0 5px 15px rgba(0,0,0,0.06);
-      --radius:18px;
+      --ok-bg:#ecfdf5; --ok:#065f46; --ok-br:#a7f3d0;
+      --err-bg:#fef2f2; --err:#991b1b; --err-br:#fecaca;
+      --warn-bg:#fff7ed; --warn:#9a3412; --warn-br:#fed7aa;
     }
 
     *{ box-sizing:border-box; }
-
     body{
       margin:0;
       background:var(--bg);
       color:var(--text);
       min-height:100vh;
       min-height:100dvh;
-      padding-bottom:80px;
+      padding-bottom:90px;
     }
 
-    /* ================= TOPBAR ================= */
+    /* Topbar */
     .topbar{
-      position:sticky;
-      top:0;
-      z-index:10;
+      position:sticky; top:0; z-index:10;
       background:rgba(248,253,249,.92);
       backdrop-filter: blur(10px);
       border-bottom:1px solid #e5f7ef;
       padding:10px 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-    .brand{
-      display:flex;
-      flex-direction:column;
-      line-height:1.1;
-    }
+    .brand{ display:flex; flex-direction:column; line-height:1.1; }
     .brand b{ font-size:15px; font-weight:800; }
-    .brand small{ font-size:12px; color:var(--muted); font-weight:700; }
-
-    .userPill{
-      padding:8px 12px;
-      border-radius:999px;
-      border:2px solid var(--border);
-      background:#fff;
-      font-size:12px;
-      font-weight:800;
+    .brand small{ font-size:12px; color:var(--muted); font-weight:700; margin-top:3px; }
+    .pillUser{
+      padding:8px 12px; border-radius:999px;
+      border:2px solid var(--border); background:#fff;
+      font-size:12px; font-weight:800;
       white-space:nowrap;
+      max-width: 52vw;
+      overflow:hidden; text-overflow:ellipsis;
     }
 
-    /* ================= CONTENT ================= */
-    .wrap{
-      max-width:720px;
-      margin:0 auto;
-      padding:16px;
-    }
+    .wrap{ max-width:980px; margin:0 auto; padding:14px; }
 
     .panel{
       background:var(--card);
       border:1px solid var(--border);
-      border-radius:22px;
+      border-radius:20px;
       box-shadow:var(--shadow);
-      padding:18px;
+      padding:16px;
     }
 
-    h1{
-      margin:0;
-      font-size:20px;
-      font-weight:800;
+    .kpis{ display:flex; gap:10px; flex-wrap:wrap; }
+    .kpi{
+      flex:1; min-width:220px;
+      background:#fbfffd;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:12px 12px;
+    }
+    .kpi small{ display:block; color:var(--muted); font-weight:800; }
+    .kpi b{ font-size:18px; font-weight:900; }
+    .hint{ font-size:12px; color:var(--muted); margin-top:6px; font-style:italic; }
+    .hint strong{ color:var(--primary-700); font-style:normal; }
+
+    .sep{ height:1px; background:#e5f7ef; margin:14px 0; }
+
+    /* Cards de lote */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:12px;
+    }
+    @media (max-width:720px){
+      .grid{ grid-template-columns: 1fr; }
     }
 
-    p{
-      margin:8px 0 0;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.4;
+    .loteCard{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+      overflow:hidden;
     }
-
-    .sep{
-      height:1px;
-      background:#e5f7ef;
-      margin:14px 0;
-    }
-
-    .lotes{
+    .loteHead{
+      padding:12px 12px 10px;
+      background:#fbfffd;
+      border-bottom:1px solid #e5f7ef;
       display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
       gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
     }
-
-    .pill{
-      padding:8px 12px;
+    .loteTitle{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .loteTitle b{ font-size:15px; font-weight:900; }
+    .loteTitle small{ color:var(--muted); font-weight:800; font-size:12px; }
+    .badge{
+      padding:6px 10px;
       border-radius:999px;
       border:2px solid var(--border);
-      background:#fbfffd;
-      font-size:13px;
-      font-weight:800;
+      background:#fff;
+      font-size:12px;
+      font-weight:900;
       white-space:nowrap;
     }
 
-    .actions{
-      margin-top:18px;
+    .rodList{
+      padding:12px;
       display:flex;
-      gap:10px;
       flex-wrap:wrap;
+      gap:8px;
+    }
+    .rodBtn{
+      border:2px solid var(--border);
+      background:#fbfffd;
+      color:var(--text);
+      font-weight:900;
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.15s ease;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .rodBtn:hover{
+      background:#f0fdf9;
+      transform: translateY(-1px);
     }
 
+    .msg{
+      border-radius:14px;
+      border:2px solid var(--warn-br);
+      background:var(--warn-bg);
+      color:var(--warn);
+      padding:12px;
+      font-weight:900;
+      display:none;
+      margin-top:12px;
+      font-size:13px;
+    }
+    .msg.err{
+      border-color: var(--err-br);
+      background: var(--err-bg);
+      color: var(--err);
+    }
+    .loading{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
+      font-weight:900;
+      font-size:13px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--primary);
+      box-shadow: 0 0 0 6px rgba(16,185,129,0.12);
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse{
+      0%{ transform: scale(1); opacity:1; }
+      60%{ transform: scale(1.15); opacity:.85; }
+      100%{ transform: scale(1); opacity:1; }
+    }
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:14px;
+    }
     .btn{
-      flex:1;
-      min-width:180px;
+      flex:1; min-width:180px;
       padding:14px;
       border-radius:16px;
       border:none;
       cursor:pointer;
-      font-weight:800;
+      font-weight:900;
       font-size:15px;
       background:linear-gradient(135deg, var(--primary), var(--primary-600));
       color:#fff;
       box-shadow:0 10px 25px rgba(16,185,129,0.25);
       transition:.2s ease;
     }
-    .btn:hover{
-      background:linear-gradient(135deg, var(--primary-600), var(--primary-700));
-      transform:translateY(-1px);
-    }
-
+    .btn:hover{ background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); transform:translateY(-1px); }
     .btn.secondary{
       background:#fff;
       color:var(--primary-700);
       border:2px solid var(--border);
       box-shadow:none;
     }
+    .btn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; }
   </style>
 </head>
 
 <body>
-
   <div class="topbar">
     <div class="brand">
       <b>PAVI Fast</b>
-      <small>Pós-login</small>
+      <small>Escolha a rodovia do lote</small>
     </div>
-    <div class="userPill" id="userName">—</div>
+    <div class="pillUser" id="who">—</div>
   </div>
 
   <div class="wrap">
     <div class="panel">
-      <h1>Bem-vindo</h1>
-      <p>
-        Você verá somente os lotes e rodovias liberados para o seu usuário.
-        Na próxima etapa, selecione o lote em que irá trabalhar.
-      </p>
+      <div class="kpis">
+        <div class="kpi">
+          <small>Usuário</small>
+          <b id="kUser">—</b>
+          <div class="hint">Você verá somente o que estiver <strong>liberado</strong> para seu usuário.</div>
+        </div>
+        <div class="kpi">
+          <small>Ação</small>
+          <b>Selecione a rodovia</b>
+          <div class="hint">Ao tocar em uma rodovia, ela já ficará pré-selecionada no formulário.</div>
+        </div>
+      </div>
 
       <div class="sep"></div>
 
-      <b style="font-size:14px">Lotes disponíveis</b>
-
-      <div class="lotes" id="lotesBox">
-        <!-- pills -->
+      <div class="loading" id="loading">
+        <span class="dot"></span>
+        <span>Carregando lotes e rodovias…</span>
       </div>
+
+      <div class="msg" id="msg"></div>
+
+      <div class="grid" id="grid" style="margin-top:12px; display:none;"></div>
 
       <div class="actions">
         <button class="btn secondary" id="btnLogout">Sair</button>
-        <button class="btn" id="btnContinue">Acessar Atividades</button>
+        <button class="btn" id="btnGoSeletor" disabled title="Selecione uma rodovia primeiro">Ir para seletor</button>
       </div>
     </div>
   </div>
 
 <script>
-const SESSION_KEY = 'PAVI_FAST_SESSION';
+  // ====== CONFIG ======
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-function formatLote(id){
-  const n = String(id||'').replace(/[^0-9]/g,'');
-  if(!n) return id;
-  return 'Lote ' + (n.length === 1 ? '0'+n : n);
-}
+  const SESSION_KEY = 'PAVI_FAST_SESSION';
+  const LS_USER = 'PAVI_FAST_USER';
+  const LS_NAME = 'PAVI_FAST_NAME';
 
-const sessionRaw = localStorage.getItem(SESSION_KEY);
-if(!sessionRaw){
-  location.href = 'index.html';
-}
+  const LS_LOTE_ATIVO = 'PAVI_FAST_LOTE_ATIVO';
+  const LS_RODOVIA_PRE = 'PAVI_FAST_RODOVIA_PRESELECT';
 
-const session = JSON.parse(sessionRaw);
-document.getElementById('userName').textContent = session.name || session.email;
+  const NEXT_PAGE = 'seletor_lotes.html';
+  const LOGIN_PAGE = 'index.html';
 
-const box = document.getElementById('lotesBox');
-const lotes = Array.isArray(session.allowedLotes) ? session.allowedLotes : [];
+  // ====== Helpers ======
+  const $ = (s)=>document.querySelector(s);
 
-if(lotes.length === 0){
-  box.innerHTML = `<span class="pill">Nenhum lote liberado</span>`;
-  document.getElementById('btnContinue').disabled = true;
-  document.getElementById('btnContinue').style.opacity = '.6';
-}else{
-  lotes.forEach(l=>{
-    const s = document.createElement('span');
-    s.className = 'pill';
-    s.textContent = formatLote(l);
-    box.appendChild(s);
+  function loteLabel(loteId){
+    const n = String(loteId||'').replace(/[^0-9]/g,'');
+    if(!n) return String(loteId||'Lote');
+    return 'Lote ' + (n.length===1 ? ('0'+n) : n);
+  }
+
+  function showMsg(text, kind){
+    const el = $('#msg');
+    el.className = 'msg' + (kind==='err' ? ' err' : '');
+    el.textContent = text;
+    el.style.display = 'block';
+  }
+
+  function hideMsg(){
+    const el = $('#msg');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+
+  function setLoading(on){
+    $('#loading').style.display = on ? 'flex' : 'none';
+  }
+
+  async function post(params){
+    const body = new URLSearchParams(params);
+    const resp = await fetch(WEBAPP_URL, { method:'POST', body });
+    const text = await resp.text();
+    let json=null; try{ json = JSON.parse(text); }catch{}
+    if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
+    if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha na resposta');
+    return json;
+  }
+
+  function ensureSession(){
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    try{ return JSON.parse(raw); }catch{ return null; }
+  }
+
+  // ====== Sessão ======
+  const session = ensureSession();
+  if(!session){
+    location.href = LOGIN_PAGE;
+  }
+
+  const userName = session.name || localStorage.getItem(LS_NAME) || session.email || localStorage.getItem(LS_USER) || '—';
+  $('#who').textContent = userName;
+  $('#kUser').textContent = userName;
+
+  const allowedLotes = Array.isArray(session.allowedLotes) ? session.allowedLotes : [];
+
+  // ====== Estado da seleção ======
+  let selectedLote = '';
+  let selectedRodovia = '';
+
+  function setSelection(lote, rodovia){
+    selectedLote = String(lote||'').trim().toUpperCase();
+    selectedRodovia = String(rodovia||'').trim();
+
+    // grava para o resto do fluxo
+    localStorage.setItem(LS_LOTE_ATIVO, selectedLote);
+    localStorage.setItem(LS_RODOVIA_PRE, selectedRodovia);
+
+    // habilita botão extra (opcional)
+    const btn = $('#btnGoSeletor');
+    btn.disabled = false;
+    btn.title = '';
+  }
+
+  // ====== Render ======
+  function renderGrid(map){
+    const grid = $('#grid');
+    grid.innerHTML = '';
+    grid.style.display = 'grid';
+
+    allowedLotes.forEach(lote=>{
+      const rods = (map && map[lote]) ? map[lote] : [];
+      const card = document.createElement('div');
+      card.className = 'loteCard';
+
+      const head = document.createElement('div');
+      head.className = 'loteHead';
+
+      const t = document.createElement('div');
+      t.className = 'loteTitle';
+      t.innerHTML = `<b>${loteLabel(lote)}</b><small>${lote}</small>`;
+
+      const badge = document.createElement('div');
+      badge.className = 'badge';
+      badge.textContent = (rods.length ? `${rods.length} rodovias` : '0 rodovias');
+
+      head.appendChild(t);
+      head.appendChild(badge);
+
+      const list = document.createElement('div');
+      list.className = 'rodList';
+
+      if(!rods.length){
+        const empty = document.createElement('div');
+        empty.style.color = 'var(--muted)';
+        empty.style.fontWeight = '900';
+        empty.style.fontSize = '13px';
+        empty.textContent = 'Nenhuma rodovia liberada para este lote.';
+        list.appendChild(empty);
+      }else{
+        rods.forEach(r=>{
+          const b = document.createElement('button');
+          b.className = 'rodBtn';
+          b.type = 'button';
+          b.textContent = r;
+
+          b.addEventListener('click', ()=>{
+            setSelection(lote, r);
+            // conforme você pediu:
+            // clicou na rodovia -> segue para o seletor
+            location.href = NEXT_PAGE;
+          });
+
+          list.appendChild(b);
+        });
+      }
+
+      card.appendChild(head);
+      card.appendChild(list);
+      grid.appendChild(card);
+    });
+  }
+
+  // ====== Load lotes + rodovias ======
+  (async function init(){
+    hideMsg();
+
+    if(!allowedLotes.length){
+      setLoading(false);
+      showMsg('Sem lote definido, entre em contato com suporte.', 'err');
+      $('#grid').style.display = 'none';
+      $('#btnGoSeletor').disabled = true;
+      return;
+    }
+
+    // Offline: até dá pra mostrar lotes, mas sem rodovias não resolve o objetivo
+    if(!navigator.onLine){
+      setLoading(false);
+      showMsg('Sem internet para carregar rodovias. Conecte e tente novamente.', 'err');
+      $('#grid').style.display = 'none';
+      return;
+    }
+
+    try{
+      setLoading(true);
+
+      // backend deve aceitar "lotes" como lista/CSV
+      const json = await post({ action:'lote_rodovias', lotes: allowedLotes.join(',') });
+      const map = json.lotes || {};
+
+      setLoading(false);
+      renderGrid(map);
+
+      // se algum lote não tiver rodovia, alerta leve (não bloqueia)
+      const anyZero = allowedLotes.some(l => !((map[l]||[]).length));
+      if(anyZero){
+        showMsg('Alguns lotes não possuem rodovias liberadas. Verifique a aba LOTE_RODOVIAS no Sheets.', 'warn');
+      }
+
+    }catch(err){
+      setLoading(false);
+      showMsg('Falha ao carregar rodovias: ' + (err.message || 'erro'), 'err');
+      $('#grid').style.display = 'none';
+    }
+  })();
+
+  // ====== Botões ======
+  $('#btnGoSeletor').addEventListener('click', ()=>{
+    location.href = NEXT_PAGE;
   });
-}
 
-document.getElementById('btnContinue').onclick = ()=>{
-  location.href = 'seletor_lotes.html';
-};
-
-document.getElementById('btnLogout').onclick = ()=>{
-  localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem('PAVI_FAST_USER');
-  localStorage.removeItem('PAVI_FAST_NAME');
-  location.href = 'index.html';
-};
+  $('#btnLogout').addEventListener('click', ()=>{
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LS_USER);
+    localStorage.removeItem(LS_NAME);
+    localStorage.removeItem(LS_LOTE_ATIVO);
+    localStorage.removeItem(LS_RODOVIA_PRE);
+    location.href = LOGIN_PAGE;
+  });
 </script>
-
 </body>
 </html>
