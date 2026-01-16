@@ -251,11 +251,52 @@
     // 🔗 URL /exec do seu Apps Script
     const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-    // Sessão nova (para poslog / seletor)
+    // ✅ Sessão (compat) antiga
     const SESSION_KEY = 'PAVI_FAST_SESSION';
+
+    // ✅ Sessão OFFLINE (30 dias) — NOVA (V1)
+    const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
+    const SESSION_MAX_DAYS = 30;
+    const SESSION_MAX_MS = SESSION_MAX_DAYS * 24 * 60 * 60 * 1000;
 
     function showMsg(el, text){ el.textContent = text; el.style.display = 'block'; }
     function hideMsgs(){ msgOk.style.display = 'none'; msgErr.style.display = 'none'; }
+
+    function loadSessionV1(){
+      try{
+        const raw = localStorage.getItem(LS_SESSION_V1);
+        if(!raw) return null;
+        const s = JSON.parse(raw);
+        return (s && typeof s === 'object') ? s : null;
+      }catch(e){ return null; }
+    }
+
+    function saveSessionV1(sess){
+      try{ localStorage.setItem(LS_SESSION_V1, JSON.stringify(sess)); }catch(e){}
+    }
+
+    function clearSessionV1(){
+      try{ localStorage.removeItem(LS_SESSION_V1); }catch(e){}
+    }
+
+    function sessionIsValid(sess){
+      if(!sess) return false;
+      const ts = Number(sess.lastLoginAt || 0);
+      if(!ts) return false;
+      return (Date.now() - ts) <= SESSION_MAX_MS;
+    }
+
+    // ✅ Auto-entrar com cache (offline / ou online também)
+    (function autoEnterFromCache(){
+      hideMsgs();
+      const sess = loadSessionV1();
+      if(!sessionIsValid(sess)) return;
+
+      // Se quiser APENAS offline, descomente a linha abaixo e comente a próxima:
+      // if(navigator.onLine) return;
+
+      window.location.replace('poslog.html');
+    })();
 
     toggleBtn.addEventListener('click', () => {
       const isPwd = inputPass.type === 'password';
@@ -316,8 +357,8 @@
           // ✅ Se login OK mas sem lote definido → mensagem e não redireciona
           if(!allowedLotes.length){
             showMsg(msgErr, 'Sem lote definido, entre em contato com suporte.');
-            // opcional: limpa qualquer sessão antiga
             localStorage.removeItem(SESSION_KEY);
+            clearSessionV1();
             return;
           }
 
@@ -328,13 +369,21 @@
           localStorage.setItem('PAVI_FAST_USER', email);
           localStorage.setItem('PAVI_FAST_NAME', nome);
 
-          // ✅ Sessão nova (usada pelo poslog.html e seletor_lotes.html)
+          // ✅ Sessão compat (antiga)
           localStorage.setItem(SESSION_KEY, JSON.stringify({
             name: nome,
             email: email,
             allowedLotes: allowedLotes,
             ts: Date.now()
           }));
+
+          // ✅ ✅ Sessão OFFLINE (30 dias) — NOVA (V1)
+          saveSessionV1({
+            usuario: email,
+            nome: nome,
+            lotes: allowedLotes,
+            lastLoginAt: Date.now()
+          });
 
           // ✅ ✅ ✅ GATILHO PARA O APP ANDROID (ATUALIZAR APÓS LOGIN)
           try{
@@ -353,7 +402,19 @@
           throw new Error(data?.mensagem || 'Usuário ou senha inválidos.');
         }
       }catch(err){
-        showMsg(msgErr, 'Não foi possível entrar: ' + err.message);
+        // ✅ Fallback OFFLINE: se já tem sessão válida, entra
+        if(!navigator.onLine){
+          const sess = loadSessionV1();
+          if(sessionIsValid(sess)){
+            showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
+            setTimeout(()=> window.location.replace('poslog.html'), 450);
+            return;
+          }
+          showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
+          return;
+        }
+
+        showMsg(msgErr, 'Não foi possível entrar: ' + (err.message || err));
       }finally{
         submitBtn.disabled = false;
         submitBtn.textContent = 'Entrar';
