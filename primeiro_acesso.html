@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Primeiro Acesso</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
+  <title>PAVI Fast</title>
 
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#10b981">
 
-  <!-- ✅ Roboto (Google Fonts) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap" rel="stylesheet">
-
   <style>
+    /* ==========================================================
+       FUNNEL SANS — LOCAL (.ttf)
+    ========================================================== */
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap;}
+
+    html, body, * { font-family:'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important; }
+
     :root{
       --bg:#f8fdf9;
       --card:#ffffff;
@@ -23,296 +30,1290 @@
       --primary-600:#0da271;
       --primary-700:#0b8c61;
       --border:#d1fae5;
+      --shadow:0 15px 35px rgba(16,185,129,0.10), 0 5px 15px rgba(0,0,0,0.06);
       --ok-bg:#ecfdf5; --ok:#065f46; --ok-br:#a7f3d0;
       --err-bg:#fef2f2; --err:#991b1b; --err-br:#fecaca;
+      --warn-bg:#fff7ed; --warn:#9a3412; --warn-br:#fed7aa;
+      --radius:18px;
     }
-    *{ box-sizing:border-box }
+
+    *{ box-sizing:border-box; }
+
+    html{
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+      scroll-padding-top:72px;
+    }
+
     body{
-      margin:0;
-      font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-      background: var(--bg);
+      margin:0; background:var(--bg); color:var(--text);
       min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      color:var(--text);
-    }
-    .container{
-      width:100%;
-      max-width:440px;
-      background:var(--card);
-      border-radius:20px;
-      box-shadow:0 15px 35px rgba(16, 185, 129, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
-      padding:36px 32px;
-      border:1px solid var(--border);
+      min-height:100dvh;
+      padding-bottom:120px;
+      touch-action: manipulation;
     }
 
-    .title-container{ text-align:center; margin-bottom:28px; }
-    .title-container i{
-      font-size: 32px; color: var(--primary);
-      margin-bottom: 12px; display:block;
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background:rgba(248,253,249,.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid #e5f7ef;
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
     }
-    h2{
-      text-align:center;
-      margin:0 0 8px;
-      color:#0f5132;
-      font-size:28px;
-      font-weight:800;
-      position: relative;
-      padding-bottom: 12px;
-    }
-    h2::after{
-      content:'';
-      position:absolute;
-      bottom:0; left:50%;
-      transform:translateX(-50%);
-      width:60px; height:3px;
-      background: linear-gradient(90deg, var(--primary), var(--primary-600));
-      border-radius: 2px;
-    }
-    .subtitle{ color:var(--muted); font-size:15px; margin:8px 0 0; }
-
-    label{
-      display:block;
-      margin:14px 0 8px;
-      color:#1a472a;
-      font-size:14px;
-      font-weight:700;
-    }
-    input{
-      width:100%;
-      padding:14px 16px;
-      margin-bottom:18px;
+    .iconBtn{
+      width:44px; height:44px;
+      border-radius:14px;
       border:2px solid var(--border);
-      border-radius:12px;
+      background:#fff;
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px;
+    }
+    .tblock{ display:flex; flex-direction:column; line-height:1.1; }
+    .title{ font-weight:800; font-size:15px; }
+    .badge{ font-size:12px; color:var(--muted); margin-top:4px; }
+
+    .wrap{ max-width:980px; margin:0 auto; padding:14px; }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .row > *{ flex:1; min-width:160px; }
+
+    label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; font-weight:700; }
+
+    input, select, button, textarea{
+      width:100%;
+      padding:14px 14px;
+      border-radius:14px;
+      border:2px solid var(--border);
       outline:none;
       background:#f8fdf9;
       color:var(--text);
-      transition:all 0.25s ease;
       font-size:16px;
     }
-    input:focus{
-      border-color:var(--primary);
+    textarea{ min-height:52px; resize:vertical; }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(16,185,129,.55);
+      box-shadow:0 0 0 4px rgba(16,185,129,.14);
       background:#fff;
-      box-shadow:0 0 0 4px rgba(16, 185, 129, 0.15);
-      transform: translateY(-1px);
     }
 
-    button{
-      width:100%;
-      padding:16px;
-      margin:8px 0 16px;
+    .btn{
+      border:none;
       background:linear-gradient(135deg, var(--primary), var(--primary-600));
       color:#fff;
-      border:none;
-      border-radius:14px;
-      cursor:pointer;
       font-weight:800;
-      font-size:16px;
-      transition:all 0.25s ease;
-      box-shadow:0 10px 25px rgba(16, 185, 129, 0.3);
+      cursor:pointer;
+      box-shadow:0 10px 25px rgba(16,185,129,0.25);
+      transition:.2s ease;
     }
-    button:hover{
-      background:linear-gradient(135deg, var(--primary-600), var(--primary-700));
-      transform: translateY(-2px);
-    }
-    button:disabled{
-      opacity:.7;
-      cursor:not-allowed;
-      transform:none;
+    .btn:hover{ background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); transform:translateY(-1px); }
+    .btn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; }
+    .btn.secondary{
+      background:#fff;
+      color:var(--primary-700);
+      border:2px solid var(--border);
       box-shadow:none;
     }
-
-    .error-message{
-      display:none;
-      margin:-8px 0 16px 0;
-      padding:10px 12px;
-      background:var(--err-bg);
-      border-radius:10px;
-      border:2px solid var(--err-br);
-      color:var(--err);
-      font-size:14px;
-      font-weight:700;
-    }
-    .success-message{
-      display:none;
-      margin:12px 0 20px;
-      padding:12px 14px;
-      background:var(--ok-bg);
-      border-radius:12px;
-      border:2px solid var(--ok-br);
-      color:var(--ok);
-      font-weight:700;
-      text-align:center;
+    .btn.danger{
+      background:#dc2626;
+      box-shadow:0 10px 25px rgba(220,38,38,0.18);
     }
 
-    .home-button{
+    .sep{ height:1px; background:#e5f7ef; margin:14px 0; }
+
+    .kpis{ display:flex; gap:10px; flex-wrap:wrap; }
+    .kpi{
+      flex:1; min-width:180px;
+      background:#fbfffd;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:12px 12px;
+    }
+    .kpi small{ display:block; color:var(--muted); font-weight:700; }
+    .kpi b{ font-size:18px; }
+
+    .hint{ font-size:12px; color:var(--muted); margin-top:6px; font-style:italic; }
+    .hint a{ color:var(--primary-700); font-weight:800; }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:999px;
+      font-size:12px; font-weight:800;
+      border:2px solid var(--border);
+      background:#fbfffd;
+      white-space:nowrap;
+    }
+    .pill.ok{ background:var(--ok-bg); color:var(--ok); border-color:var(--ok-br); }
+    .pill.err{ background:var(--err-bg); color:var(--err); border-color:var(--err-br); }
+    .pill.warn{ background:var(--warn-bg); color:var(--warn); border-color:var(--warn-br); }
+
+    .list{ display:flex; flex-direction:column; gap:10px; }
+    .item{
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:12px;
+      background:#fff;
+    }
+    .itemTop{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .meta{ font-size:12px; color:var(--muted); margin-top:6px; }
+    .actions{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+    .actions button{ padding:12px; border-radius:14px; min-width:120px; }
+
+    /* Drawer */
+    .backdrop{
+      position:fixed; inset:0; background:rgba(26,71,42,.35);
+      display:none; z-index:20;
+    }
+    .drawer{
+      position:fixed; top:0; left:0; height:100vh; width:280px;
+      background:#fff;
+      border-right:1px solid var(--border);
+      box-shadow:var(--shadow);
+      transform:translateX(-100%);
+      transition:.2s ease;
+      z-index:21;
+      padding:10px;
+    }
+    .drawer.open{ transform:translateX(0); }
+    .backdrop.open{ display:block; }
+    .drawerHeader{
+      padding:6px 8px 10px;
+      border-bottom:1px solid #e5f7ef;
+      margin-bottom:10px;
+    }
+    .drawerHeader b{ display:block; }
+    .drawerHeader small{ color:var(--muted); font-weight:700; }
+    .nav a{
       display:block;
-      width:100%;
-      padding:14px;
-      background:#f0fdf9;
-      color:#0b8c61;
-      text-align:center;
-      text-decoration:none;
-      border:2px solid #d1fae5;
+      padding:12px 10px;
       border-radius:12px;
+      color:var(--text);
+      text-decoration:none;
       font-weight:800;
-      font-size:16px;
-      transition:all 0.25s ease;
-      margin-top:6px;
     }
-    .home-button:hover{
-      background:#e5f7ef;
-      border-color:var(--primary);
-      color:var(--primary-700);
-      transform: translateY(-2px);
+    .nav a:hover{ background:#f0fdf9; }
+    .nav a.danger{ color:#dc2626; }
+
+    /* Views */
+    .view{ display:none; }
+    .view.active{ display:block; }
+
+    /* Seletor de atividade */
+    .atvBox{
+      border:2px solid var(--border);
+      border-radius:18px;
+      background:#fbfffd;
+      padding:12px;
+    }
+    .atvTop{ display:flex; align-items:center; gap:10px; }
+    .atvTop input{ background:#fff; }
+    .atvCount{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      white-space:nowrap;
+      padding:8px 10px;
+      border-radius:999px;
+      border:2px solid var(--border);
+      background:#fff;
+    }
+    .atvList{
+      margin-top:10px;
+      border:2px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+      max-height:240px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .atvItem{
+      padding:12px 12px;
+      border-bottom:1px solid #e5f7ef;
+      cursor:pointer;
+      font-weight:800;
+      color:var(--text);
+      user-select:none;
+    }
+    .atvItem:last-child{ border-bottom:none; }
+    .atvItem:hover{ background:#f0fdf9; }
+    .atvEmpty{
+      padding:12px;
+      color:var(--muted);
+      font-weight:800;
+      text-align:center;
+    }
+    .atvFooter{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-top:8px; flex-wrap:wrap;
     }
 
-    .input-icon{ position:relative; }
-    .input-icon i{
+    /* Foto */
+    .camCard{
+      border:2px solid var(--border);
+      border-radius:18px;
+      background:#fbfffd;
+      padding:12px;
+    }
+    .camFrame{
+      position:relative;
+      border:2px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+      background:#0b1f16;
+      aspect-ratio: 16 / 9;
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .camVideo, .camShot{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:none;
+    }
+    .camOverlay{
       position:absolute;
-      left:16px;
-      top:46px;
-      color: var(--muted);
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.25));
+      color:#eafff6;
+      text-align:center;
+      padding:18px;
     }
-    .input-icon input{ padding-left:45px; }
+    .camOverlay b{ font-size:16px; }
+    .camIcon{
+      width:70px; height:70px;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+      opacity:0.95;
+    }
+    .camBtns{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    .camBtns button{ min-width:140px; }
 
+    .warnText{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:2px solid var(--warn-br);
+      background:var(--warn-bg);
+      color:var(--warn);
+      font-weight:800;
+      display:none;
+      font-size:13px;
+    }
+
+    @media (max-width:520px){
+      .wrap{ padding:10px; }
+      .row > *{ min-width:140px; }
+      .atvList{ max-height:220px; }
+      .camBtns button{ min-width:0; flex:1; }
+    }
+
+    /* ==========================================================
+       MODAL/TOAST CUSTOM (sem "GitHub diz")
+    ========================================================== */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background:rgba(26,71,42,.35);
+      display:none;
+      z-index:9998;
+    }
+    .modalBackdrop.open{ display:block; }
+    .modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(520px, calc(100vw - 28px));
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      z-index:9999;
+      display:none;
+    }
+    .modal.open{ display:block; }
+    .modalTitle{
+      font-weight:900;
+      font-size:15px;
+      margin:4px 2px 8px;
+    }
+    .modalMsg{
+      color:var(--text);
+      font-weight:800;
+      font-size:14px;
+      white-space:pre-line;
+      line-height:1.35;
+      padding:10px 12px;
+      border-radius:14px;
+      border:2px solid var(--border);
+      background:#fbfffd;
+    }
+    .modalBtns{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .snackbar{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      width:min(560px, calc(100vw - 24px));
+      background:#0b1f16;
+      color:#eafff6;
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow:0 14px 28px rgba(0,0,0,.18);
+      border:1px solid rgba(209,250,229,.25);
+      z-index:9997;
+      display:none;
+      white-space:pre-line;
+      font-weight:800;
+      font-size:14px;
+    }
+    .snackbar.show{ display:block; }
+
+    /* ==========================================================
+       ✅ REMOVER "INCLUIR NOVO" APENAS NO FRONT
+    ========================================================== */
+    #hintNew{ display:none !important; }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="title-container">
-      <i class="fas fa-user-plus"></i>
-      <h2>Primeiro Acesso</h2>
-      <p class="subtitle">Crie sua conta para acessar o sistema</p>
+  <div class="backdrop" id="backdrop"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawerHeader">
+      <b>PAVI Fast</b>
+      <small id="who">—</small>
     </div>
-
-    <form id="registrationForm" novalidate>
-      <div class="input-icon">
-        <i class="fas fa-user"></i>
-        <label for="fullName">Nome completo</label>
-        <input type="text" id="fullName" placeholder="Digite seu nome completo" required>
-      </div>
-
-      <div class="input-icon">
-        <i class="fas fa-envelope"></i>
-        <label for="email">E-mail</label>
-        <input type="email" id="email" placeholder="seu@email.com" required>
-      </div>
-
-      <div class="input-icon">
-        <i class="fas fa-lock"></i>
-        <label for="password">Senha</label>
-        <input type="password" id="password" placeholder="••••••••" required>
-      </div>
-
-      <div class="input-icon">
-        <i class="fas fa-lock"></i>
-        <label for="confirmPassword">Confirmar senha</label>
-        <input type="password" id="confirmPassword" placeholder="••••••••" required>
-      </div>
-
-      <div class="error-message" id="msgErr"></div>
-      <div class="success-message" id="msgOk">Cadastro enviado! Aguarde liberação. Redirecionando…</div>
-
-      <button id="btnSubmit" type="submit">
-        <i class="fas fa-check-circle"></i> Finalizar Cadastro
-      </button>
-    </form>
-
-    <a href="index.html" class="home-button">
-      <i class="fas fa-arrow-left"></i> Voltar para Login
-    </a>
+    <div class="nav">
+      <a href="#" data-nav="novo">➕ Novo registro</a>
+      <a href="#" data-nav="meus">🗂️ Meus envios</a>
+      <a href="#" data-nav="sync">🔄 Reenviar pendentes</a>
+      <a href="#" data-nav="logout" class="danger">Sair</a>
+    </div>
+    <div class="sep"></div>
+    <div class="hint">
+      Offline: o sistema salva para enviar depois quando houver internet.
+    </div>
   </div>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // FontAwesome via CSS import (simples)
-    const style = document.createElement('style');
-    style.textContent = `@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');`;
-    document.head.appendChild(style);
+  <div class="topbar">
+    <button class="iconBtn" id="btnMenu" aria-label="Menu">☰</button>
+    <div class="tblock">
+      <div class="title" id="viewTitle">Novo registro</div>
+      <div class="badge" id="netBadge">—</div>
+    </div>
+  </div>
 
-    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
+  <div class="wrap">
 
-    const form = document.getElementById('registrationForm');
-    const btn = document.getElementById('btnSubmit');
+    <div class="panel">
+      <div class="kpis">
+        <div class="kpi">
+          <small>Usuário</small>
+          <b id="kUser">—</b>
+        </div>
+      </div>
+    </div>
 
-    const fullNameEl = document.getElementById('fullName');
-    const emailEl = document.getElementById('email');
-    const passEl = document.getElementById('password');
-    const pass2El = document.getElementById('confirmPassword');
+    <div style="height:12px"></div>
 
-    const msgErr = document.getElementById('msgErr');
-    const msgOk = document.getElementById('msgOk');
+    <div class="panel view active" id="viewNovo">
 
-    function showErr(t){ msgErr.textContent = t; msgErr.style.display = 'block'; msgOk.style.display='none'; }
-    function showOk(){ msgOk.style.display = 'block'; msgErr.style.display='none'; }
-    function clearMsgs(){ msgErr.style.display='none'; msgOk.style.display='none'; }
+      <label>Atividade</label>
+      <div class="atvBox">
+        <div class="atvTop">
+          <input id="atividade" placeholder="Digite para filtrar..." autocomplete="off" />
+          <div class="atvCount" id="atvCount">0</div>
+        </div>
 
-    function basicValidate(){
-      const nome = fullNameEl.value.trim();
-      const email = emailEl.value.trim().toLowerCase();
-      const senha = passEl.value;
+        <div class="atvList" id="atvList">
+          <div class="atvEmpty">Carregando atividades…</div>
+        </div>
 
-      if(!nome) return { ok:false, msg:'Informe o nome completo.' };
-      if(!email) return { ok:false, msg:'Informe o e-mail.' };
-      if(!email.includes('@')) return { ok:false, msg:'E-mail inválido.' };
-      if(!senha) return { ok:false, msg:'Informe a senha.' };
-      if(senha.length < 4) return { ok:false, msg:'Senha muito curta (mínimo 4).' };
-      if(passEl.value !== pass2El.value) return { ok:false, msg:'As senhas não coincidem.' };
+        <div class="atvFooter">
+          <!-- ✅ removido do front (fica escondido por CSS) -->
+          <div class="hint" style="margin:0" id="hintNew"></div>
 
-      return { ok:true, nome, email, senha };
+          <div class="hint" style="margin:0">
+            Toque em uma opção para selecionar.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Trecho</label>
+          <input id="trecho" placeholder="Ex.: km 12+300 ao km 13+050 (lado direito)..." />
+          <div class="hint">Campo de observação do local/trecho executado.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Rodovia</label>
+          <input id="rodovia" placeholder="Ex.: PR-082" />
+          <div class="hint">Clique para editar, se for necessário</div>
+        </div>
+        <div>
+          <label>Total (m)</label>
+          <input id="total" inputmode="decimal" placeholder="Ex.: 10,5" />
+          <div class="hint">Use números e vírgula.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Prazo de</label>
+          <input id="prazoDe" type="date" />
+        </div>
+        <div>
+          <label>Prazo até</label>
+          <input id="prazoAte" type="date" />
+        </div>
+      </div>
+
+      <!-- FOTO (opcional) -->
+      <div class="row">
+        <div>
+          <label>Foto (opcional)</label>
+
+          <div class="camCard">
+            <div class="camFrame" id="camFrame">
+              <video id="camVideo" class="camVideo" playsinline muted autoplay></video>
+              <img id="camShot" class="camShot" alt="Foto capturada" />
+
+              <div class="camOverlay" id="camOverlay">
+                <svg class="camIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 7l1.2-2.1c.2-.4.6-.6 1-.6h1.6c.4 0 .8.2 1 .6L15 7h2.2c1 0 1.8.8 1.8 1.8v9.4c0 1-.8 1.8-1.8 1.8H6.8c-1 0-1.8-.8-1.8-1.8V8.8C5 7.8 5.8 7 6.8 7H9z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M12 17.2a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2z" stroke="white" stroke-width="1.6"/>
+                  <path d="M17.6 9.5h.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <b>Pronto para capturar</b>
+                <div style="font-size:13px;opacity:.9">
+                  Toque em <b>Abrir câmera</b>, depois <b>Tirar foto</b>.
+                </div>
+              </div>
+            </div>
+
+            <div class="camBtns">
+              <button class="btn secondary" id="btnOpenCam" type="button">Abrir câmera</button>
+              <button class="btn" id="btnTakePhoto" type="button" disabled>Tirar foto</button>
+            </div>
+
+            <div class="hint">clique para enviar</div>
+            <div class="warnText" id="camErr"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="btnSalvar">ENVIAR</button>
+      </div>
+
+      <div class="hint" id="saveMsg"></div>
+    </div>
+
+    <div class="panel view" id="viewMeus">
+      <div class="row">
+        <button class="btn secondary" id="btnRefreshList">Atualizar lista</button>
+        <button class="btn" id="btnResend">Reenviar pendentes</button>
+      </div>
+      <div class="sep"></div>
+      <div class="list" id="list"></div>
+    </div>
+
+  </div>
+
+  <!-- Modal/Toast custom -->
+  <div class="modalBackdrop" id="mBackdrop"></div>
+  <div class="modal" id="mBox" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modalTitle" id="mTitle">Confirmação</div>
+    <div class="modalMsg" id="mMsg">—</div>
+    <div class="modalBtns" id="mBtns"></div>
+  </div>
+  <div class="snackbar" id="snack">—</div>
+
+<script>
+/* ==========================================================
+   CONFIG
+========================================================== */
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
+const CACHE_ACTIVITIES_KEY = 'PAVI_FAST_ACTIVIDADES_CACHE_V1';
+const LS_USER = 'PAVI_FAST_USER';
+const LS_NAME = 'PAVI_FAST_NAME';
+
+// ✅ Lote selecionado (poslog pode gravar em qualquer uma destas chaves)
+const LS_LOTE_A = 'PAVI_FAST_LOTE';
+const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
+
+/* ==========================================================
+   Pré-seleção de Rodovia vinda do poslog.html
+========================================================== */
+(function applyPreselectedRodovia(){
+  const key = 'PAVI_FAST_RODOVIA_PRESELECT';
+  const pre = (localStorage.getItem(key) || '').trim();
+  if(!pre) return;
+
+  const el = document.getElementById('rodovia');
+  if(el){
+    el.value = pre;
+    el.dispatchEvent(new Event('input', { bubbles:true }));
+    el.dispatchEvent(new Event('change', { bubbles:true }));
+  }
+
+  localStorage.removeItem(key);
+})();
+
+/* ==========================================================
+   Helpers
+========================================================== */
+const $ = (s)=>document.querySelector(s);
+const $$ = (s)=>Array.from(document.querySelectorAll(s));
+
+function setOnlineBadge(){
+  $('#netBadge').textContent = navigator.onLine ? 'Online' : 'Offline';
+}
+window.addEventListener('online', setOnlineBadge);
+window.addEventListener('offline', setOnlineBadge);
+
+function showView(which){
+  $('#viewNovo').classList.toggle('active', which==='novo');
+  $('#viewMeus').classList.toggle('active', which==='meus');
+  $('#viewTitle').textContent = (which==='novo') ? 'Novo registro' : 'Meus envios';
+}
+
+/* ==========================================================
+   Toast + Confirm (sem popups nativos)
+========================================================== */
+let snackTimer = null;
+
+function toast(msg){
+  const el = document.getElementById('snack');
+  if(!el) return;
+
+  el.textContent = String(msg ?? '');
+  el.classList.add('show');
+
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(()=> el.classList.remove('show'), 2600);
+}
+
+function modalClose_(){
+  const bd = document.getElementById('mBackdrop');
+  const box = document.getElementById('mBox');
+  if(bd) bd.classList.remove('open');
+  if(box){
+    box.classList.remove('open');
+    box.setAttribute('aria-hidden','true');
+  }
+}
+
+function modalOpen_(title, message, buttons){
+  const bd = document.getElementById('mBackdrop');
+  const box = document.getElementById('mBox');
+  const t = document.getElementById('mTitle');
+  const m = document.getElementById('mMsg');
+  const btns = document.getElementById('mBtns');
+
+  if(t) t.textContent = title || 'Atenção';
+  if(m) m.textContent = message || '';
+  if(btns){
+    btns.innerHTML = '';
+    (buttons || []).forEach(b=>{
+      const bt = document.createElement('button');
+      bt.type = 'button';
+      bt.className = 'btn' + (b.variant ? ' ' + b.variant : '');
+      bt.textContent = b.label || 'OK';
+      bt.addEventListener('click', ()=>{
+        modalClose_();
+        try{ b.onClick && b.onClick(); }catch{}
+      });
+      btns.appendChild(bt);
+    });
+  }
+
+  if(bd) bd.classList.add('open');
+  if(box){
+    box.classList.add('open');
+    box.setAttribute('aria-hidden','false');
+  }
+}
+
+function alertModal(message, title='Atenção'){
+  return new Promise((resolve)=>{
+    modalOpen_(title, String(message ?? ''), [
+      { label:'OK', variant:'', onClick: ()=>resolve(true) }
+    ]);
+  });
+}
+
+function confirmModal(message, title='Confirmação'){
+  return new Promise((resolve)=>{
+    modalOpen_(title, String(message ?? ''), [
+      { label:'Cancelar', variant:'secondary', onClick: ()=>resolve(false) },
+      { label:'OK', variant:'', onClick: ()=>resolve(true) }
+    ]);
+  });
+}
+
+document.getElementById('mBackdrop').addEventListener('click', ()=>modalClose_());
+
+function normalizeNumberBR(str){
+  if (typeof str !== 'string') str = String(str ?? '');
+  const s = str.trim().replace(/\./g,'').replace(',','.');
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+function toBRDateTime(ts){
+  try { return new Date(ts).toLocaleString('pt-BR'); }
+  catch { return String(ts); }
+}
+
+function getSelectedLote(){
+  const a = (localStorage.getItem(LS_LOTE_A) || '').trim();
+  const b = (localStorage.getItem(LS_LOTE_B) || '').trim();
+  const v = (a || b || '').trim();
+  return v ? v.toUpperCase() : '';
+}
+
+/* ==========================================================
+   Drawer
+========================================================== */
+function drawer(open){
+  $('#drawer').classList.toggle('open', open);
+  $('#backdrop').classList.toggle('open', open);
+}
+$('#btnMenu').onclick = ()=>drawer(true);
+$('#backdrop').onclick = ()=>drawer(false);
+
+$$('[data-nav]').forEach(a=>{
+  a.addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const nav = a.getAttribute('data-nav');
+    drawer(false);
+
+    if(nav==='novo') showView('novo');
+    if(nav==='meus'){ showView('meus'); await renderQueue(); }
+    if(nav==='sync'){ await resendAll(); await renderQueue(); }
+    if(nav==='logout'){
+      localStorage.removeItem(LS_USER);
+      localStorage.removeItem(LS_NAME);
+      window.location.href = 'index.html';
+    }
+  });
+});
+
+/* ==========================================================
+   IndexedDB (fila offline)
+========================================================== */
+const DB_NAME = 'pavi_fast_db_v1';
+const STORE = 'queue';
+
+function openDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = ()=>{
+      const db = req.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        db.createObjectStore(STORE, { keyPath:'id' });
+      }
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function idbPut(obj){
+  const db = await openDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(STORE,'readwrite');
+    tx.objectStore(STORE).put(obj);
+    tx.oncomplete = ()=>resolve(true);
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function idbGetAll(){
+  const db = await openDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(STORE,'readonly');
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = ()=>resolve(req.result||[]);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function idbDel(id){
+  const db = await openDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(STORE,'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = ()=>resolve(true);
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+
+/* ==========================================================
+   Catálogo de atividades
+========================================================== */
+let activities = [];
+let filtered = [];
+
+/* ✅ CONTROLE: atividade selecionada (pra não mostrar "nenhuma" depois de selecionar) */
+let selectedAtvKey = '';
+
+function normText(s){
+  return String(s ?? '')
+    .trim()
+    .replace(/\s+/g,' ')
+    .toLowerCase();
+}
+
+function showAtvList(){
+  const box = $('#atvList');
+  if(box) box.style.display = 'block';
+}
+function hideAtvList(){
+  const box = $('#atvList');
+  if(box) box.style.display = 'none';
+}
+
+function loadActivitiesCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_ACTIVITIES_KEY);
+    if(!raw) return [];
+    return JSON.parse(raw);
+  }catch{ return []; }
+}
+function saveActivitiesCache(list){
+  try{ localStorage.setItem(CACHE_ACTIVITIES_KEY, JSON.stringify(list)); }catch{}
+}
+
+/* ✅ Remove duplicados por nome (case-insensitive) */
+function dedupeActivitiesByName(list){
+  const out = [];
+  const seen = new Set();
+
+  (list || []).forEach(it=>{
+    const name = String(it?.atividade || '').trim();
+    if(!name) return;
+
+    const key = name.toLowerCase();
+    if(seen.has(key)) return;
+    seen.add(key);
+
+    out.push({
+      atividade: name,
+      rodovia: String(it?.rodovia || '').trim()
+    });
+  });
+
+  return out;
+}
+
+function pickRodoviaByAtividade(name){
+  const v = (name||'').trim().toLowerCase();
+  const it = activities.find(x => (x.atividade||'').trim().toLowerCase() === v);
+  return it?.rodovia || '';
+}
+
+async function fetchActivities(){
+  const body = new URLSearchParams({ action:'activities' });
+  const resp = await fetch(WEBAPP_URL, { method:'POST', body });
+  const text = await resp.text();
+  let json=null; try{ json = JSON.parse(text); }catch{}
+  if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
+  if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao carregar atividades');
+  return json.itens || [];
+}
+
+function renderAtvList(list){
+  const box = $('#atvList');
+
+  /* ✅ garante que nunca renderiza duplicado */
+  list = dedupeActivitiesByName(list || []);
+
+  $('#atvCount').textContent = String(list.length);
+
+  // ✅ Se a atividade já está selecionada e o filtro ficou 0, não mostra "nenhuma atividade encontrada".
+  const currentKey = normText($('#atividade').value);
+  if(list.length === 0 && selectedAtvKey && currentKey === selectedAtvKey){
+    // esconde a lista por estética (fica só o selecionado no input)
+    box.innerHTML = '';
+    hideAtvList();
+    return;
+  }
+
+  // ✅ Se o usuário apagou/alterou o texto, volta a mostrar lista normalmente
+  showAtvList();
+
+  box.innerHTML = '';
+  if(list.length === 0){
+    box.innerHTML = `<div class="atvEmpty">Nenhuma atividade encontrada.</div>`;
+    return;
+  }
+
+  list.forEach((it)=>{
+    const div = document.createElement('div');
+    div.className = 'atvItem';
+    div.textContent = (it.atividade || '—');
+
+    div.addEventListener('click', ()=>{
+      $('#atividade').value = it.atividade || '';
+
+      // ✅ marca selecionada (para esconder a lista depois)
+      selectedAtvKey = normText(it.atividade || '');
+
+      const rod = it.rodovia || pickRodoviaByAtividade(it.atividade);
+      if(rod) $('#rodovia').value = rod;
+
+      // ✅ após selecionar: esconde a lista (não exibe "nenhuma...")
+      hideAtvList();
+
+      // mantém consistência interna (se alguém voltar a digitar, a lista retorna)
+      filtered = filterActivities($('#atividade').value);
+      $('#atvCount').textContent = String(filtered.length);
+
+      $('#atividade').blur();
+    });
+
+    box.appendChild(div);
+  });
+}
+
+function filterActivities(q){
+  const term = (q||'').trim().toLowerCase();
+  if(!term) return activities.slice(0, 200);
+  return activities
+    .filter(x => (x.atividade||'').toLowerCase().includes(term))
+    .slice(0, 200);
+}
+
+async function loadActivitiesOnOpen(){
+  activities = dedupeActivitiesByName(loadActivitiesCache());
+  if(!Array.isArray(activities)) activities = [];
+  activities.sort((a,b)=> (a.atividade||'').localeCompare((b.atividade||''), 'pt-BR'));
+  filtered = filterActivities('');
+  renderAtvList(filtered);
+
+  if(navigator.onLine){
+    try{
+      const list = await fetchActivities();
+      activities = dedupeActivitiesByName(list || []);
+      saveActivitiesCache(activities);
+      activities.sort((a,b)=> (a.atividade||'').localeCompare((b.atividade||''), 'pt-BR'));
+      filtered = filterActivities($('#atividade').value);
+      renderAtvList(filtered);
+    }catch(err){
+      console.warn('Falha ao atualizar atividades:', err);
+    }
+  }
+}
+
+$('#atividade').addEventListener('input', ()=>{
+  // ✅ ao digitar, se mudou do selecionado, libera lista novamente
+  const key = normText($('#atividade').value);
+  if(selectedAtvKey && key !== selectedAtvKey){
+    // o usuário alterou o texto após selecionar -> volta modo busca
+  }
+  filtered = filterActivities($('#atividade').value);
+  renderAtvList(filtered);
+});
+
+$('#atividade').addEventListener('focus', ()=>{
+  // ✅ ao tocar no campo, mostra lista e filtra (permite trocar)
+  filtered = filterActivities($('#atividade').value);
+  showAtvList();
+  renderAtvList(filtered);
+});
+
+$('#atividade').addEventListener('change', ()=>{
+  const rod = pickRodoviaByAtividade($('#atividade').value);
+  if(rod) $('#rodovia').value = rod;
+});
+
+/* ✅ removido: incluir novo (front-only)
+   - não existe listener do btnAddAtv
+   - não mostra/oculta hintNew
+*/
+
+/* ==========================================================
+   FOTO (CÂMERA)
+========================================================== */
+let camStream = null;
+let capturedDataUrl = ""; // opcional
+
+function showCamError(msg){
+  const box = $('#camErr');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+function clearCamError(){
+  const box = $('#camErr');
+  box.style.display = 'none';
+  box.textContent = '';
+}
+
+function setCamUI(state){
+  const v = $('#camVideo');
+  const img = $('#camShot');
+  const ov = $('#camOverlay');
+
+  if(state === 'idle'){
+    v.style.display = 'none';
+    img.style.display = 'none';
+    ov.style.display = 'flex';
+    $('#btnTakePhoto').disabled = true;
+  }
+  if(state === 'live'){
+    v.style.display = 'block';
+    img.style.display = 'none';
+    ov.style.display = 'none';
+    $('#btnTakePhoto').disabled = false;
+  }
+  if(state === 'shot'){
+    v.style.display = 'none';
+    img.style.display = 'block';
+    ov.style.display = 'none';
+    $('#btnTakePhoto').disabled = true;
+  }
+}
+
+async function stopCamera(){
+  if(camStream){
+    camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+  }
+  const v = $('#camVideo');
+  v.srcObject = null;
+}
+
+async function startCamera(){
+  clearCamError();
+
+  if(!navigator.mediaDevices?.getUserMedia){
+    showCamError('Este dispositivo/navegador não suporta câmera.');
+    return;
+  }
+
+  const tryConstraints = [
+    { video: { facingMode: { ideal: 'environment' } }, audio: false },
+    { video: true, audio: false }
+  ];
+
+  try{
+    await stopCamera();
+
+    let stream = null;
+    let lastErr = null;
+
+    for(const c of tryConstraints){
+      try{
+        stream = await navigator.mediaDevices.getUserMedia(c);
+        break;
+      }catch(err){
+        lastErr = err;
+      }
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearMsgs();
+    if(!stream){
+      throw lastErr || new Error('Could not start video source');
+    }
 
-      const v = basicValidate();
-      if(!v.ok){ showErr(v.msg); return; }
+    camStream = stream;
 
-      btn.disabled = true;
-      const old = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    const v = $('#camVideo');
+    v.srcObject = stream;
+    v.setAttribute('playsinline','true');
+    v.muted = true;
 
-      try{
-        const body = new URLSearchParams({
-          action: 'register',
-          nome: v.nome,
-          email: v.email,
-          senha: v.senha
-        });
+    await v.play();
+    setCamUI('live');
+  }catch(err){
+    setCamUI('idle');
+    showCamError('Não foi possível abrir a câmera. Verifique permissões e tente novamente. (' + (err?.message || 'erro') + ')');
+  }
+}
 
-        const resp = await fetch(WEBAPP_URL, { method:'POST', body });
-        const text = await resp.text();
+async function takePhoto(){
+  clearCamError();
+  if(!camStream){
+    showCamError('Abra a câmera antes de tirar a foto.');
+    return;
+  }
 
-        let json=null;
-        try{ json = JSON.parse(text); }catch{}
+  const v = $('#camVideo');
+  const canvas = document.createElement('canvas');
 
-        if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP ' + resp.status));
-        if(!json || json.status !== 'OK') throw new Error(json?.mensagem || 'Erro ao cadastrar.');
+  const w = v.videoWidth || 1280;
+  const h = v.videoHeight || 720;
 
-        // opcional: pré-preencher login depois
-        localStorage.setItem('PAVI_FAST_LAST_EMAIL', v.email);
+  canvas.width = w;
+  canvas.height = h;
 
-        showOk();
-        form.reset();
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(v, 0, 0, w, h);
 
-        // ✅ volta pro login correto
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 1800);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+  capturedDataUrl = dataUrl;
 
-      }catch(err){
-        showErr('Erro: ' + (err.message || err));
-      }finally{
-        btn.disabled = false;
-        btn.innerHTML = old;
+  $('#camShot').src = dataUrl;
+  setCamUI('shot');
+
+  await stopCamera();
+}
+
+$('#btnOpenCam').addEventListener('click', startCamera);
+$('#btnTakePhoto').addEventListener('click', takePhoto);
+
+/* ==========================================================
+   Envio
+========================================================== */
+async function sendOne(rec){
+  if(!navigator.onLine){
+    rec.status = 'PENDING';
+    rec.errorMsg = 'Sem internet';
+    await idbPut(rec);
+    return;
+  }
+
+  try{
+    const params = {
+      action:'submit',
+      usuario: rec.usuario,
+      nome: rec.nome,
+      lote: rec.lote || '',
+      atividade: rec.atividade,
+      rodovia: rec.rodovia,
+      prazoDe: rec.prazoDe || '',
+      prazoAte: rec.prazoAte || '',
+      total: String(rec.totalBR || rec.total || ''),
+      trecho: rec.trecho || ''
+    };
+
+    if(rec.photoDataUrl && String(rec.photoDataUrl).startsWith('data:image/')){
+      params.foto = rec.photoDataUrl;
+    }
+
+    const body = new URLSearchParams(params);
+
+    const resp = await fetch(WEBAPP_URL, { method:'POST', body });
+    const text = await resp.text();
+    let json=null; try{ json = JSON.parse(text); }catch{}
+
+    if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
+    if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao enviar');
+
+    rec.status = 'SENT';
+    rec.errorMsg = '';
+    await idbDel(rec.id);
+  }catch(err){
+    rec.status = 'ERROR';
+    rec.errorMsg = err.message || 'Erro';
+    await idbPut(rec);
+  }
+}
+
+async function resendAll(){
+  const all = await idbGetAll();
+  for(const rec of all){
+    await sendOne(rec);
+  }
+  toast('Reenvio concluído.');
+}
+
+async function renderQueue(){
+  const list = $('#list');
+  const all = (await idbGetAll()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+  list.innerHTML = '';
+  if(all.length === 0){
+    list.innerHTML = `<div class="item"><b>Nenhum envio pendente.</b><div class="meta">Tudo sincronizado.</div></div>`;
+    return;
+  }
+
+  all.forEach(rec=>{
+    const pillClass = rec.status==='ERROR' ? 'err' : (rec.status==='SENT' ? 'ok' : 'warn');
+    const pillLabel = rec.status==='ERROR' ? 'Erro' : (rec.status==='SENT' ? 'Enviado' : 'Pendente');
+
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <div class="itemTop">
+        <div>
+          <b>${rec.atividade || '—'}</b>
+          <div class="meta">${toBRDateTime(rec.createdAt)} • Total: ${rec.totalBR || rec.total || '—'} m</div>
+        </div>
+        <span class="pill ${pillClass}">${pillLabel}</span>
+      </div>
+      <div class="meta">Trecho: ${rec.trecho || '—'}</div>
+      <div class="meta">Rodovia: ${rec.rodovia || '—'} • Prazo: ${rec.prazoDe || '—'} → ${rec.prazoAte || '—'}</div>
+      <div class="meta">Lote: ${rec.lote || '—'}</div>
+      ${rec.errorMsg ? `<div class="meta" style="color:#991b1b;font-weight:800;margin-top:6px">Erro: ${rec.errorMsg}</div>` : ``}
+      <div class="actions">
+        <button class="btn secondary" data-act="detail" data-id="${rec.id}">Ver detalhe</button>
+        <button class="btn" data-act="send" data-id="${rec.id}">Enviar</button>
+        <button class="btn danger" data-act="del" data-id="${rec.id}">Excluir</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+
+  list.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      const all = await idbGetAll();
+      const rec = all.find(x=>x.id===id);
+      if(!rec) return;
+
+      if(act==='detail'){
+        await alertModal(
+          `Atividade: ${rec.atividade}\nTrecho: ${rec.trecho || '—'}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nLote: ${rec.lote || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`,
+          'Detalhe'
+        );
+      }
+      if(act==='send'){
+        await sendOne(rec);
+        await renderQueue();
+        toast('Tentativa de envio concluída.');
+      }
+      if(act==='del'){
+        const ok = await confirmModal('Excluir este pendente?', 'Confirmar');
+        if(ok){
+          await idbDel(id);
+          await renderQueue();
+          toast('Excluído.');
+        }
       }
     });
   });
-  </script>
+}
+
+/* ==========================================================
+   Botões
+========================================================== */
+$('#btnResend').addEventListener('click', async ()=>{ await resendAll(); await renderQueue(); });
+$('#btnRefreshList').addEventListener('click', async ()=>{ await renderQueue(); });
+
+/* ==========================================================
+   Salvar novo registro
+========================================================== */
+$('#btnSalvar').addEventListener('click', async ()=>{
+  const usuario = localStorage.getItem(LS_USER) || '';
+  const nome = localStorage.getItem(LS_NAME) || usuario;
+
+  const lote = getSelectedLote(); // pode ser vazio
+
+  const atividade = $('#atividade').value.trim();
+  const trecho = $('#trecho').value.trim();
+  const rodovia = $('#rodovia').value.trim();
+  const totalBR = $('#total').value.trim();
+  const prazoDe = $('#prazoDe').value;
+  const prazoAte = $('#prazoAte').value;
+
+  const photoDataUrl = capturedDataUrl; // opcional
+
+  if(!atividade) return toast('Informe a atividade.');
+  if(!rodovia) return toast('Informe a rodovia.');
+  if(!totalBR) return toast('Informe o total.');
+
+  const total = normalizeNumberBR(totalBR);
+  if(total === null) return toast('Total inválido. Use número e vírgula.');
+
+  $('#btnSalvar').disabled = true;
+  $('#saveMsg').textContent = 'Preparando envio...';
+
+  try{
+    const rec = {
+      id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + '_' + Math.random()),
+      createdAt: Date.now(),
+      status: 'PENDING',
+      errorMsg: '',
+      usuario, nome,
+      lote,
+      atividade, trecho,
+      rodovia,
+      prazoDe, prazoAte,
+      total, totalBR,
+      unidade: 'm',
+      photoDataUrl: photoDataUrl || ''
+    };
+
+    await idbPut(rec);
+
+    // limpa campos
+    $('#atividade').value='';
+    selectedAtvKey = '';      // ✅ limpa seleção de atividade também
+    showAtvList();            // ✅ volta lista pro estado padrão
+    $('#trecho').value='';
+    $('#rodovia').value='';
+    $('#total').value='';
+    $('#prazoDe').value='';
+    $('#prazoAte').value='';
+    capturedDataUrl = '';
+    $('#camShot').src = '';
+    setCamUI('idle');
+    clearCamError();
+    $('#saveMsg').textContent = '';
+
+    await sendOne(rec);
+    toast('Registro salvo.');
+  }catch(err){
+    await alertModal('Erro: ' + err.message, 'Falha');
+  }finally{
+    $('#btnSalvar').disabled = false;
+    $('#saveMsg').textContent = '';
+  }
+});
+
+/* ==========================================================
+   Init
+========================================================== */
+(async function init(){
+  const usuario = localStorage.getItem(LS_USER);
+  const nome = localStorage.getItem(LS_NAME) || usuario;
+
+  if(!usuario){
+    window.location.href = 'index.html';
+    return;
+  }
+
+  $('#who').textContent = nome || usuario;
+  $('#kUser').textContent = nome || usuario;
+
+  setOnlineBadge();
+  setCamUI('idle');
+
+  await loadActivitiesOnOpen();
+})();
+</script>
+
 <script>
   // PWA / Offline inteligente
   if ('serviceWorker' in navigator) {
