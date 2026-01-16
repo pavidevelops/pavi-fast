@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
   <title>PAVI Fast — Pós-login</title>
 
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#10b981">
+
   <style>
     /* ==========================================================
        FUNNEL SANS — LOCAL (.ttf)
@@ -549,5 +552,12 @@
     location.href = LOGIN_PAGE;
   });
 </script>
+<script>
+  // PWA / Offline inteligente
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+</script>
+
 </body>
 </html>
