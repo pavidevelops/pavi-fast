@@ -286,16 +286,16 @@
       return (Date.now() - ts) <= SESSION_MAX_MS;
     }
 
-    // ✅ Auto-entrar com cache (offline / ou online também)
+    // ✅ Auto-entrar SOMENTE quando OFFLINE (evita surpresa online)
     (function autoEnterFromCache(){
       hideMsgs();
+      if(navigator.onLine) return;
+
       const sess = loadSessionV1();
-      if(!sessionIsValid(sess)) return;
-
-      // Se quiser APENAS offline, descomente a linha abaixo e comente a próxima:
-      // if(navigator.onLine) return;
-
-      window.location.replace('poslog.html');
+      if(sessionIsValid(sess)){
+        // entra direto, sem tentar fetch
+        window.location.replace('poslog.html');
+      }
     })();
 
     toggleBtn.addEventListener('click', () => {
@@ -314,8 +314,6 @@
     }
 
     function normalizeLotes(lotes){
-      // Esperado do backend: array ["L1","L8"].
-      // Aceita também string "L1,L8" (caso você use assim em algum momento).
       if(Array.isArray(lotes)){
         return lotes.map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
       }
@@ -327,6 +325,20 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if(!validate()) return;
+
+      hideMsgs();
+
+      // ✅ ✅ ✅ Regra principal: se OFFLINE, NÃO tenta fetch.
+      if(!navigator.onLine){
+        const sess = loadSessionV1();
+        if(sessionIsValid(sess)){
+          showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
+          setTimeout(()=> window.location.replace('poslog.html'), 350);
+          return;
+        }
+        showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
+        return;
+      }
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Entrando...';
@@ -354,7 +366,6 @@
           const email = (data.email || userEmail);
           const allowedLotes = normalizeLotes(data.lotes);
 
-          // ✅ Se login OK mas sem lote definido → mensagem e não redireciona
           if(!allowedLotes.length){
             showMsg(msgErr, 'Sem lote definido, entre em contato com suporte.');
             localStorage.removeItem(SESSION_KEY);
@@ -362,14 +373,11 @@
             return;
           }
 
-          // ✅ Mensagem OK
           showMsg(msgOk, 'Bem-vindo, ' + nome + '! Redirecionando...');
 
-          // ✅ Mantém compatibilidade com o que você já tinha
           localStorage.setItem('PAVI_FAST_USER', email);
           localStorage.setItem('PAVI_FAST_NAME', nome);
 
-          // ✅ Sessão compat (antiga)
           localStorage.setItem(SESSION_KEY, JSON.stringify({
             name: nome,
             email: email,
@@ -377,7 +385,6 @@
             ts: Date.now()
           }));
 
-          // ✅ ✅ Sessão OFFLINE (30 dias) — NOVA (V1)
           saveSessionV1({
             usuario: email,
             nome: nome,
@@ -385,14 +392,12 @@
             lastLoginAt: Date.now()
           });
 
-          // ✅ ✅ ✅ GATILHO PARA O APP ANDROID (ATUALIZAR APÓS LOGIN)
           try{
             if(window.Android && typeof window.Android.loginOk === 'function'){
               window.Android.loginOk();
             }
           }catch(e){}
 
-          // ✅ Agora o fluxo vai para o pós-login
           setTimeout(() => {
             window.location.href = 'poslog.html';
           }, 800);
@@ -402,7 +407,7 @@
           throw new Error(data?.mensagem || 'Usuário ou senha inválidos.');
         }
       }catch(err){
-        // ✅ Fallback OFFLINE (robusto): "Failed to fetch" também conta como offline
+        // ✅ fallback (caso caia aqui mesmo online, por instabilidade)
         const msg = String(err?.message || err || '');
         const looksOffline =
           (!navigator.onLine) ||
