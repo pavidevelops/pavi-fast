@@ -251,13 +251,10 @@
     const msgErr = document.getElementById('msgErr');
     const firstAccess = document.getElementById('firstAccess');
 
-    // 🔗 URL /exec do seu Apps Script
     const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-    // ✅ Sessão (compat) antiga
     const SESSION_KEY = 'PAVI_FAST_SESSION';
 
-    // ✅ Sessão OFFLINE (30 dias) — NOVA (V1)
     const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
     const SESSION_MAX_DAYS = 30;
     const SESSION_MAX_MS = SESSION_MAX_DAYS * 24 * 60 * 60 * 1000;
@@ -289,15 +286,28 @@
       return (Date.now() - ts) <= SESSION_MAX_MS;
     }
 
-    // ✅ Auto-entrar SOMENTE quando OFFLINE (evita surpresa online)
+    // ✅ RESOLVEDOR DE ROTAS (corrige Android /assets e /local automaticamente)
+    function route(file){
+      const path = String(location.pathname || '');
+      if (path.startsWith('/assets/')) return '/assets/' + file;
+      if (path.startsWith('/local/'))  return '/local/'  + file;
+      // GitHub Pages / web normal
+      return file;
+    }
+
+    function go(file, replace=false){
+      const url = route(file);
+      if(replace) location.replace(url);
+      else location.href = url;
+    }
+
+    // ✅ Auto-entrar SOMENTE quando OFFLINE (sem tentar fetch)
     (function autoEnterFromCache(){
       hideMsgs();
       if(navigator.onLine) return;
-
       const sess = loadSessionV1();
       if(sessionIsValid(sess)){
-        // entra direto, sem tentar fetch
-        window.location.replace('poslog.html');
+        go('poslog.html', true);
       }
     })();
 
@@ -331,12 +341,12 @@
 
       hideMsgs();
 
-      // ✅ ✅ ✅ Regra principal: se OFFLINE, NÃO tenta fetch.
+      // ✅ OFFLINE: não faz fetch
       if(!navigator.onLine){
         const sess = loadSessionV1();
         if(sessionIsValid(sess)){
           showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
-          setTimeout(()=> window.location.replace('poslog.html'), 350);
+          setTimeout(()=> go('poslog.html', true), 250);
           return;
         }
         showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
@@ -402,15 +412,14 @@
           }catch(e){}
 
           setTimeout(() => {
-            window.location.href = 'poslog.html';
-          }, 800);
+            go('poslog.html', false);
+          }, 450);
 
           form.reset();
         }else{
           throw new Error(data?.mensagem || 'Usuário ou senha inválidos.');
         }
       }catch(err){
-        // ✅ fallback (caso caia aqui mesmo online, por instabilidade)
         const msg = String(err?.message || err || '');
         const looksOffline =
           (!navigator.onLine) ||
@@ -421,7 +430,7 @@
           const sess = loadSessionV1();
           if(sessionIsValid(sess)){
             showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
-            setTimeout(()=> window.location.replace('poslog.html'), 450);
+            setTimeout(()=> go('poslog.html', true), 300);
             return;
           }
           showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
@@ -437,16 +446,17 @@
 
     firstAccess.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = 'primeiro_acesso.html';
+      go('primeiro_acesso.html', false);
     });
   });
   </script>
-<script>
-  // PWA / Offline inteligente
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  }
-</script>
+
+  <script>
+    // PWA / Offline inteligente
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    }
+  </script>
 
 </body>
 </html>
