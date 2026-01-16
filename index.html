@@ -176,8 +176,16 @@
       font-size:14px;
       font-weight: 500;
     }
-    .msg.ok{ background:var(--ok-bg); color:var(--ok); border:2px solid var(--ok-br); }
-    .msg.err{ background:var(--err-bg); color:var(--err); border:2px solid var(--err-br); }
+    .msg.ok{
+      background:var(--ok-bg);
+      color:var(--ok);
+      border:2px solid var(--ok-br);
+    }
+    .msg.err{
+      background:var(--err-bg);
+      color:var(--err);
+      border:2px solid var(--err-br);
+    }
     .hint{
       color:var(--muted);
       font-size:12px;
@@ -185,6 +193,15 @@
       font-style: italic;
       padding-left: 4px;
     }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .row { animation: fadeIn 0.4s ease forwards; }
+    .row:nth-child(1) { animation-delay: 0.1s; }
+    .row:nth-child(2) { animation-delay: 0.2s; }
+    .btn { animation: fadeIn 0.4s ease 0.3s forwards; opacity: 0; }
+    .link { animation: fadeIn 0.4s ease 0.4s forwards; opacity: 0; }
   </style>
 </head>
 <body>
@@ -234,10 +251,16 @@
     const msgErr = document.getElementById('msgErr');
     const firstAccess = document.getElementById('firstAccess');
 
+    // 🔗 URL /exec do seu Apps Script
     const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
+    // ✅ Sessão (compat) antiga
+    const SESSION_KEY = 'PAVI_FAST_SESSION';
+
+    // ✅ Sessão OFFLINE (30 dias) — NOVA (V1)
     const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
-    const SESSION_MAX_MS = 30 * 24 * 60 * 60 * 1000;
+    const SESSION_MAX_DAYS = 30;
+    const SESSION_MAX_MS = SESSION_MAX_DAYS * 24 * 60 * 60 * 1000;
 
     function showMsg(el, text){ el.textContent = text; el.style.display = 'block'; }
     function hideMsgs(){ msgOk.style.display = 'none'; msgErr.style.display = 'none'; }
@@ -250,9 +273,15 @@
         return (s && typeof s === 'object') ? s : null;
       }catch(e){ return null; }
     }
+
     function saveSessionV1(sess){
       try{ localStorage.setItem(LS_SESSION_V1, JSON.stringify(sess)); }catch(e){}
     }
+
+    function clearSessionV1(){
+      try{ localStorage.removeItem(LS_SESSION_V1); }catch(e){}
+    }
+
     function sessionIsValid(sess){
       if(!sess) return false;
       const ts = Number(sess.lastLoginAt || 0);
@@ -260,34 +289,15 @@
       return (Date.now() - ts) <= SESSION_MAX_MS;
     }
 
-    function normalizeLotes(lotes){
-      if(Array.isArray(lotes)){
-        return lotes.map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
-      }
-      const s = String(lotes||'').trim();
-      if(!s) return [];
-      return s.split(',').map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
-    }
-
-    // ✅ URL correta do poslog conforme canal atual (assets/local/web)
-    function poslogUrl(){
-      const href = String(window.location.href || '');
-      const origin = window.location.origin;
-
-      if(href.includes('/assets/')) return origin + '/assets/poslog.html';
-      if(href.includes('/local/'))  return origin + '/local/poslog.html';
-
-      // web normal (GitHub Pages)
-      return new URL('poslog.html', href).href;
-    }
-
-    // ✅ Auto-entrar SOMENTE quando OFFLINE
-    (function offlineAutoEnter(){
+    // ✅ Auto-entrar SOMENTE quando OFFLINE (evita surpresa online)
+    (function autoEnterFromCache(){
       hideMsgs();
       if(navigator.onLine) return;
+
       const sess = loadSessionV1();
       if(sessionIsValid(sess)){
-        window.location.replace(poslogUrl());
+        // entra direto, sem tentar fetch
+        window.location.replace('poslog.html');
       }
     })();
 
@@ -306,18 +316,27 @@
       return true;
     }
 
+    function normalizeLotes(lotes){
+      if(Array.isArray(lotes)){
+        return lotes.map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
+      }
+      const s = String(lotes||'').trim();
+      if(!s) return [];
+      return s.split(',').map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if(!validate()) return;
 
       hideMsgs();
 
-      // ✅ OFFLINE: NÃO tenta fetch
+      // ✅ ✅ ✅ Regra principal: se OFFLINE, NÃO tenta fetch.
       if(!navigator.onLine){
         const sess = loadSessionV1();
         if(sessionIsValid(sess)){
           showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
-          setTimeout(()=> window.location.replace(poslogUrl()), 200);
+          setTimeout(()=> window.location.replace('poslog.html'), 350);
           return;
         }
         showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
@@ -338,52 +357,60 @@
 
         const resp = await fetch(WEBAPP_URL, { method:'POST', body });
         const text = await resp.text();
-
-        let data = null;
-        try{ data = JSON.parse(text); }catch(_){ data = null; }
+        let data;
+        try{ data = JSON.parse(text); } catch { data = null; }
 
         if(!resp.ok){
           throw new Error(data?.mensagem || text || 'Falha na solicitação.');
         }
 
-        if(!data || data.status !== 'OK'){
+        if(data && data.status === 'OK'){
+          const nome = (data.nome || userEmail);
+          const email = (data.email || userEmail);
+          const allowedLotes = normalizeLotes(data.lotes);
+
+          if(!allowedLotes.length){
+            showMsg(msgErr, 'Sem lote definido, entre em contato com suporte.');
+            localStorage.removeItem(SESSION_KEY);
+            clearSessionV1();
+            return;
+          }
+
+          showMsg(msgOk, 'Bem-vindo, ' + nome + '! Redirecionando...');
+
+          localStorage.setItem('PAVI_FAST_USER', email);
+          localStorage.setItem('PAVI_FAST_NAME', nome);
+
+          localStorage.setItem(SESSION_KEY, JSON.stringify({
+            name: nome,
+            email: email,
+            allowedLotes: allowedLotes,
+            ts: Date.now()
+          }));
+
+          saveSessionV1({
+            usuario: email,
+            nome: nome,
+            lotes: allowedLotes,
+            lastLoginAt: Date.now()
+          });
+
+          try{
+            if(window.Android && typeof window.Android.loginOk === 'function'){
+              window.Android.loginOk();
+            }
+          }catch(e){}
+
+          setTimeout(() => {
+            window.location.href = 'poslog.html';
+          }, 800);
+
+          form.reset();
+        }else{
           throw new Error(data?.mensagem || 'Usuário ou senha inválidos.');
         }
-
-        const nome = (data.nome || userEmail);
-        const email = (data.email || userEmail);
-        const allowedLotes = normalizeLotes(data.lotes);
-
-        if(!allowedLotes.length){
-          showMsg(msgErr, 'Sem lote definido, entre em contato com suporte.');
-          try{ localStorage.removeItem(LS_SESSION_V1); }catch(e){}
-          return;
-        }
-
-        // ✅ salva sessão offline
-        localStorage.setItem('PAVI_FAST_USER', email);
-        localStorage.setItem('PAVI_FAST_NAME', nome);
-
-        saveSessionV1({
-          usuario: email,
-          nome: nome,
-          lotes: allowedLotes,
-          lastLoginAt: Date.now()
-        });
-
-        // ✅ chama Android (se existir)
-        try{
-          if(window.Android && typeof window.Android.loginOk === 'function'){
-            window.Android.loginOk();
-          }
-        }catch(_){}
-
-        showMsg(msgOk, 'Bem-vindo, ' + nome + '!');
-
-        // ✅ redirect garantido (URL correta)
-        window.location.replace(poslogUrl());
-
       }catch(err){
+        // ✅ fallback (caso caia aqui mesmo online, por instabilidade)
         const msg = String(err?.message || err || '');
         const looksOffline =
           (!navigator.onLine) ||
@@ -394,7 +421,7 @@
           const sess = loadSessionV1();
           if(sessionIsValid(sess)){
             showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
-            setTimeout(()=> window.location.replace(poslogUrl()), 200);
+            setTimeout(()=> window.location.replace('poslog.html'), 450);
             return;
           }
           showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
@@ -410,23 +437,16 @@
 
     firstAccess.addEventListener('click', (e) => {
       e.preventDefault();
-
-      // mantém canal (assets/local/web)
-      const href = String(window.location.href || '');
-      const origin = window.location.origin;
-
-      if(href.includes('/assets/')) return window.location.href = origin + '/assets/primeiro_acesso.html';
-      if(href.includes('/local/'))  return window.location.href = origin + '/local/primeiro_acesso.html';
-
       window.location.href = 'primeiro_acesso.html';
     });
   });
   </script>
+<script>
+  // PWA / Offline inteligente
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+</script>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
-    }
-  </script>
 </body>
 </html>
