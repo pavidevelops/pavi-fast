@@ -263,11 +263,17 @@
   const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
   const SESSION_KEY = 'PAVI_FAST_SESSION';
+  const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1'; // ✅ offline (30 dias)
+  const SESSION_MAX_DAYS = 30;
+  const SESSION_MAX_MS = SESSION_MAX_DAYS * 24 * 60 * 60 * 1000;
+
   const LS_USER = 'PAVI_FAST_USER';
   const LS_NAME = 'PAVI_FAST_NAME';
 
   const LS_LOTE_ATIVO = 'PAVI_FAST_LOTE_ATIVO';
   const LS_RODOVIA_PRE = 'PAVI_FAST_RODOVIA_PRESELECT';
+
+  const CACHE_LOTE_RODOVIAS = 'PAVI_FAST_LOTE_RODOVIAS_CACHE_V1'; // ✅ cache p/ offline
 
   const NEXT_PAGE = 'seletor_lotes.html';
   const LOGIN_PAGE = 'index.html';
@@ -308,23 +314,79 @@
     return json;
   }
 
-  function ensureSession(){
+  function ensureSessionCompat(){
     const raw = localStorage.getItem(SESSION_KEY);
     if(!raw) return null;
     try{ return JSON.parse(raw); }catch{ return null; }
   }
 
+  function loadSessionV1(){
+    try{
+      const raw = localStorage.getItem(LS_SESSION_V1);
+      if(!raw) return null;
+      const s = JSON.parse(raw);
+      return (s && typeof s === 'object') ? s : null;
+    }catch(e){ return null; }
+  }
+
+  function sessionV1IsValid(sess){
+    if(!sess) return false;
+    const ts = Number(sess.lastLoginAt || 0);
+    if(!ts) return false;
+    return (Date.now() - ts) <= SESSION_MAX_MS;
+  }
+
+  function loadLoteRodoviasCache(){
+    try{
+      const raw = localStorage.getItem(CACHE_LOTE_RODOVIAS);
+      if(!raw) return null;
+      const c = JSON.parse(raw);
+      return (c && typeof c === 'object') ? c : null;
+    }catch(e){ return null; }
+  }
+
+  function saveLoteRodoviasCache(map){
+    try{
+      localStorage.setItem(CACHE_LOTE_RODOVIAS, JSON.stringify({
+        ts: Date.now(),
+        map: map || {}
+      }));
+    }catch(e){}
+  }
+
+  function pickMapForAllowed(mapAll, allowed){
+    const out = {};
+    (allowed || []).forEach(l => { out[l] = Array.isArray(mapAll?.[l]) ? mapAll[l] : []; });
+    return out;
+  }
+
   // ====== Sessão ======
-  const session = ensureSession();
-  if(!session){
+  const sessionCompat = ensureSessionCompat();
+  const sessionV1 = loadSessionV1();
+
+  // ✅ Regra: se não tem sessão compat E não tem sessão V1 válida => volta login
+  if(!sessionCompat && !sessionV1IsValid(sessionV1)){
     location.href = LOGIN_PAGE;
   }
 
-  const userName = session.name || localStorage.getItem(LS_NAME) || session.email || localStorage.getItem(LS_USER) || '—';
+  // Nome do usuário (preferindo V1)
+  const userName =
+    (sessionV1?.nome) ||
+    (sessionCompat?.name) ||
+    localStorage.getItem(LS_NAME) ||
+    (sessionV1?.usuario) ||
+    (sessionCompat?.email) ||
+    localStorage.getItem(LS_USER) ||
+    '—';
+
   $('#who').textContent = userName;
   $('#kUser').textContent = userName;
 
-  const allowedLotes = Array.isArray(session.allowedLotes) ? session.allowedLotes : [];
+  // Lotes permitidos (preferindo V1)
+  const allowedLotes =
+    (Array.isArray(sessionV1?.lotes) ? sessionV1.lotes : null) ||
+    (Array.isArray(sessionCompat?.allowedLotes) ? sessionCompat.allowedLotes : null) ||
+    [];
 
   // ====== Estado da seleção ======
   let selectedLote = '';
@@ -388,7 +450,6 @@
 
           b.addEventListener('click', ()=>{
             setSelection(lote, r);
-            // conforme você pediu:
             // clicou na rodovia -> segue para o seletor
             location.href = NEXT_PAGE;
           });
@@ -403,7 +464,7 @@
     });
   }
 
-  // ====== Load lotes + rodovias ======
+  // ====== Load lotes + rodovias (com cache p/ offline) ======
   (async function init(){
     hideMsg();
 
@@ -415,23 +476,38 @@
       return;
     }
 
-    // Offline: até dá pra mostrar lotes, mas sem rodovias não resolve o objetivo
+    // ✅ Se estiver OFFLINE, tenta usar cache de rodovias
     if(!navigator.onLine){
+      const cache = loadLoteRodoviasCache();
+      const mapAll = cache?.map || null;
+      const map = mapAll ? pickMapForAllowed(mapAll, allowedLotes) : null;
+
       setLoading(false);
-      showMsg('Sem internet para carregar rodovias. Conecte e tente novamente.', 'err');
+
+      if(map){
+        renderGrid(map);
+        showMsg('Modo offline: usando rodovias salvas no aparelho.', 'warn');
+        return;
+      }
+
+      showMsg('Sem internet e sem cache de rodovias neste aparelho. Conecte-se uma vez para carregar.', 'err');
       $('#grid').style.display = 'none';
       return;
     }
 
+    // ✅ Online: busca no backend, renderiza e salva cache
     try{
       setLoading(true);
 
-      // backend deve aceitar "lotes" como lista/CSV
       const json = await post({ action:'lote_rodovias', lotes: allowedLotes.join(',') });
-      const map = json.lotes || {};
+      const mapAll = json.lotes || {};
+      const map = pickMapForAllowed(mapAll, allowedLotes);
 
       setLoading(false);
       renderGrid(map);
+
+      // ✅ salva cache completo (para offline)
+      saveLoteRodoviasCache(mapAll);
 
       // se algum lote não tiver rodovia, alerta leve (não bloqueia)
       const anyZero = allowedLotes.some(l => !((map[l]||[]).length));
@@ -441,6 +517,18 @@
 
     }catch(err){
       setLoading(false);
+
+      // ✅ Se deu erro online, tenta fallback no cache
+      const cache = loadLoteRodoviasCache();
+      const mapAll = cache?.map || null;
+      const map = mapAll ? pickMapForAllowed(mapAll, allowedLotes) : null;
+
+      if(map){
+        renderGrid(map);
+        showMsg('Falha ao atualizar rodovias. Mostrando dados salvos no aparelho.', 'warn');
+        return;
+      }
+
       showMsg('Falha ao carregar rodovias: ' + (err.message || 'erro'), 'err');
       $('#grid').style.display = 'none';
     }
@@ -453,6 +541,7 @@
 
   $('#btnLogout').addEventListener('click', ()=>{
     localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LS_SESSION_V1);
     localStorage.removeItem(LS_USER);
     localStorage.removeItem(LS_NAME);
     localStorage.removeItem(LS_LOTE_ATIVO);
