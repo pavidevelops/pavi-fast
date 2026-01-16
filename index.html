@@ -402,8 +402,14 @@
           throw new Error(data?.mensagem || 'Usuário ou senha inválidos.');
         }
       }catch(err){
-        // ✅ Fallback OFFLINE: se já tem sessão válida, entra
-        if(!navigator.onLine){
+        // ✅ Fallback OFFLINE (robusto): "Failed to fetch" também conta como offline
+        const msg = String(err?.message || err || '');
+        const looksOffline =
+          (!navigator.onLine) ||
+          /failed to fetch/i.test(msg) ||
+          (err && err.name === 'TypeError');
+
+        if(looksOffline){
           const sess = loadSessionV1();
           if(sessionIsValid(sess)){
             showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
@@ -414,7 +420,7 @@
           return;
         }
 
-        showMsg(msgErr, 'Não foi possível entrar: ' + (err.message || err));
+        showMsg(msgErr, 'Não foi possível entrar: ' + msg);
       }finally{
         submitBtn.disabled = false;
         submitBtn.textContent = 'Entrar';
