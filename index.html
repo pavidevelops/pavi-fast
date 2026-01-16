@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#10b981">
 
-  <!-- ✅ Roboto (Google Fonts) -->
+  <!-- Roboto -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap" rel="stylesheet">
@@ -29,92 +29,42 @@
     *{ box-sizing:border-box }
     body{
       margin:0;
-      font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg);
+      font-family:Roboto,system-ui,Arial;
+      background:var(--bg);
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
       padding:24px;
       color:var(--text);
-      letter-spacing: -0.01em;
     }
     .card{
       width:100%;
       max-width:420px;
       background:var(--card);
       border-radius:20px;
-      box-shadow:0 15px 35px rgba(16, 185, 129, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
       padding:36px 32px;
       border:1px solid var(--border);
-      transition: transform 0.3s ease;
+      box-shadow:0 15px 35px rgba(16,185,129,.12);
     }
-    .card:hover { transform: translateY(-2px); }
-    .logo { display:flex; justify-content:center; margin-bottom:20px; }
-    .logo img {
-      width: 240px;
-      height: auto;
-      max-width: 100%;
-      filter: brightness(1.05) contrast(1.1);
-    }
-    h1{
-      margin:0 0 8px;
-      font-size:28px;
-      font-weight:700;
-      text-align:center;
-      color:#0f5132;
-      letter-spacing: -0.02em;
-    }
-    .subtitle{
-      text-align:center;
-      color:var(--muted);
-      font-size:15px;
-      margin-bottom:24px;
-      line-height: 1.5;
-    }
-    label{
-      display:block;
-      font-size:14px;
-      font-weight:600;
-      margin:12px 0 8px;
-      color:#1a472a;
-    }
-    .field{ position:relative; }
+    .logo{display:flex;justify-content:center;margin-bottom:20px}
+    .logo img{width:240px;max-width:100%}
+    h1{text-align:center;margin:0 0 8px}
+    .subtitle{text-align:center;color:var(--muted);margin-bottom:24px}
+    label{font-weight:600;margin:12px 0 6px;display:block}
+    .field{position:relative}
     input{
       width:100%;
       padding:14px 48px 14px 16px;
       border-radius:12px;
       border:2px solid var(--border);
-      outline:none;
       background:#f8fdf9;
-      color:var(--text);
-      transition:all 0.25s ease;
       font-size:16px;
-      font-family: inherit;
-    }
-    input:focus{
-      border-color:var(--primary);
-      background:#ffffff;
-      box-shadow:0 0 0 4px rgba(16, 185, 129, 0.15), 0 2px 8px rgba(16, 185, 129, 0.1);
-      transform: translateY(-1px);
     }
     .toggle-password{
-      position:absolute;
-      right:12px;
-      top:50%;
+      position:absolute;right:10px;top:50%;
       transform:translateY(-50%);
-      border:0;
-      background:transparent;
-      cursor:pointer;
-      font-size:20px;
-      color:#5d7a6d;
-      padding:8px;
-      border-radius:10px;
-      transition: all 0.2s ease;
-    }
-    .toggle-password:hover{
-      background:#d1fae5;
-      color:#0f5132;
+      border:0;background:none;font-size:18px;cursor:pointer
     }
     .btn{
       width:100%;
@@ -122,341 +72,118 @@
       padding:16px;
       border:0;
       border-radius:14px;
-      background:linear-gradient(135deg, var(--primary), var(--primary-600));
+      background:linear-gradient(135deg,var(--primary),var(--primary-600));
       color:#fff;
       font-weight:700;
       font-size:16px;
       cursor:pointer;
-      box-shadow:0 10px 25px rgba(16, 185, 129, 0.3);
-      transition:all 0.25s ease;
-      font-family: inherit;
-      letter-spacing: 0.02em;
     }
-    .btn:hover{
-      background:linear-gradient(135deg, var(--primary-600), var(--primary-700));
-      box-shadow:0 12px 28px rgba(16, 185, 129, 0.4);
-      transform: translateY(-2px);
-    }
-    .btn:active{
-      transform:translateY(0px);
-      box-shadow:0 8px 20px rgba(16, 185, 129, 0.25);
-    }
-    .btn[disabled]{
-      opacity:.7;
-      cursor:not-allowed;
-      box-shadow:none;
-      transform: none !important;
-    }
-    .row{ margin-bottom:18px; }
-    .link{
-      text-align:center;
-      margin-top:20px;
-      padding-top:16px;
-      border-top: 1px solid #e5f7ef;
-    }
-    .link a{
-      color:var(--primary-700);
-      text-decoration:none;
-      font-weight:600;
-      transition: all 0.2s ease;
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-    .link a:hover{
-      color:#0da271;
-      background: #f0fdf9;
-      text-decoration: underline;
-    }
-    .msg{
-      display:none;
-      margin-top:16px;
-      padding:14px 16px;
-      border-radius:12px;
-      font-size:14px;
-      font-weight: 500;
-    }
-    .msg.ok{
-      background:var(--ok-bg);
-      color:var(--ok);
-      border:2px solid var(--ok-br);
-    }
-    .msg.err{
-      background:var(--err-bg);
-      color:var(--err);
-      border:2px solid var(--err-br);
-    }
-    .hint{
-      color:var(--muted);
-      font-size:12px;
-      margin-top:8px;
-      font-style: italic;
-      padding-left: 4px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .row { animation: fadeIn 0.4s ease forwards; }
-    .row:nth-child(1) { animation-delay: 0.1s; }
-    .row:nth-child(2) { animation-delay: 0.2s; }
-    .btn { animation: fadeIn 0.4s ease 0.3s forwards; opacity: 0; }
-    .link { animation: fadeIn 0.4s ease 0.4s forwards; opacity: 0; }
+    .msg{display:none;margin-top:16px;padding:14px;border-radius:12px;font-size:14px}
+    .msg.ok{background:var(--ok-bg);color:var(--ok);border:2px solid var(--ok-br)}
+    .msg.err{background:var(--err-bg);color:var(--err);border:2px solid var(--err-br)}
+    .link{text-align:center;margin-top:20px}
+    .link a{color:var(--primary-700);text-decoration:none;font-weight:600}
   </style>
 </head>
 <body>
-  <main class="card">
-    <div class="logo">
-      <img src="logo.png" alt="PAVI Fast">
+
+<main class="card">
+  <div class="logo">
+    <img src="logo.png" alt="PAVI Fast">
+  </div>
+
+  <h1>Entrar</h1>
+  <p class="subtitle">Acesse sua conta para continuar</p>
+
+  <form id="loginForm" novalidate>
+    <label>Usuário</label>
+    <input id="username" autocomplete="username" required>
+
+    <label>Senha</label>
+    <div class="field">
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button type="button" class="toggle-password">👁️</button>
     </div>
-    <h1>Entrar</h1>
-    <p class="subtitle">Acesse sua conta para continuar</p>
 
-    <form id="loginForm" novalidate>
-      <div class="row">
-        <label for="username">Usuário</label>
-        <div class="field">
-          <input id="username" name="username" type="text" autocomplete="username" placeholder="seu@email.com" required />
-        </div>
-      </div>
+    <button class="btn" id="submitBtn">Entrar</button>
 
-      <div class="row">
-        <label for="password">Senha</label>
-        <div class="field">
-          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
-          <button type="button" class="toggle-password" aria-label="Mostrar/ocultar senha" title="Mostrar/ocultar senha">👁️</button>
-        </div>
-        <div class="hint">Dica: verifique se o Caps Lock está desligado.</div>
-      </div>
+    <div id="msgOk" class="msg ok"></div>
+    <div id="msgErr" class="msg err"></div>
 
-      <button id="submitBtn" class="btn" type="submit">Entrar</button>
+    <div class="link">
+      <a href="#" id="firstAccess">Primeiro acesso</a>
+    </div>
+  </form>
+</main>
 
-      <div id="msgOk" class="msg ok"></div>
-      <div id="msgErr" class="msg err"></div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
 
-      <div class="link">
-        <a href="#" id="firstAccess">Primeiro acesso</a>
-      </div>
-    </form>
-  </main>
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
 
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('loginForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const toggleBtn = document.querySelector('.toggle-password');
-    const inputUser = document.getElementById('username');
-    const inputPass = document.getElementById('password');
-    const msgOk = document.getElementById('msgOk');
-    const msgErr = document.getElementById('msgErr');
-    const firstAccess = document.getElementById('firstAccess');
+  const form = document.getElementById('loginForm');
+  const btn  = document.getElementById('submitBtn');
+  const ok   = document.getElementById('msgOk');
+  const err  = document.getElementById('msgErr');
 
-    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
+  function show(el, txt){ el.textContent = txt; el.style.display='block'; }
+  function hide(){ ok.style.display='none'; err.style.display='none'; }
 
-    const SESSION_KEY = 'PAVI_FAST_SESSION';
+  document.querySelector('.toggle-password').onclick = () => {
+    const p = password;
+    p.type = p.type === 'password' ? 'text' : 'password';
+  };
 
-    const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
-    const SESSION_MAX_DAYS = 30;
-    const SESSION_MAX_MS = SESSION_MAX_DAYS * 24 * 60 * 60 * 1000;
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    hide();
 
-    function showMsg(el, text){ el.textContent = text; el.style.display = 'block'; }
-    function hideMsgs(){ msgOk.style.display = 'none'; msgErr.style.display = 'none'; }
-
-    function loadSessionV1(){
-      try{
-        const raw = localStorage.getItem(LS_SESSION_V1);
-        if(!raw) return null;
-        const s = JSON.parse(raw);
-        return (s && typeof s === 'object') ? s : null;
-      }catch(e){ return null; }
+    if(!navigator.onLine){
+      show(err,'Sem internet. Conecte-se para o primeiro acesso.');
+      return;
     }
 
-    function saveSessionV1(sess){
-      try{ localStorage.setItem(LS_SESSION_V1, JSON.stringify(sess)); }catch(e){}
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
+
+    try{
+      const body = new URLSearchParams({
+        action:'login',
+        usuario: username.value.trim(),
+        senha: password.value
+      });
+
+      const r = await fetch(WEBAPP_URL,{method:'POST',body});
+      const t = await r.text();
+      const d = JSON.parse(t);
+
+      if(d.status !== 'OK') throw new Error(d.mensagem||'Login inválido');
+
+      localStorage.setItem('PAVI_FAST_USER', d.email || username.value);
+      localStorage.setItem('PAVI_FAST_NAME', d.nome || username.value);
+
+      show(ok,'Login OK. Entrando...');
+
+      // ✅ REDIRECIONAMENTO CORRETO (funciona em /local/)
+      setTimeout(()=>{
+        window.location.replace('poslog.html');
+      }, 500);
+
+    }catch(e){
+      show(err,'Erro: '+e.message);
+    }finally{
+      btn.disabled=false;
+      btn.textContent='Entrar';
     }
-
-    function clearSessionV1(){
-      try{ localStorage.removeItem(LS_SESSION_V1); }catch(e){}
-    }
-
-    function sessionIsValid(sess){
-      if(!sess) return false;
-      const ts = Number(sess.lastLoginAt || 0);
-      if(!ts) return false;
-      return (Date.now() - ts) <= SESSION_MAX_MS;
-    }
-
-    // ✅ RESOLVEDOR DE ROTAS (corrige Android /assets e /local automaticamente)
-    function route(file){
-      const path = String(location.pathname || '');
-      if (path.startsWith('/assets/')) return '/assets/' + file;
-      if (path.startsWith('/local/'))  return '/local/'  + file;
-      // GitHub Pages / web normal
-      return file;
-    }
-
-    function go(file, replace=false){
-      const url = route(file);
-      if(replace) location.replace(url);
-      else location.href = url;
-    }
-
-    // ✅ Auto-entrar SOMENTE quando OFFLINE (sem tentar fetch)
-    (function autoEnterFromCache(){
-      hideMsgs();
-      if(navigator.onLine) return;
-      const sess = loadSessionV1();
-      if(sessionIsValid(sess)){
-        go('poslog.html', true);
-      }
-    })();
-
-    toggleBtn.addEventListener('click', () => {
-      const isPwd = inputPass.type === 'password';
-      inputPass.type = isPwd ? 'text' : 'password';
-      toggleBtn.textContent = isPwd ? '🔒' : '👁️';
-    });
-
-    function validate(){
-      hideMsgs();
-      const u = inputUser.value.trim();
-      const p = inputPass.value;
-      if(!u){ showMsg(msgErr, 'Informe o usuário.'); inputUser.focus(); return false; }
-      if(!p){ showMsg(msgErr, 'Informe a senha.'); inputPass.focus(); return false; }
-      return true;
-    }
-
-    function normalizeLotes(lotes){
-      if(Array.isArray(lotes)){
-        return lotes.map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
-      }
-      const s = String(lotes||'').trim();
-      if(!s) return [];
-      return s.split(',').map(x => String(x||'').trim().toUpperCase()).filter(Boolean);
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if(!validate()) return;
-
-      hideMsgs();
-
-      // ✅ OFFLINE: não faz fetch
-      if(!navigator.onLine){
-        const sess = loadSessionV1();
-        if(sessionIsValid(sess)){
-          showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
-          setTimeout(()=> go('poslog.html', true), 250);
-          return;
-        }
-        showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Entrando...';
-
-      try{
-        const userEmail = inputUser.value.trim().toLowerCase();
-
-        const body = new URLSearchParams({
-          action: 'login',
-          usuario: userEmail,
-          senha: inputPass.value
-        });
-
-        const resp = await fetch(WEBAPP_URL, { method:'POST', body });
-        const text = await resp.text();
-        let data;
-        try{ data = JSON.parse(text); } catch { data = null; }
-
-        if(!resp.ok){
-          throw new Error(data?.mensagem || text || 'Falha na solicitação.');
-        }
-
-        if(data && data.status === 'OK'){
-          const nome = (data.nome || userEmail);
-          const email = (data.email || userEmail);
-          const allowedLotes = normalizeLotes(data.lotes);
-
-          if(!allowedLotes.length){
-            showMsg(msgErr, 'Sem lote definido, entre em contato com suporte.');
-            localStorage.removeItem(SESSION_KEY);
-            clearSessionV1();
-            return;
-          }
-
-          showMsg(msgOk, 'Bem-vindo, ' + nome + '! Redirecionando...');
-
-          localStorage.setItem('PAVI_FAST_USER', email);
-          localStorage.setItem('PAVI_FAST_NAME', nome);
-
-          localStorage.setItem(SESSION_KEY, JSON.stringify({
-            name: nome,
-            email: email,
-            allowedLotes: allowedLotes,
-            ts: Date.now()
-          }));
-
-          saveSessionV1({
-            usuario: email,
-            nome: nome,
-            lotes: allowedLotes,
-            lastLoginAt: Date.now()
-          });
-
-          try{
-            if(window.Android && typeof window.Android.loginOk === 'function'){
-              window.Android.loginOk();
-            }
-          }catch(e){}
-
-          setTimeout(() => {
-            go('poslog.html', false);
-          }, 450);
-
-          form.reset();
-        }else{
-          throw new Error(data?.mensagem || 'Usuário ou senha inválidos.');
-        }
-      }catch(err){
-        const msg = String(err?.message || err || '');
-        const looksOffline =
-          (!navigator.onLine) ||
-          /failed to fetch/i.test(msg) ||
-          (err && err.name === 'TypeError');
-
-        if(looksOffline){
-          const sess = loadSessionV1();
-          if(sessionIsValid(sess)){
-            showMsg(msgOk, 'Modo offline: entrando com sessão salva...');
-            setTimeout(()=> go('poslog.html', true), 300);
-            return;
-          }
-          showMsg(msgErr, 'Sem internet. Para o primeiro acesso, conecte-se e faça login.');
-          return;
-        }
-
-        showMsg(msgErr, 'Não foi possível entrar: ' + msg);
-      }finally{
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Entrar';
-      }
-    });
-
-    firstAccess.addEventListener('click', (e) => {
-      e.preventDefault();
-      go('primeiro_acesso.html', false);
-    });
   });
-  </script>
 
-  <script>
-    // PWA / Offline inteligente
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
-    }
-  </script>
+  firstAccess.onclick = e=>{
+    e.preventDefault();
+    window.location.replace('primeiro_acesso.html');
+  };
+
+});
+</script>
 
 </body>
 </html>
