@@ -1,0 +1,16 @@
+{
+  "name": "PAVI Fast",
+  "short_name": "PAVI Fast",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fdf9",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
