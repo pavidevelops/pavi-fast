@@ -1,42 +1,23 @@
 {
-  "version": "2026.01.15-01",
-  "baseUrl": "https://pavidevelops.github.io/pavi-fast/",
+  "version": "2026-01-16-01",
+  "baseUrl": "https://pavidevelops.github.io/pavi-fast",
   "files": [
-    {
-      "path": "index.html",
-      "sha256": "0995408ae908e2220e8f4e41a2341e84826ea799d771b948aec635130a70f6"
-    },
-    {
-      "path": "poslog.html",
-      "sha256": "5f36e8beb88370fa527f3c0420658cd2367719f4adf9c95953bb37db3db36332"
-    },
-    {
-      "path": "seletor_lotes.html",
-      "sha256": "79910735403fd91be55b44f0665ee159f27cceda987be58cf9ef5f948e9bf867"
-    },
-    {
-      "path": "primeiro_acesso.html",
-      "sha256": "b2e9052aef0476a000380b4c2be9d1ae840102fa321815872d13899a3e61d968c"
-    },
-    {
-      "path": "logo.png",
-      "sha256": "0f26cc9e275b2ee1fded82d2d1c45e4d33810ed1191ee31218b593ee6382496"
-    },
-    {
-      "path": "FunnelSans-Regular.ttf",
-      "sha256": "b236f95db3c1ce889586bf4f1fe68440557e6740c988e779dbd13d6890eddde"
-    },
-    {
-      "path": "FunnelSans-Medium.ttf",
-      "sha256": "4e0a948aa7ee07e25d15cd6cca3a51821fc50d9b90c66fe3cdbd1afb209e1b88"
-    },
-    {
-      "path": "FunnelSans-SemiBold.ttf",
-      "sha256": "e7ea78fef5d96362dceafdad6982c4e19f9f3d8daa38874023ba8d960e8f1"
-    },
-    {
-      "path": "FunnelSans-Bold.ttf",
-      "sha256": "da4d2f0fc9ac45643ca2eb146973d78028f8112ab925062f7ba56180253f3913"
-    }
+    "index.html",
+    "poslog.html",
+    "seletor_lotes.html",
+    "primeiro_acesso.html",
+    "logo.png",
+    "manifest.webmanifest",
+    "sw.js",
+
+    "FunnelSans-Regular.ttf",
+    "FunnelSans-Medium.ttf",
+    "FunnelSans-SemiBold.ttf",
+    "FunnelSans-Italic.ttf",
+    "FunnelSans-BoldItalic.ttf",
+    "FunnelSans-Bold.ttf",
+
+    "Roboto-VariableFont_wdth,wght.ttf",
+    "Roboto-Italic-VariableFont_wdth,wght.ttf"
   ]
 }
