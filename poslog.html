@@ -364,12 +364,24 @@
   }
 
   // ====== Sessão ======
-  const sessionCompat = ensureSessionCompat();
-  const sessionV1 = loadSessionV1();
+  let sessionCompat = ensureSessionCompat();
+  let sessionV1 = loadSessionV1();
 
-  // ✅ Regra: se não tem sessão compat E não tem sessão V1 válida => volta login
+  // ✅ Fallback seguro: se não tem sessão, mas tem usuário salvo pelo login, cria uma sessão mínima
   if(!sessionCompat && !sessionV1IsValid(sessionV1)){
-    location.href = LOGIN_PAGE;
+    const u = (localStorage.getItem(LS_USER) || '').trim();
+    const n = (localStorage.getItem(LS_NAME) || '').trim();
+    if(u){
+      sessionV1 = {
+        usuario: u,
+        nome: n || u,
+        lotes: [],
+        lastLoginAt: Date.now()
+      };
+      try{ localStorage.setItem(LS_SESSION_V1, JSON.stringify(sessionV1)); }catch(e){}
+    }else{
+      location.href = LOGIN_PAGE;
+    }
   }
 
   // Nome do usuário (preferindo V1)
@@ -399,11 +411,9 @@
     selectedLote = String(lote||'').trim().toUpperCase();
     selectedRodovia = String(rodovia||'').trim();
 
-    // grava para o resto do fluxo
     localStorage.setItem(LS_LOTE_ATIVO, selectedLote);
     localStorage.setItem(LS_RODOVIA_PRE, selectedRodovia);
 
-    // habilita botão extra (opcional)
     const btn = $('#btnGoSeletor');
     btn.disabled = false;
     btn.title = '';
@@ -453,7 +463,6 @@
 
           b.addEventListener('click', ()=>{
             setSelection(lote, r);
-            // clicou na rodovia -> segue para o seletor
             location.href = NEXT_PAGE;
           });
 
@@ -479,7 +488,6 @@
       return;
     }
 
-    // ✅ Se estiver OFFLINE, tenta usar cache de rodovias
     if(!navigator.onLine){
       const cache = loadLoteRodoviasCache();
       const mapAll = cache?.map || null;
@@ -498,7 +506,6 @@
       return;
     }
 
-    // ✅ Online: busca no backend, renderiza e salva cache
     try{
       setLoading(true);
 
@@ -509,10 +516,8 @@
       setLoading(false);
       renderGrid(map);
 
-      // ✅ salva cache completo (para offline)
       saveLoteRodoviasCache(mapAll);
 
-      // se algum lote não tiver rodovia, alerta leve (não bloqueia)
       const anyZero = allowedLotes.some(l => !((map[l]||[]).length));
       if(anyZero){
         showMsg('Alguns lotes não possuem rodovias liberadas. Verifique a aba LOTE_RODOVIAS no Sheets.', 'warn');
@@ -521,7 +526,6 @@
     }catch(err){
       setLoading(false);
 
-      // ✅ Se deu erro online, tenta fallback no cache
       const cache = loadLoteRodoviasCache();
       const mapAll = cache?.map || null;
       const map = mapAll ? pickMapForAllowed(mapAll, allowedLotes) : null;
@@ -552,6 +556,7 @@
     location.href = LOGIN_PAGE;
   });
 </script>
+
 <script>
   // PWA / Offline inteligente
   if ('serviceWorker' in navigator) {
