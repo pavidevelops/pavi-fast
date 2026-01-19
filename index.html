@@ -105,7 +105,6 @@
       <button type="button" class="toggle-password">👁️</button>
     </div>
 
-    <!-- AJUSTE MÍNIMO: garante submit consistente em WebView -->
     <button class="btn" id="submitBtn" type="submit">Entrar</button>
 
     <div id="msgOk" class="msg ok"></div>
@@ -127,10 +126,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const ok   = document.getElementById('msgOk');
   const err  = document.getElementById('msgErr');
 
-  // AJUSTE MÍNIMO: não depender de "id vira variável" (WebView pode falhar)
   const username = document.getElementById('username');
   const password = document.getElementById('password');
   const firstAccess = document.getElementById('firstAccess');
+
+  // ✅ chaves de sessão esperadas pelo poslog.html
+  const SESSION_KEY = 'PAVI_FAST_SESSION';
+  const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
 
   function show(el, txt){ el.textContent = txt; el.style.display='block'; }
   function hide(){ ok.style.display='none'; err.style.display='none'; }
@@ -165,12 +167,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if(d.status !== 'OK') throw new Error(d.mensagem||'Login inválido');
 
+      // Mantém o que você já fazia
       localStorage.setItem('PAVI_FAST_USER', d.email || username.value);
       localStorage.setItem('PAVI_FAST_NAME', d.nome || username.value);
 
+      // ✅ AJUSTE CHAVE: grava a sessão que o poslog.html exige
+      // Tenta pegar lotes do backend (se vier), senão cria vazio (poslog vai avisar "sem lote")
+      let lotes = [];
+      if (Array.isArray(d.lotes)) {
+        lotes = d.lotes;
+      } else if (typeof d.lotes === 'string' && d.lotes.trim()) {
+        lotes = d.lotes.split(',').map(s => s.trim()).filter(Boolean);
+      }
+
+      const sessV1 = {
+        usuario: (d.email || username.value || '').trim(),
+        nome: (d.nome || username.value || '').trim(),
+        lotes: lotes,
+        lastLoginAt: Date.now()
+      };
+
+      localStorage.setItem(LS_SESSION_V1, JSON.stringify(sessV1));
+
+      // Compat (caso algum fluxo antigo ainda use)
+      const sessCompat = {
+        email: sessV1.usuario,
+        name: sessV1.nome,
+        allowedLotes: sessV1.lotes
+      };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(sessCompat));
+
       show(ok,'Login OK. Entrando...');
 
-      // ✅ REDIRECIONAMENTO CORRETO (funciona em /local/ e no GitHub Pages)
       setTimeout(()=>{
         window.location.replace('poslog.html');
       }, 500);
