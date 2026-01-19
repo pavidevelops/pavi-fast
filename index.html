@@ -105,7 +105,8 @@
       <button type="button" class="toggle-password">👁️</button>
     </div>
 
-    <button class="btn" id="submitBtn">Entrar</button>
+    <!-- AJUSTE MÍNIMO: garante submit consistente em WebView -->
+    <button class="btn" id="submitBtn" type="submit">Entrar</button>
 
     <div id="msgOk" class="msg ok"></div>
     <div id="msgErr" class="msg err"></div>
@@ -125,6 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn  = document.getElementById('submitBtn');
   const ok   = document.getElementById('msgOk');
   const err  = document.getElementById('msgErr');
+
+  // AJUSTE MÍNIMO: não depender de "id vira variável" (WebView pode falhar)
+  const username = document.getElementById('username');
+  const password = document.getElementById('password');
+  const firstAccess = document.getElementById('firstAccess');
 
   function show(el, txt){ el.textContent = txt; el.style.display='block'; }
   function hide(){ ok.style.display='none'; err.style.display='none'; }
@@ -164,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       show(ok,'Login OK. Entrando...');
 
-      // ✅ REDIRECIONAMENTO CORRETO (funciona em /local/)
+      // ✅ REDIRECIONAMENTO CORRETO (funciona em /local/ e no GitHub Pages)
       setTimeout(()=>{
         window.location.replace('poslog.html');
       }, 500);
