@@ -152,6 +152,27 @@ document.addEventListener('DOMContentLoaded', () => {
     try{ return JSON.parse(txt); }catch(e){ return null; }
   }
 
+  // ✅ normaliza destino para evitar "TST.HTML", "/tst.html", " tst.html ", etc
+  function normalizeDestino(raw){
+    let d = (raw ?? "").toString().trim();
+    if(!d) return "";
+    d = d.replace(/\\/g, "/");
+    d = d.replace(/^\/+/, "");     // remove "/" do começo
+    d = d.replace(/\s+/g, "");     // remove espaços
+    d = d.toLowerCase();
+
+    // se digitarem só "tst", vira "tst.html"
+    if(d && !d.includes(".")) d = d + ".html";
+
+    return d;
+  }
+
+  // ✅ evita cache no Android/WebView/GitHub Pages
+  function withCacheBuster(path){
+    const v = Date.now(); // simples e efetivo
+    return path + (path.includes("?") ? "&" : "?") + "v=" + v;
+  }
+
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     hide();
@@ -183,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
         senha: s
       });
 
-      // ✅ CORRETO: usa API_URL (não WEBAPP_URL)
       const r = await fetch(API_URL, { method:'POST', body });
       const t = await r.text();
       const d = safeJsonParse(t);
@@ -210,8 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
         lotes = d.lotes.split(',').map(x => x.trim()).filter(Boolean);
       }
 
-      // ✅ destino (coluna W) — se backend enviar
-      const destino = String(d.destino || "").trim();
+      // ✅ destino (coluna W) normalizado
+      const destino = normalizeDestino(d.destino);
 
       const sessV1 = {
         usuario: (d.email || u || '').trim(),
@@ -232,13 +252,17 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessCompat));
 
+      // ✅ debug rápido (se quiser ver no console)
+      // console.log("DESTINO RAW:", d.destino, "DESTINO NORMAL:", destino);
+
       show(ok,'Login OK. Entrando...');
 
       // ✅ redirecionamento por DESTINO (W)
       // se vazio: poslog.html
-      const go = (destino ? destino : 'poslog.html').trim();
+      const go = destino ? destino : 'poslog.html';
 
-      setTimeout(()=> window.location.replace(go), 350);
+      // cache buster pra não ficar preso no poslog antigo
+      setTimeout(()=> window.location.replace(withCacheBuster(go)), 250);
 
     }catch(e){
       show(err,'Não foi possível entrar: ' + (e.message || e));
