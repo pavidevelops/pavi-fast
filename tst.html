@@ -214,6 +214,7 @@
   </div>
 
   <script>
+    // ✅ WebApp da planilha TST (submit_tst)
     const API_URL = "https://script.google.com/macros/s/AKfycby4Fjn2Cd083r9y9-RAgY6kDBlGb-Yzw7o82MljeWxlkW2OPofQR4KIvmNXx-PRbcz0rQ/exec";
     const ACTION = "submit_tst";
     const QUEUE_KEY = "PAVI_FAST_TST_QUEUE_V1";
@@ -347,7 +348,6 @@
     }
     function setQueue(q){
       localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
-      // badges removidos — nada aqui
     }
 
     function render(){
@@ -567,6 +567,8 @@
     function buildPayload(){
       return {
         action: ACTION,
+
+        // extras (não atrapalham)
         client_time: new Date().toISOString(),
         client_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
 
@@ -605,18 +607,32 @@
       };
     }
 
+    // ✅ AJUSTADO: entende status/mensagem do seu Apps Script
     async function postPayload(payload){
       const body = new URLSearchParams(payload);
+
       const res = await fetch(API_URL, {
         method:"POST",
         headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
         body
       });
+
       const txt = await res.text();
       let json=null; try{ json=JSON.parse(txt);}catch(e){}
-      if(!res.ok) throw new Error("HTTP "+res.status+" — "+(json?.message || txt || ""));
-      if(json && json.ok===false) throw new Error(json.message || "Erro no servidor");
-      return json || { ok:true, raw:txt };
+
+      if(!res.ok){
+        const msg = (json && (json.mensagem || json.message)) ? (json.mensagem || json.message) : (txt || "");
+        throw new Error("HTTP " + res.status + " — " + msg);
+      }
+
+      if(json){
+        if(String(json.status || "").toUpperCase() === "ERR"){
+          throw new Error(json.mensagem || "Erro no servidor");
+        }
+        return json;
+      }
+
+      return { status:"OK", raw:txt };
     }
 
     async function flushQueue(){
@@ -663,8 +679,8 @@
 
       try{
         if(navigator.onLine){
-          await postPayload(payload);
-          showBox("ok","Registro enviado com sucesso.");
+          const r = await postPayload(payload);
+          showBox("ok", r?.mensagem ? String(r.mensagem) : "Registro enviado com sucesso.");
 
           for(const k in answers) delete answers[k];
           cursor = 0;
