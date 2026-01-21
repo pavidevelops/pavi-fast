@@ -680,7 +680,14 @@
       try{
         if(navigator.onLine){
           const r = await postPayload(payload);
-          showBox("ok", r?.mensagem ? String(r.mensagem) : "Registro enviado com sucesso.");
+
+          // ✅ confirmação forte com protocolo/linha (se vier)
+          const proto = r?.protocolo ? `Protocolo: ${r.protocolo}` : "";
+          const linha = r?.linha ? `Linha: ${r.linha}` : "";
+          const extra = [proto, linha].filter(Boolean).join(" • ");
+          const msg = (r?.mensagem ? String(r.mensagem) : "✅ ENVIADO E CONFIRMADO PELO SERVIDOR.") + (extra ? " " + extra : "");
+
+          showBox("ok", msg);
 
           for(const k in answers) delete answers[k];
           cursor = 0;
