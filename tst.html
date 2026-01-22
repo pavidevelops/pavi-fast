@@ -103,7 +103,6 @@
       letter-spacing:.2px;
     }
     .req{color:#dc2626;font-weight:900;margin-left:6px}
-
     .hint{font-size:12px;color:var(--muted);margin-top:-2px;margin-bottom:10px}
 
     input, select, textarea{
@@ -171,6 +170,25 @@
     .item b{display:block;font-size:12px;color:var(--muted);font-weight:800}
     .item span{display:block;font-size:13px;font-weight:800;color:var(--text);word-break:break-word}
     .item small{color:var(--muted);font-size:12px;font-weight:800}
+
+    /* Toast fixo no topo (confirmação sempre visível) */
+    #toast{
+      position:fixed;
+      left:50%;
+      top:14px;
+      transform:translateX(-50%);
+      z-index:9999;
+      min-width:280px;
+      max-width:92vw;
+      padding:12px 14px;
+      border-radius:14px;
+      display:none;
+      font-weight:900;
+      font-size:13px;
+      box-shadow:0 10px 25px rgba(0,0,0,.12);
+      text-align:center;
+      user-select:none;
+    }
   </style>
 </head>
 
@@ -191,7 +209,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="cardTop">
       <div class="progressRow">
         <div class="progressText" id="progressText">—</div>
         <div style="flex:1">
@@ -213,7 +231,13 @@
     </div>
   </div>
 
+  <!-- Toast fixo (sempre visível após envio) -->
+  <div id="toast"></div>
+
   <script>
+    /***********************
+     * CONFIG
+     ***********************/
     // ✅ WebApp da planilha TST (submit_tst)
     const API_URL = "https://script.google.com/macros/s/AKfycby4Fjn2Cd083r9y9-RAgY6kDBlGb-Yzw7o82MljeWxlkW2OPofQR4KIvmNXx-PRbcz0rQ/exec";
     const ACTION = "submit_tst";
@@ -323,14 +347,55 @@
       return count;
     }
 
-    function showBox(kind, msg){
+    function clearBoxes(){
       ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
+    }
+
+    function showToast(kind, msg){
+      const t = $("toast");
+      if(!t) return;
+
+      const map = {
+        ok:   { bg:"#ecfdf5", br:"#a7f3d0", tx:"#065f46" },
+        warn: { bg:"#fffbeb", br:"#fde68a", tx:"#92400e" },
+        err:  { bg:"#fef2f2", br:"#fecaca", tx:"#991b1b" }
+      };
+      const c = map[kind] || map.ok;
+
+      t.style.background = c.bg;
+      t.style.border = "2px solid " + c.br;
+      t.style.color = c.tx;
+      t.textContent = msg;
+      t.style.display = "block";
+
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(()=>{ t.style.display="none"; }, 4000);
+    }
+
+    function scrollToAlerts(){
+      const okEl = $("okBox");
+      const warnEl = $("warnBox");
+      const errEl = $("errBox");
+
+      const el = (okEl && okEl.style.display === "block") ? okEl
+               : (warnEl && warnEl.style.display === "block") ? warnEl
+               : (errEl && errEl.style.display === "block") ? errEl
+               : null;
+
+      if(el) el.scrollIntoView({ behavior:"smooth", block:"center" });
+    }
+
+    function showBox(kind, msg){
+      clearBoxes();
       const el = kind==="ok" ? $("okBox") : (kind==="warn" ? $("warnBox") : $("errBox"));
       el.textContent = msg;
       el.style.display = "block";
-    }
-    function clearBoxes(){
-      ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
+
+      // ✅ sempre visível no topo
+      showToast(kind, msg);
+
+      // ✅ e rola até o alerta também
+      setTimeout(scrollToAlerts, 60);
     }
 
     function updateNet(){
@@ -403,6 +468,9 @@
           onOk();
         }
       });
+
+      // garante que a área de input fica visível
+      setTimeout(()=>{ $("cardTop").scrollIntoView({behavior:"smooth", block:"start"}); }, 10);
     }
 
     function buildInput(step){
@@ -607,7 +675,7 @@
       };
     }
 
-    // ✅ AJUSTADO: entende status/mensagem do seu Apps Script
+    // ✅ robusto: entende {ok:true,message:"..."} e também {status:"OK", mensagem:"..."}
     async function postPayload(payload){
       const body = new URLSearchParams(payload);
 
@@ -626,13 +694,18 @@
       }
 
       if(json){
+        // padrão 1: ok/message
+        if(json.ok === false){
+          throw new Error(json.message || "Erro no servidor");
+        }
+        // padrão 2: status/mensagem
         if(String(json.status || "").toUpperCase() === "ERR"){
           throw new Error(json.mensagem || "Erro no servidor");
         }
         return json;
       }
 
-      return { status:"OK", raw:txt };
+      return { ok:true, message:"Enviado.", raw:txt };
     }
 
     async function flushQueue(){
@@ -653,7 +726,7 @@
           return;
         }
       }
-      if(sent>0) showBox("ok","Fila enviada com sucesso ("+sent+" item(ns)).");
+      if(sent>0) showBox("ok","✅ Fila enviada com sucesso ("+sent+" item(ns)).");
     }
 
     async function submitAll(){
@@ -673,6 +746,7 @@
       }
 
       const payload = buildPayload();
+
       $("btnOk").disabled = true;
       $("btnNA").disabled = true;
       $("btnBack").disabled = true;
@@ -681,38 +755,39 @@
         if(navigator.onLine){
           const r = await postPayload(payload);
 
-          // ✅ confirmação forte com protocolo/linha (se vier)
-          const proto = r?.protocolo ? `Protocolo: ${r.protocolo}` : "";
-          const linha = r?.linha ? `Linha: ${r.linha}` : "";
-          const extra = [proto, linha].filter(Boolean).join(" • ");
-          const msg = (r?.mensagem ? String(r.mensagem) : "✅ ENVIADO E CONFIRMADO PELO SERVIDOR.") + (extra ? " " + extra : "");
-
-          showBox("ok", msg);
-
+          // ✅ LIMPA E VOLTA PRO COMEÇO
           for(const k in answers) delete answers[k];
           cursor = 0;
           render();
 
+          // ✅ AVISO SEMPRE VISÍVEL (toast + caixa)
+          const msg = (r && (r.message || r.mensagem)) ? (r.message || r.mensagem) : "✅ ENVIADO COM SUCESSO!";
+          showBox("ok", "✅ ENVIADO COM SUCESSO! " + msg);
+
+          // tenta reenviar fila pendente
           await flushQueue();
         }else{
           const q = getQueue();
           q.push({ payload });
           setQueue(q);
-          showBox("warn","Sem internet. Registro salvo na fila e será enviado automaticamente.");
 
           for(const k in answers) delete answers[k];
           cursor = 0;
           render();
+
+          showBox("warn","Sem internet. Registro salvo na fila e será enviado automaticamente.");
         }
       }catch(e){
+        // se falhar online, guarda na fila
         const q = getQueue();
         q.push({ payload });
         setQueue(q);
-        showBox("warn","Falha ao enviar agora. Salvei na fila para reenviar automaticamente. Detalhe: "+(e.message||e));
 
         for(const k in answers) delete answers[k];
         cursor = 0;
         render();
+
+        showBox("warn","Falha ao enviar agora. Salvei na fila para reenviar automaticamente. Detalhe: "+(e.message||e));
       }finally{
         $("btnOk").disabled = false;
         $("btnNA").disabled = false;
