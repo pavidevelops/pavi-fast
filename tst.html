@@ -42,6 +42,7 @@
     .top{
       display:flex;align-items:center;justify-content:space-between;gap:12px;
       margin:10px 0 14px;
+      flex-wrap:wrap;
     }
     .brand{display:flex;align-items:center;gap:10px}
     .logo{
@@ -53,6 +54,7 @@
     .title h1{margin:0;font-size:18px;font-weight:800}
     .title p{margin:3px 0 0;font-size:12px;color:var(--muted)}
 
+    .rightTools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
     .pill{
       display:inline-flex;align-items:center;gap:8px;
       padding:10px 12px;border-radius:999px;
@@ -138,13 +140,18 @@
       display:inline-flex;align-items:center;justify-content:center;
       transition:.15s ease;
       user-select:none;
+      white-space:nowrap;
     }
-    .btnPrimary{background:var(--primary);color:#fff}
+    .btnPrimary{background:linear-gradient(135deg,var(--primary),var(--primary-600));color:#fff}
     .btnSecondary{background:#fff;color:var(--text);border:1px solid var(--border)}
     .btnGhost{background:transparent;color:var(--text);border:1px dashed rgba(18,51,34,.22)}
+    .btnDanger{background:#fff;color:#991b1b;border:1px solid #fecaca}
     .btn:disabled{opacity:.55;cursor:not-allowed}
 
-    .alert{margin-top:12px;padding:12px;border-radius:14px;border:1px solid var(--border);font-size:13px;display:none}
+    .alert{
+      margin-top:12px;padding:12px;border-radius:14px;border:1px solid var(--border);
+      font-size:13px;display:none
+    }
     .alert.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-br)}
     .alert.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-br)}
     .alert.err{background:var(--err-bg);color:var(--err);border-color:var(--err-br)}
@@ -171,24 +178,7 @@
     .item span{display:block;font-size:13px;font-weight:800;color:var(--text);word-break:break-word}
     .item small{color:var(--muted);font-size:12px;font-weight:800}
 
-    /* Toast fixo no topo (confirmação sempre visível) */
-    #toast{
-      position:fixed;
-      left:50%;
-      top:14px;
-      transform:translateX(-50%);
-      z-index:9999;
-      min-width:280px;
-      max-width:92vw;
-      padding:12px 14px;
-      border-radius:14px;
-      display:none;
-      font-weight:900;
-      font-size:13px;
-      box-shadow:0 10px 25px rgba(0,0,0,.12);
-      text-align:center;
-      user-select:none;
-    }
+    .mini{font-size:12px;color:var(--muted);margin-top:10px}
   </style>
 </head>
 
@@ -199,17 +189,21 @@
         <div class="logo"><img src="logo.png" alt="PAVI"></div>
         <div class="title">
           <h1>Registro de Acidente — TST</h1>
-          <p>Modo dinâmico (1 campo por vez) • N/A para pular • Offline-first</p>
+          <p>1 campo por vez • N/A para pular • fila offline com reenvio</p>
         </div>
       </div>
 
-      <div class="pill" title="Conexão">
-        <span class="dot off" id="netDot"></span>
-        <span id="netText">Offline</span>
+      <div class="rightTools">
+        <button class="btn btnSecondary" id="btnTest" type="button">Testar conexão</button>
+
+        <div class="pill" title="Conexão">
+          <span class="dot off" id="netDot"></span>
+          <span id="netText">Offline</span>
+        </div>
       </div>
     </div>
 
-    <div class="card" id="cardTop">
+    <div class="card">
       <div class="progressRow">
         <div class="progressText" id="progressText">—</div>
         <div style="flex:1">
@@ -223,581 +217,502 @@
         <button class="btn btnSecondary" id="btnBack" type="button">Voltar</button>
         <button class="btn btnGhost" id="btnNA" type="button">N/A (pular)</button>
         <button class="btn btnPrimary" id="btnOk" type="button">OK / Próximo</button>
+        <button class="btn btnDanger" id="btnClearQueue" type="button">Limpar fila</button>
       </div>
 
       <div class="alert ok" id="okBox"></div>
       <div class="alert warn" id="warnBox"></div>
       <div class="alert err" id="errBox"></div>
+
+      <div class="mini" id="queueInfo"></div>
     </div>
   </div>
 
-  <!-- Toast fixo (sempre visível após envio) -->
-  <div id="toast"></div>
+<script>
+  /*********************************************************
+   * ✅ CONFIG
+   * Cole aqui o /exec do WebApp TST
+   *********************************************************/
+  const API_URL = "COLE_AQUI_SEU_LINK_EXEC_DO_TST";
+  const ACTION = "submit_tst";
+  const QUEUE_KEY = "PAVI_FAST_TST_QUEUE_V3";
 
-  <script>
-    /***********************
-     * CONFIG
-     ***********************/
-    // ✅ WebApp da planilha TST (submit_tst)
-    const API_URL = "https://script.google.com/macros/s/AKfycby4Fjn2Cd083r9y9-RAgY6kDBlGb-Yzw7o82MljeWxlkW2OPofQR4KIvmNXx-PRbcz0rQ/exec";
-    const ACTION = "submit_tst";
-    const QUEUE_KEY = "PAVI_FAST_TST_QUEUE_V1";
+  const $ = (id)=>document.getElementById(id);
 
-    const $ = (id)=>document.getElementById(id);
+  const steps = [
+    { key:"matricula", label:"MATRÍCULA DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Ex.: 12345", inputmode:"numeric" },
+    { key:"nome_funcionario", label:"NOME DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Nome completo" },
 
-    const steps = [
-      { key:"matricula", label:"MATRÍCULA DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Ex.: 12345", inputmode:"numeric" },
-      { key:"nome_funcionario", label:"NOME DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Nome completo" },
+    { key:"idade", label:"IDADE", type:"number", placeholder:"Ex.: 34" },
+    { key:"funcao", label:"FUNÇÃO", type:"text", placeholder:"Ex.: Coletor" },
+    { key:"setor", label:"SETOR", type:"text", placeholder:"Ex.: Operação" },
 
-      { key:"idade", label:"IDADE", type:"number", placeholder:"Ex.: 34" },
-      { key:"funcao", label:"FUNÇÃO", type:"text", placeholder:"Ex.: Coletor" },
-      { key:"setor", label:"SETOR", type:"text", placeholder:"Ex.: Operação" },
+    { key:"data_acidente", label:"DATA DO ACIDENTE", type:"date" },
 
-      { key:"data_acidente", label:"DATA DO ACIDENTE", type:"date" },
+    { key:"regiao", label:"REGIÃO", type:"select", options:["PARANAGUÁ","CIANORTE","MARINGÁ","OUTRO"] },
+    { key:"regiao_outro", label:"REGIÃO (OUTRO) — ESCREVER", type:"text", placeholder:"Descreva a região",
+      showIf:(a)=>a.regiao==="OUTRO", requiredIf:(a)=>a.regiao==="OUTRO"
+    },
 
-      { key:"regiao", label:"REGIÃO", type:"select", options:["PARANAGUÁ","CIANORTE","MARINGÁ","OUTRO"] },
-      { key:"regiao_outro", label:"REGIÃO (OUTRO) — ESCREVER", type:"text", placeholder:"Descreva a região",
-        showIf:(a)=>a.regiao==="OUTRO", requiredIf:(a)=>a.regiao==="OUTRO"
-      },
+    { key:"gravidade", label:"GRAVIDADE", type:"select", options:["LEVE","SÉRIO","GRAVE"] },
+    { key:"periodo_evento", label:"PERÍODO DO EVENTO", type:"select",
+      options:[
+        "MANHÃ (05:00 às 12:00)",
+        "TARDE (12:01 às 18:00)",
+        "NOITE (18:01 às 23:59)",
+        "MADRUGADA (00:00 às 04:59)"
+      ]
+    },
 
-      { key:"gravidade", label:"GRAVIDADE", type:"select", options:["LEVE","SÉRIO","GRAVE"] },
-      { key:"periodo_evento", label:"PERÍODO DO EVENTO", type:"select",
-        options:[
-          "MANHÃ (05:00 às 12:00)",
-          "TARDE (12:01 às 18:00)",
-          "NOITE (18:01 às 23:59)",
-          "MADRUGADA (00:00 às 04:59)"
-        ]
-      },
+    { key:"tipo_lesao", label:"TIPO DE LESÃO", type:"select",
+      options:["ESCORIAÇÃO","TORÇÃO","CORTE/PERFURAÇÃO","MORDIDA","OUTROS"]
+    },
+    { key:"tipo_lesao_outro", label:"TIPO DE LESÃO (OUTROS) — DESCREVER", type:"text", placeholder:"Descreva a lesão",
+      showIf:(a)=>a.tipo_lesao==="OUTROS", requiredIf:(a)=>a.tipo_lesao==="OUTROS"
+    },
 
-      { key:"tipo_lesao", label:"TIPO DE LESÃO", type:"select",
-        options:["ESCORIAÇÃO","TORÇÃO","CORTE/PERFURAÇÃO","MORDIDA","OUTROS"]
-      },
-      { key:"tipo_lesao_outro", label:"TIPO DE LESÃO (OUTROS) — DESCREVER", type:"text", placeholder:"Descreva a lesão",
-        showIf:(a)=>a.tipo_lesao==="OUTROS", requiredIf:(a)=>a.tipo_lesao==="OUTROS"
-      },
+    { key:"parte_corpo", label:"PARTE DO CORPO ATINGIDO", type:"select",
+      options:["PERNA/JOELHO","SEM LESÃO","OMBRO","MULTIPLAS PARTES","PÉ","DEDOS","BRAÇO","PERNA","OUTRO"]
+    },
+    { key:"parte_corpo_outro", label:"PARTE DO CORPO (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a parte do corpo",
+      showIf:(a)=>a.parte_corpo==="OUTRO", requiredIf:(a)=>a.parte_corpo==="OUTRO"
+    },
 
-      { key:"parte_corpo", label:"PARTE DO CORPO ATINGIDO", type:"select",
-        options:["PERNA/JOELHO","SEM LESÃO","OMBRO","MULTIPLAS PARTES","PÉ","DEDOS","BRAÇO","PERNA","OUTRO"]
-      },
-      { key:"parte_corpo_outro", label:"PARTE DO CORPO (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a parte do corpo",
-        showIf:(a)=>a.parte_corpo==="OUTRO", requiredIf:(a)=>a.parte_corpo==="OUTRO"
-      },
+    { key:"samu", label:"ATENDIMENTO SAMU?", type:"select", options:["SIM","NÃO"] },
+    { key:"local_ocorrencia", label:"LOCAL OCORRÊNCIA (ENDEREÇO)", type:"text", placeholder:"Rua, número, bairro, referência…" },
 
-      { key:"samu", label:"ATENDIMENTO SAMU?", type:"select", options:["SIM","NÃO"] },
-      { key:"local_ocorrencia", label:"LOCAL OCORRÊNCIA (ENDEREÇO)", type:"text", placeholder:"Rua, número, bairro, referência…" },
+    { key:"cid", label:"CID", type:"text", placeholder:"Ex.: S93.4" },
+    { key:"cat", label:"CAT", type:"text", placeholder:"Número/identificação" },
 
-      { key:"cid", label:"CID", type:"text", placeholder:"Ex.: S93.4" },
-      { key:"cat", label:"CAT", type:"text", placeholder:"Número/identificação" },
+    { key:"razao", label:"RAZÃO ACIDENTE", type:"select",
+      options:["ATAQUE ANIMAL","FALTA DE ATENÇÃO","COLISÃO COM TERCEIRO","IMPRUDENCIAS","OUTRO"]
+    },
+    { key:"razao_outro", label:"RAZÃO (OUTRO) — DESCREVA", type:"text", placeholder:"Descreva a razão",
+      showIf:(a)=>a.razao==="OUTRO", requiredIf:(a)=>a.razao==="OUTRO"
+    },
 
-      { key:"razao", label:"RAZÃO ACIDENTE", type:"select",
-        options:["ATAQUE ANIMAL","FALTA DE ATENÇÃO","COLISÃO COM TERCEIRO","IMPRUDENCIAS","OUTRO"]
-      },
-      { key:"razao_outro", label:"RAZÃO (OUTRO) — DESCREVA", type:"text", placeholder:"Descreva a razão",
-        showIf:(a)=>a.razao==="OUTRO", requiredIf:(a)=>a.razao==="OUTRO"
-      },
+    { key:"acao_preventiva", label:"AÇÃO PREVENTIVA", type:"select",
+      options:["ORIENTAÇÃO FUNIONARIO","TREINAMENTO INDIVIDUAL","SUPERVISÃO CAMPO","REGISTRO EM ELATORIO","AFASTAMENTO COLABORADOR","OUTRO"]
+    },
+    { key:"acao_preventiva_outro", label:"AÇÃO PREVENTIVA (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a ação preventiva",
+      showIf:(a)=>a.acao_preventiva==="OUTRO", requiredIf:(a)=>a.acao_preventiva==="OUTRO"
+    },
 
-      { key:"acao_preventiva", label:"AÇÃO PREVENTIVA", type:"select",
-        options:["ORIENTAÇÃO FUNIONARIO","TREINAMENTO INDIVIDUAL","SUPERVISÃO CAMPO","REGISTRO EM ELATORIO","AFASTAMENTO COLABORADOR","OUTRO"]
-      },
-      { key:"acao_preventiva_outro", label:"AÇÃO PREVENTIVA (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a ação preventiva",
-        showIf:(a)=>a.acao_preventiva==="OUTRO", requiredIf:(a)=>a.acao_preventiva==="OUTRO"
-      },
+    { key:"observacoes", label:"OBSERVAÇÕES (OPCIONAL)", type:"textarea", placeholder:"Detalhes adicionais..." },
 
-      { key:"observacoes", label:"OBSERVAÇÕES (OPCIONAL)", type:"textarea", placeholder:"Detalhes adicionais..." },
+    { key:"__review__", label:"REVISAR E ENVIAR", type:"review" }
+  ];
 
-      { key:"__review__", label:"REVISAR E ENVIAR", type:"review" }
-    ];
+  const answers = {};
+  let cursor = 0;
 
-    const answers = {};
-    let cursor = 0;
+  function isShown(step){ return (typeof step.showIf==="function") ? !!step.showIf(answers) : true; }
+  function isRequired(step){ return !!step.required || ((typeof step.requiredIf==="function") ? !!step.requiredIf(answers) : false); }
+  function currentStepIndex(){ let i=cursor; while(i<steps.length && !isShown(steps[i])) i++; return i; }
+  function prevVisibleIndex(from){ let i=from-1; while(i>=0 && !isShown(steps[i])) i--; return i; }
+  function nextVisibleIndex(from){ let i=from+1; while(i<steps.length && !isShown(steps[i])) i++; return i; }
+  function shownCountUpTo(index){ let c=0; for(let i=0;i<=index;i++) if(isShown(steps[i])) c++; return c; }
+  function totalShownCount(){ let c=0; for(const s of steps) if(isShown(s)) c++; return c; }
 
-    function isShown(step){
-      if(typeof step.showIf === "function") return !!step.showIf(answers);
-      return true;
+  function showBox(kind, msg){
+    ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
+    const el = kind==="ok" ? $("okBox") : (kind==="warn" ? $("warnBox") : $("errBox"));
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+  function clearBoxes(){ ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; }); }
+
+  function updateNet(){
+    const online = navigator.onLine;
+    $("netDot").className = "dot " + (online ? "ok" : "off");
+    $("netText").textContent = online ? "Online" : "Offline";
+  }
+
+  function getQueue(){ try{ return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); } catch(e){ return []; } }
+  function setQueue(q){ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); updateQueueInfo(); }
+  function updateQueueInfo(){
+    const q = getQueue();
+    $("queueInfo").textContent = q.length ? `Fila: ${q.length} registro(s) aguardando envio.` : "Fila: vazia.";
+  }
+
+  window.addEventListener("online", ()=>{ updateNet(); flushQueue(); });
+  window.addEventListener("offline", updateNet);
+  updateNet();
+  updateQueueInfo();
+
+  function render(){
+    clearBoxes();
+
+    cursor = currentStepIndex();
+    const step = steps[cursor];
+
+    const shownPos = shownCountUpTo(cursor);
+    const total = totalShownCount();
+
+    $("progressText").textContent = `Campo ${shownPos} de ${total}`;
+    $("barFill").style.width = Math.round((shownPos/Math.max(1,total))*100) + "%";
+
+    $("btnBack").disabled = prevVisibleIndex(cursor) < 0;
+    $("btnOk").textContent = (step.type==="review") ? "Enviar" : "OK / Próximo";
+
+    const req = isRequired(step);
+    $("btnNA").disabled = req || step.type==="review";
+
+    const area = $("stepArea");
+    area.innerHTML = "";
+
+    if(step.type === "review"){ area.appendChild(renderReview()); return; }
+
+    const label = document.createElement("label");
+    label.textContent = step.label;
+    if(req){
+      const star = document.createElement("span");
+      star.className = "req";
+      star.textContent = "*";
+      label.appendChild(star);
     }
-    function isRequired(step){
-      if(step.required) return true;
-      if(typeof step.requiredIf === "function") return !!step.requiredIf(answers);
+    area.appendChild(label);
+
+    const hint = document.createElement("div");
+    hint.className = "hint";
+    hint.textContent = req ? "Obrigatório" : "Opcional (use N/A para pular)";
+    area.appendChild(hint);
+
+    const input = buildInput(step);
+    area.appendChild(input);
+
+    setTimeout(()=>{ try{ input.focus(); }catch(e){} }, 10);
+
+    input.addEventListener("keydown", (ev)=>{
+      if(ev.key === "Enter" && step.type !== "textarea"){
+        ev.preventDefault();
+        onOk();
+      }
+    });
+  }
+
+  function buildInput(step){
+    const val = (answers[step.key] ?? "");
+    let el;
+
+    if(step.type === "select"){
+      el = document.createElement("select");
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = "Selecione…";
+      el.appendChild(opt0);
+
+      for(const o of (step.options || [])){
+        const opt = document.createElement("option");
+        opt.value = o;
+        opt.textContent = o;
+        el.appendChild(opt);
+      }
+      el.value = val;
+
+    }else if(step.type === "textarea"){
+      el = document.createElement("textarea");
+      el.placeholder = step.placeholder || "";
+      el.value = val;
+
+    }else{
+      el = document.createElement("input");
+      el.type = step.type || "text";
+      el.placeholder = step.placeholder || "";
+      el.value = val;
+
+      if(step.inputmode) el.setAttribute("inputmode", step.inputmode);
+      if(step.type === "number"){ el.min="0"; el.max="120"; }
+    }
+
+    el.id = "fieldInput";
+    return el;
+  }
+
+  function readCurrentValue(){
+    const input = $("fieldInput");
+    if(!input) return "";
+    let v = (input.value ?? "");
+    if(typeof v === "string") v = v.trim();
+    return v;
+  }
+
+  function validateStep(value){
+    const step = steps[cursor];
+    const req = isRequired(step);
+    if(!req) return true;
+    if(value === "" || value === "N/A"){
+      showBox("err", "Este campo é obrigatório.");
       return false;
     }
-    function currentStepIndex(){
-      let i = cursor;
-      while(i < steps.length && !isShown(steps[i])) i++;
-      return i;
-    }
-    function prevVisibleIndex(from){
-      let i = from - 1;
-      while(i >= 0 && !isShown(steps[i])) i--;
-      return i;
-    }
-    function nextVisibleIndex(from){
-      let i = from + 1;
-      while(i < steps.length && !isShown(steps[i])) i++;
-      return i;
-    }
-    function shownCountUpTo(index){
-      let count = 0;
-      for(let i=0;i<=index;i++) if(isShown(steps[i])) count++;
-      return count;
-    }
-    function totalShownCount(){
-      let count = 0;
-      for(const s of steps) if(isShown(s)) count++;
-      return count;
-    }
+    return true;
+  }
 
-    function clearBoxes(){
-      ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
-    }
+  function prettyValue(v){
+    if(v === undefined || v === null || v === "") return "—";
+    return String(v);
+  }
 
-    function showToast(kind, msg){
-      const t = $("toast");
-      if(!t) return;
+  function renderReview(){
+    const wrap = document.createElement("div");
+    wrap.className = "review";
 
-      const map = {
-        ok:   { bg:"#ecfdf5", br:"#a7f3d0", tx:"#065f46" },
-        warn: { bg:"#fffbeb", br:"#fde68a", tx:"#92400e" },
-        err:  { bg:"#fef2f2", br:"#fecaca", tx:"#991b1b" }
-      };
-      const c = map[kind] || map.ok;
+    const h = document.createElement("h3");
+    h.textContent = "Confira antes de enviar (toque para editar)";
+    wrap.appendChild(h);
 
-      t.style.background = c.bg;
-      t.style.border = "2px solid " + c.br;
-      t.style.color = c.tx;
-      t.textContent = msg;
-      t.style.display = "block";
+    const list = document.createElement("div");
+    list.className = "list";
 
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(()=>{ t.style.display="none"; }, 4000);
+    for(let i=0;i<steps.length;i++){
+      const s = steps[i];
+      if(s.type === "review") continue;
+      if(!isShown(s)) continue;
+
+      const item = document.createElement("div");
+      item.className = "item";
+
+      const left = document.createElement("div");
+      const b = document.createElement("b");
+      b.textContent = s.label;
+      const span = document.createElement("span");
+      span.textContent = prettyValue(answers[s.key]);
+      left.appendChild(b);
+      left.appendChild(span);
+
+      const right = document.createElement("small");
+      right.textContent = (isRequired(s) ? "obrig." : "opcional");
+
+      item.appendChild(left);
+      item.appendChild(right);
+
+      item.addEventListener("click", ()=>{ cursor = i; render(); });
+
+      list.appendChild(item);
     }
 
-    function scrollToAlerts(){
-      const okEl = $("okBox");
-      const warnEl = $("warnBox");
-      const errEl = $("errBox");
+    wrap.appendChild(list);
+    return wrap;
+  }
 
-      const el = (okEl && okEl.style.display === "block") ? okEl
-               : (warnEl && warnEl.style.display === "block") ? warnEl
-               : (errEl && errEl.style.display === "block") ? errEl
-               : null;
+  function autoClearDependents(step){
+    if(step.key === "regiao" && answers.regiao !== "OUTRO") answers.regiao_outro = "";
+    if(step.key === "tipo_lesao" && answers.tipo_lesao !== "OUTROS") answers.tipo_lesao_outro = "";
+    if(step.key === "parte_corpo" && answers.parte_corpo !== "OUTRO") answers.parte_corpo_outro = "";
+    if(step.key === "razao" && answers.razao !== "OUTRO") answers.razao_outro = "";
+    if(step.key === "acao_preventiva" && answers.acao_preventiva !== "OUTRO") answers.acao_preventiva_outro = "";
+  }
 
-      if(el) el.scrollIntoView({ behavior:"smooth", block:"center" });
+  function onOk(){
+    const step = steps[cursor];
+    if(step.type === "review"){ submitAll(); return; }
+
+    const v = readCurrentValue();
+    if(!validateStep(v)) return;
+
+    answers[step.key] = v;
+    autoClearDependents(step);
+
+    cursor = nextVisibleIndex(cursor);
+    render();
+  }
+
+  function onNA(){
+    const step = steps[cursor];
+    if(isRequired(step) || step.type==="review") return;
+
+    answers[step.key] = "N/A";
+    autoClearDependents(step);
+
+    cursor = nextVisibleIndex(cursor);
+    render();
+  }
+
+  function onBack(){
+    const p = prevVisibleIndex(cursor);
+    if(p >= 0){ cursor = p; render(); }
+  }
+
+  $("btnOk").addEventListener("click", onOk);
+  $("btnNA").addEventListener("click", onNA);
+  $("btnBack").addEventListener("click", onBack);
+
+  $("btnClearQueue").addEventListener("click", ()=>{
+    localStorage.removeItem(QUEUE_KEY);
+    updateQueueInfo();
+    showBox("ok","Fila limpa.");
+  });
+
+  function buildPayload(){
+    return {
+      action: ACTION,
+      client_time: new Date().toISOString(),
+      client_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+
+      matricula: answers.matricula || "",
+      nome_funcionario: answers.nome_funcionario || "",
+      idade: answers.idade || "",
+      funcao: answers.funcao || "",
+      setor: answers.setor || "",
+      data_acidente: answers.data_acidente || "",
+
+      regiao: answers.regiao || "",
+      regiao_outro: answers.regiao_outro || "",
+
+      gravidade: answers.gravidade || "",
+      periodo_evento: answers.periodo_evento || "",
+
+      tipo_lesao: answers.tipo_lesao || "",
+      tipo_lesao_outro: answers.tipo_lesao_outro || "",
+
+      parte_corpo: answers.parte_corpo || "",
+      parte_corpo_outro: answers.parte_corpo_outro || "",
+
+      samu: answers.samu || "",
+      local_ocorrencia: answers.local_ocorrencia || "",
+
+      cid: answers.cid || "",
+      cat: answers.cat || "",
+
+      razao: answers.razao || "",
+      razao_outro: answers.razao_outro || "",
+
+      acao_preventiva: answers.acao_preventiva || "",
+      acao_preventiva_outro: answers.acao_preventiva_outro || "",
+
+      observacoes: answers.observacoes || ""
+    };
+  }
+
+  async function postPayload(payload){
+    const body = new URLSearchParams(payload);
+
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+      body
+    });
+
+    const txt = await res.text();
+    let json=null; try{ json=JSON.parse(txt);}catch(e){}
+
+    if(!res.ok){
+      const msg = (json && (json.message || json.mensagem)) ? (json.message || json.mensagem) : (txt || "");
+      throw new Error("HTTP " + res.status + " — " + msg);
     }
 
-    function showBox(kind, msg){
-      clearBoxes();
-      const el = kind==="ok" ? $("okBox") : (kind==="warn" ? $("warnBox") : $("errBox"));
-      el.textContent = msg;
-      el.style.display = "block";
-
-      // ✅ sempre visível no topo
-      showToast(kind, msg);
-
-      // ✅ e rola até o alerta também
-      setTimeout(scrollToAlerts, 60);
+    if(json){
+      if(json.ok === false) throw new Error(json.message || "Erro no servidor");
+      if(String(json.status || "").toUpperCase() === "ERR") throw new Error(json.mensagem || "Erro no servidor");
+      return json;
     }
 
-    function updateNet(){
-      const online = navigator.onLine;
-      $("netDot").className = "dot " + (online ? "ok" : "off");
-      $("netText").textContent = online ? "Online" : "Offline";
+    return { ok:true, message:"OK", raw:txt };
+  }
+
+  async function testConnection(){
+    clearBoxes();
+    try{
+      const r = await fetch(API_URL, { method:"GET", cache:"no-store" });
+      const t = await r.text();
+      showBox("ok","Conexão OK. Resposta do servidor: " + (t || "(vazio)"));
+    }catch(e){
+      showBox("err","Falha ao conectar no WebApp. Detalhe: " + (e.message || e));
     }
-    window.addEventListener("online", ()=>{ updateNet(); flushQueue(); });
-    window.addEventListener("offline", updateNet);
-    updateNet();
+  }
 
-    function getQueue(){
-      try{ return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); }
-      catch(e){ return []; }
-    }
-    function setQueue(q){
-      localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
-    }
+  $("btnTest").addEventListener("click", testConnection);
 
-    function render(){
-      clearBoxes();
+  async function flushQueue(){
+    if(!navigator.onLine) return;
 
-      const i = currentStepIndex();
-      cursor = i;
+    const q = getQueue();
+    if(q.length === 0) return;
 
-      const step = steps[i];
-      const shownPos = shownCountUpTo(i);
-      const total = totalShownCount();
+    let sent = 0;
 
-      $("progressText").textContent = `Campo ${shownPos} de ${total}`;
-      $("barFill").style.width = Math.round((shownPos/Math.max(1,total))*100) + "%";
-
-      $("btnBack").disabled = prevVisibleIndex(i) < 0;
-      $("btnOk").textContent = (step.type==="review") ? "Enviar" : "OK / Próximo";
-
-      const req = isRequired(step);
-      $("btnNA").disabled = req || step.type==="review";
-
-      const area = $("stepArea");
-      area.innerHTML = "";
-
-      if(step.type === "review"){
-        area.appendChild(renderReview());
-        return;
-      }
-
-      const label = document.createElement("label");
-      label.textContent = step.label;
-      if(req){
-        const star = document.createElement("span");
-        star.className = "req";
-        star.textContent = "*";
-        label.appendChild(star);
-      }
-      area.appendChild(label);
-
-      const hint = document.createElement("div");
-      hint.className = "hint";
-      hint.textContent = req ? "Obrigatório" : "Opcional (use N/A para pular)";
-      area.appendChild(hint);
-
-      const input = buildInput(step);
-      area.appendChild(input);
-
-      setTimeout(()=>{ try{ input.focus(); }catch(e){} }, 10);
-
-      input.addEventListener("keydown", (ev)=>{
-        if(ev.key === "Enter" && step.type !== "textarea"){
-          ev.preventDefault();
-          onOk();
-        }
-      });
-
-      // garante que a área de input fica visível
-      setTimeout(()=>{ $("cardTop").scrollIntoView({behavior:"smooth", block:"start"}); }, 10);
-    }
-
-    function buildInput(step){
-      const val = (answers[step.key] ?? "");
-      let el;
-
-      if(step.type === "select"){
-        el = document.createElement("select");
-        const opt0 = document.createElement("option");
-        opt0.value = "";
-        opt0.textContent = "Selecione…";
-        el.appendChild(opt0);
-
-        for(const o of step.options || []){
-          const opt = document.createElement("option");
-          opt.value = o;
-          opt.textContent = o;
-          el.appendChild(opt);
-        }
-        el.value = val;
-
-      }else if(step.type === "textarea"){
-        el = document.createElement("textarea");
-        el.placeholder = step.placeholder || "";
-        el.value = val;
-
-      }else{
-        el = document.createElement("input");
-        el.type = step.type || "text";
-        el.placeholder = step.placeholder || "";
-        el.value = val;
-
-        if(step.inputmode) el.setAttribute("inputmode", step.inputmode);
-        if(step.type === "number"){
-          el.min = "0";
-          el.max = "120";
-        }
-      }
-
-      el.id = "fieldInput";
-      return el;
-    }
-
-    function readCurrentValue(){
-      const input = $("fieldInput");
-      if(!input) return "";
-      let v = (input.value ?? "");
-      if(typeof v === "string") v = v.trim();
-      return v;
-    }
-
-    function validateStep(value){
-      const step = steps[cursor];
-      const req = isRequired(step);
-      if(!req) return true;
-      if(value === "" || value === "N/A"){
-        showBox("err", "Este campo é obrigatório.");
-        return false;
-      }
-      return true;
-    }
-
-    function prettyValue(v){
-      if(v === undefined || v === null || v === "") return "—";
-      return String(v);
-    }
-
-    function renderReview(){
-      const wrap = document.createElement("div");
-      wrap.className = "review";
-
-      const h = document.createElement("h3");
-      h.textContent = "Confira antes de enviar (toque para editar)";
-      wrap.appendChild(h);
-
-      const list = document.createElement("div");
-      list.className = "list";
-
-      for(let i=0;i<steps.length;i++){
-        const s = steps[i];
-        if(s.type === "review") continue;
-        if(!isShown(s)) continue;
-
-        const item = document.createElement("div");
-        item.className = "item";
-
-        const left = document.createElement("div");
-        const b = document.createElement("b");
-        b.textContent = s.label;
-        const span = document.createElement("span");
-        span.textContent = prettyValue(answers[s.key]);
-        left.appendChild(b);
-        left.appendChild(span);
-
-        const right = document.createElement("small");
-        right.textContent = (isRequired(s) ? "obrig." : "opcional");
-
-        item.appendChild(left);
-        item.appendChild(right);
-
-        item.addEventListener("click", ()=>{
-          cursor = i;
-          render();
-        });
-
-        list.appendChild(item);
-      }
-
-      wrap.appendChild(list);
-      return wrap;
-    }
-
-    function autoClearDependents(step){
-      if(step.key === "regiao" && answers.regiao !== "OUTRO") answers.regiao_outro = "";
-      if(step.key === "tipo_lesao" && answers.tipo_lesao !== "OUTROS") answers.tipo_lesao_outro = "";
-      if(step.key === "parte_corpo" && answers.parte_corpo !== "OUTRO") answers.parte_corpo_outro = "";
-      if(step.key === "razao" && answers.razao !== "OUTRO") answers.razao_outro = "";
-      if(step.key === "acao_preventiva" && answers.acao_preventiva !== "OUTRO") answers.acao_preventiva_outro = "";
-    }
-
-    function onOk(){
-      const step = steps[cursor];
-
-      if(step.type === "review"){
-        submitAll();
-        return;
-      }
-
-      const v = readCurrentValue();
-      if(!validateStep(v)) return;
-
-      answers[step.key] = v;
-      autoClearDependents(step);
-
-      cursor = nextVisibleIndex(cursor);
-      render();
-    }
-
-    function onNA(){
-      const step = steps[cursor];
-      if(isRequired(step) || step.type==="review") return;
-
-      answers[step.key] = "N/A";
-      autoClearDependents(step);
-
-      cursor = nextVisibleIndex(cursor);
-      render();
-    }
-
-    function onBack(){
-      const p = prevVisibleIndex(cursor);
-      if(p >= 0){
-        cursor = p;
-        render();
-      }
-    }
-
-    $("btnOk").addEventListener("click", onOk);
-    $("btnNA").addEventListener("click", onNA);
-    $("btnBack").addEventListener("click", onBack);
-
-    function buildPayload(){
-      return {
-        action: ACTION,
-
-        // extras (não atrapalham)
-        client_time: new Date().toISOString(),
-        client_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
-
-        matricula: answers.matricula || "",
-        nome_funcionario: answers.nome_funcionario || "",
-        idade: answers.idade || "",
-        funcao: answers.funcao || "",
-        setor: answers.setor || "",
-        data_acidente: answers.data_acidente || "",
-
-        regiao: answers.regiao || "",
-        regiao_outro: answers.regiao_outro || "",
-
-        gravidade: answers.gravidade || "",
-        periodo_evento: answers.periodo_evento || "",
-
-        tipo_lesao: answers.tipo_lesao || "",
-        tipo_lesao_outro: answers.tipo_lesao_outro || "",
-
-        parte_corpo: answers.parte_corpo || "",
-        parte_corpo_outro: answers.parte_corpo_outro || "",
-
-        samu: answers.samu || "",
-        local_ocorrencia: answers.local_ocorrencia || "",
-
-        cid: answers.cid || "",
-        cat: answers.cat || "",
-
-        razao: answers.razao || "",
-        razao_outro: answers.razao_outro || "",
-
-        acao_preventiva: answers.acao_preventiva || "",
-        acao_preventiva_outro: answers.acao_preventiva_outro || "",
-
-        observacoes: answers.observacoes || ""
-      };
-    }
-
-    // ✅ robusto: entende {ok:true,message:"..."} e também {status:"OK", mensagem:"..."}
-    async function postPayload(payload){
-      const body = new URLSearchParams(payload);
-
-      const res = await fetch(API_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
-        body
-      });
-
-      const txt = await res.text();
-      let json=null; try{ json=JSON.parse(txt);}catch(e){}
-
-      if(!res.ok){
-        const msg = (json && (json.mensagem || json.message)) ? (json.mensagem || json.message) : (txt || "");
-        throw new Error("HTTP " + res.status + " — " + msg);
-      }
-
-      if(json){
-        // padrão 1: ok/message
-        if(json.ok === false){
-          throw new Error(json.message || "Erro no servidor");
-        }
-        // padrão 2: status/mensagem
-        if(String(json.status || "").toUpperCase() === "ERR"){
-          throw new Error(json.mensagem || "Erro no servidor");
-        }
-        return json;
-      }
-
-      return { ok:true, message:"Enviado.", raw:txt };
-    }
-
-    async function flushQueue(){
-      if(!navigator.onLine) return;
-      const q = getQueue();
-      if(q.length === 0) return;
-
-      let sent = 0;
-      while(q.length){
-        const item = q[0];
-        try{
-          await postPayload(item.payload);
-          q.shift();
-          sent++;
-          setQueue(q);
-        }catch(e){
-          if(sent>0) showBox("warn","Reenviados "+sent+" item(ns). Ainda restam "+q.length+" na fila.");
-          return;
-        }
-      }
-      if(sent>0) showBox("ok","✅ Fila enviada com sucesso ("+sent+" item(ns)).");
-    }
-
-    async function submitAll(){
-      clearBoxes();
-
-      if(!answers.matricula || answers.matricula==="N/A"){
-        cursor = steps.findIndex(s=>s.key==="matricula");
-        render();
-        showBox("err","Informe a matrícula (obrigatório).");
-        return;
-      }
-      if(!answers.nome_funcionario || answers.nome_funcionario==="N/A"){
-        cursor = steps.findIndex(s=>s.key==="nome_funcionario");
-        render();
-        showBox("err","Informe o nome (obrigatório).");
-        return;
-      }
-
-      const payload = buildPayload();
-
-      $("btnOk").disabled = true;
-      $("btnNA").disabled = true;
-      $("btnBack").disabled = true;
-
+    while(q.length){
       try{
-        if(navigator.onLine){
-          const r = await postPayload(payload);
-
-          // ✅ LIMPA E VOLTA PRO COMEÇO
-          for(const k in answers) delete answers[k];
-          cursor = 0;
-          render();
-
-          // ✅ AVISO SEMPRE VISÍVEL (toast + caixa)
-          const msg = (r && (r.message || r.mensagem)) ? (r.message || r.mensagem) : "✅ ENVIADO COM SUCESSO!";
-          showBox("ok", "✅ ENVIADO COM SUCESSO! " + msg);
-
-          // tenta reenviar fila pendente
-          await flushQueue();
-        }else{
-          const q = getQueue();
-          q.push({ payload });
-          setQueue(q);
-
-          for(const k in answers) delete answers[k];
-          cursor = 0;
-          render();
-
-          showBox("warn","Sem internet. Registro salvo na fila e será enviado automaticamente.");
-        }
+        await postPayload(q[0].payload);
+        q.shift();
+        sent++;
+        setQueue(q);
       }catch(e){
-        // se falhar online, guarda na fila
+        if(sent > 0) showBox("warn","Reenviados "+sent+" item(ns). Ainda restam "+q.length+" na fila.");
+        return;
+      }
+    }
+
+    if(sent>0) showBox("ok","✅ Fila enviada com sucesso ("+sent+" item(ns)).");
+  }
+
+  function resetForm(){
+    for(const k in answers) delete answers[k];
+    cursor = 0;
+    render();
+  }
+
+  async function submitAll(){
+    clearBoxes();
+
+    if(!answers.matricula || answers.matricula==="N/A"){
+      cursor = steps.findIndex(s=>s.key==="matricula");
+      render();
+      showBox("err","Informe a matrícula (obrigatório).");
+      return;
+    }
+    if(!answers.nome_funcionario || answers.nome_funcionario==="N/A"){
+      cursor = steps.findIndex(s=>s.key==="nome_funcionario");
+      render();
+      showBox("err","Informe o nome (obrigatório).");
+      return;
+    }
+
+    const payload = buildPayload();
+
+    $("btnOk").disabled = true;
+    $("btnNA").disabled = true;
+    $("btnBack").disabled = true;
+
+    try{
+      if(!navigator.onLine){
         const q = getQueue();
         q.push({ payload });
         setQueue(q);
-
-        for(const k in answers) delete answers[k];
-        cursor = 0;
-        render();
-
-        showBox("warn","Falha ao enviar agora. Salvei na fila para reenviar automaticamente. Detalhe: "+(e.message||e));
-      }finally{
-        $("btnOk").disabled = false;
-        $("btnNA").disabled = false;
-        $("btnBack").disabled = false;
+        showBox("warn","Sem internet. Registro salvo na fila e será enviado automaticamente.");
+        resetForm();
+        return;
       }
-    }
 
-    cursor = 0;
-    render();
-    flushQueue();
-  </script>
+      // ✅ envio real e espera confirmação do servidor
+      const r = await postPayload(payload);
+      const msg = (r && (r.message || r.mensagem)) ? (r.message || r.mensagem) : "✅ Enviado com sucesso.";
+      showBox("ok", msg);
+
+      // ✅ só reseta depois de mostrar confirmação
+      resetForm();
+
+      await flushQueue();
+
+    }catch(e){
+      const q = getQueue();
+      q.push({ payload });
+      setQueue(q);
+
+      const detalhe = (e && e.message) ? e.message : String(e);
+      showBox("warn","Falha ao enviar agora. Salvei na fila para reenviar automaticamente. Detalhe: " + detalhe);
+
+      resetForm();
+    }finally{
+      $("btnOk").disabled = false;
+      $("btnNA").disabled = false;
+      $("btnBack").disabled = false;
+    }
+  }
+
+  // inicialização
+  render();
+  flushQueue();
+</script>
 </body>
 </html>
