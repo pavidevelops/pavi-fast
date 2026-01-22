@@ -6,9 +6,6 @@
   <title>PAVI FAST — TST (Acidente)</title>
 
   <style>
-    /* ============================
-       FUNNEL SANS — LOCAL (.ttf)
-    ============================ */
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap;}
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap;}
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap;}
@@ -20,7 +17,6 @@
       --text:#123322;
       --muted:#5d7a6d;
       --primary:#10b981;
-      --primary-600:#0da271;
       --border:#d1fae5;
       --shadow:0 10px 25px rgba(16,185,129,.10);
       --radius:18px;
@@ -31,194 +27,60 @@
     }
 
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:'FunnelSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
+    body{margin:0;font-family:'FunnelSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;background:var(--bg);color:var(--text)}
     .wrap{max-width:980px;margin:0 auto;padding:18px 14px 28px}
 
-    .top{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      margin:10px 0 14px;
-    }
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 14px}
     .brand{display:flex;align-items:center;gap:10px}
-    .logo{
-      width:40px;height:40px;border-radius:12px;overflow:hidden;
-      border:1px solid var(--border); background:#fff; box-shadow:var(--shadow);
-      display:grid;place-items:center;
-    }
+    .logo{width:40px;height:40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#fff;box-shadow:var(--shadow);display:grid;place-items:center}
     .logo img{width:100%;height:100%;object-fit:cover}
     .title h1{margin:0;font-size:18px;font-weight:800}
     .title p{margin:3px 0 0;font-size:12px;color:var(--muted)}
-
-    .right{
-      display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;
-    }
-
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:10px 12px;border-radius:999px;
-      border:1px solid var(--border);
-      background:#fff;
-      box-shadow:var(--shadow);
-      font-size:12px;
-      user-select:none;
-      white-space:nowrap;
-    }
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;box-shadow:var(--shadow);font-size:12px;white-space:nowrap}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.ok{background:#10b981}
     .dot.off{background:#f59e0b}
 
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
-    }
-
-    .progressRow{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      margin-bottom:10px;
-    }
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .progressRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
     .progressText{font-size:12px;color:var(--muted)}
-    .bar{
-      width:100%;
-      height:10px;
-      border-radius:999px;
-      background:#eaf7ef;
-      border:1px solid var(--border);
-      overflow:hidden;
-    }
-    .bar > div{
-      height:100%;
-      width:0%;
-      background:var(--primary);
-      transition:width .2s ease;
-    }
+    .bar{width:100%;height:10px;border-radius:999px;background:#eaf7ef;border:1px solid var(--border);overflow:hidden}
+    .bar > div{height:100%;width:0%;background:var(--primary);transition:width .2s ease}
 
-    label{
-      display:block;
-      font-size:14px;
-      font-weight:900;
-      margin:6px 0 8px;
-      letter-spacing:.2px;
-    }
+    label{display:block;font-size:14px;font-weight:900;margin:6px 0 8px;letter-spacing:.2px}
     .req{color:#dc2626;font-weight:900;margin-left:6px}
-
     .hint{font-size:12px;color:var(--muted);margin-top:-2px;margin-bottom:10px}
 
-    input, select, textarea{
-      width:100%;
-      padding:14px 12px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#fff;
-      font-family:inherit;
-      font-size:15px;
-      outline:none;
-      transition:.15s ease;
-    }
+    input, select, textarea{width:100%;padding:14px 12px;border-radius:14px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:15px;outline:none;transition:.15s ease}
     textarea{min-height:110px;resize:vertical}
-    input:focus, select:focus, textarea:focus{
-      border-color: rgba(16,185,129,.55);
-      box-shadow: 0 0 0 4px rgba(16,185,129,.12);
-    }
+    input:focus, select:focus, textarea:focus{border-color:rgba(16,185,129,.55);box-shadow:0 0 0 4px rgba(16,185,129,.12)}
 
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
-    .btn{
-      appearance:none;border:0;cursor:pointer;
-      border-radius:14px;
-      padding:12px 14px;
-      font-family:inherit;
-      font-weight:900;
-      font-size:14px;
-      display:inline-flex;align-items:center;justify-content:center;
-      transition:.15s ease;
-      user-select:none;
-      min-width:110px;
-    }
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .btn{appearance:none;border:0;cursor:pointer;border-radius:14px;padding:12px 14px;font-family:inherit;font-weight:900;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:.15s ease;user-select:none;min-width:110px}
     .btnPrimary{background:var(--primary);color:#fff}
     .btnSecondary{background:#fff;color:var(--text);border:1px solid var(--border)}
     .btnGhost{background:transparent;color:var(--text);border:1px dashed rgba(18,51,34,.22)}
     .btn:disabled{opacity:.55;cursor:not-allowed}
 
-    .alert{margin-top:12px;padding:12px;border-radius:14px;border:1px solid var(--border);font-size:13px;display:none}
-    .alert.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-br)}
-    .alert.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-br)}
-    .alert.err{background:var(--err-bg);color:var(--err);border-color:var(--err-br)}
-
-    .review{
-      margin-top:10px;
-      border-top:1px solid var(--border);
-      padding-top:12px;
-    }
+    .review{margin-top:10px;border-top:1px solid var(--border);padding-top:12px}
     .review h3{margin:0 0 8px;font-size:14px;font-weight:900}
     .list{display:grid;gap:8px}
-    .item{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px 12px;
-      background:#fff;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:flex-start;
-      cursor:pointer;
-    }
+    .item{border:1px solid var(--border);border-radius:14px;padding:10px 12px;background:#fff;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;cursor:pointer}
     .item b{display:block;font-size:12px;color:var(--muted);font-weight:800}
     .item span{display:block;font-size:13px;font-weight:800;color:var(--text);word-break:break-word}
     .item small{color:var(--muted);font-size:12px;font-weight:800}
 
-    /* ============================
-       MODAL (POPUP)
-    ============================ */
-    .modalBack{
-      position:fixed;inset:0;
-      background:rgba(18,51,34,.38);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:9999;
-    }
-    .modal{
-      width:min(520px, 100%);
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:18px;
-      box-shadow:0 20px 60px rgba(0,0,0,.18);
-      overflow:hidden;
-    }
-    .modalHead{
-      display:flex;align-items:center;gap:10px;
-      padding:14px 16px;
-      border-bottom:1px solid var(--border);
-    }
-    .badge{
-      width:30px;height:30px;border-radius:10px;
-      display:grid;place-items:center;
-      border:1px solid var(--border);
-      background:var(--bg);
-      font-weight:900;
-    }
+    .modalBack{position:fixed;inset:0;background:rgba(18,51,34,.38);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
+    .modal{width:min(520px, 100%);background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.18);overflow:hidden}
+    .modalHead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+    .badge{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--border);background:var(--bg);font-weight:900}
     .badge.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-br)}
     .badge.err{background:var(--err-bg);color:var(--err);border-color:var(--err-br)}
+    .badge.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-br)}
     .modalTitle{font-weight:900}
     .modalBody{padding:14px 16px;color:var(--text);font-weight:700}
     .modalBody p{margin:0;color:var(--muted);font-weight:700}
-    .modalActions{
-      display:flex;gap:10px;justify-content:flex-end;
-      padding:14px 16px;border-top:1px solid var(--border);
-      background:#fff;
-    }
+    .modalActions{display:flex;gap:10px;justify-content:flex-end;padding:14px 16px;border-top:1px solid var(--border);background:#fff}
   </style>
 </head>
 
@@ -229,15 +91,13 @@
         <div class="logo"><img src="logo.png" alt="PAVI"></div>
         <div class="title">
           <h1>Registro de Acidente — TST</h1>
-          <p>1 campo por vez • N/A para pular • envio direto (sem fila)</p>
+          <p>1 campo por vez • N/A para pular • envio imediato com confirmação</p>
         </div>
       </div>
 
-      <div class="right">
-        <div class="pill" title="Conexão">
-          <span class="dot off" id="netDot"></span>
-          <span id="netText">Offline</span>
-        </div>
+      <div class="pill" title="Conexão">
+        <span class="dot off" id="netDot"></span>
+        <span id="netText">Offline</span>
       </div>
     </div>
 
@@ -251,15 +111,11 @@
 
       <div id="stepArea"></div>
 
-      <div class="actions" id="actions">
+      <div class="actions">
         <button class="btn btnSecondary" id="btnBack" type="button">Voltar</button>
         <button class="btn btnGhost" id="btnNA" type="button">N/A (pular)</button>
         <button class="btn btnPrimary" id="btnOk" type="button">OK / Próximo</button>
       </div>
-
-      <div class="alert ok" id="okBox"></div>
-      <div class="alert warn" id="warnBox"></div>
-      <div class="alert err" id="errBox"></div>
     </div>
   </div>
 
@@ -282,49 +138,42 @@
   </div>
 
   <script>
-    // ✅ WebApp da planilha TST (submit_tst)
-    // IMPORTANTE: mantenha EXATAMENTE este /exec
+    // ✅ Seu /exec do TST
     const API_URL = "https://script.google.com/macros/s/AKfycby4Fjn2Cd083r9y9-RAgY6kDBlGb-Yzw7o82MljeWxlkW2OPofQR4KIvmNXx-PRbcz0rQ/exec";
     const ACTION = "submit_tst";
 
     const $ = (id)=>document.getElementById(id);
 
-    /* ============================
-       MODAL helpers
-    ============================ */
+    function updateNet(){
+      const online = navigator.onLine;
+      $("netDot").className = "dot " + (online ? "ok" : "off");
+      $("netText").textContent = online ? "Online" : "Offline";
+    }
+    window.addEventListener("online", updateNet);
+    window.addEventListener("offline", updateNet);
+    updateNet();
+
+    // Modal
     function openModal(kind, title, msg, sub){
-      const back = $("modalBack");
       const badge = $("modalBadge");
-      const t = $("modalTitle");
-      const m = $("modalMsg");
-      const s = $("modalSub");
-
       if(kind === "err"){
-        badge.className = "badge err";
-        badge.textContent = "!";
-      }else{
-        badge.className = "badge ok";
-        badge.textContent = "✓";
+        badge.className = "badge err"; badge.textContent="!";
+      } else if(kind === "warn"){
+        badge.className = "badge warn"; badge.textContent="!";
+      } else {
+        badge.className = "badge ok"; badge.textContent="✓";
       }
-
-      t.textContent = title || (kind==="err" ? "Falha ao enviar" : "Enviado com sucesso");
-      m.textContent = msg || "";
-      s.textContent = sub || "";
-
-      back.style.display = "flex";
+      $("modalTitle").textContent = title || "—";
+      $("modalMsg").textContent = msg || "";
+      $("modalSub").textContent = sub || "";
+      $("modalBack").style.display = "flex";
     }
-    function closeModal(){
-      $("modalBack").style.display = "none";
-    }
+    function closeModal(){ $("modalBack").style.display="none"; }
     $("modalClose").addEventListener("click", closeModal);
     $("modalOk").addEventListener("click", closeModal);
-    $("modalBack").addEventListener("click", (e)=>{
-      if(e.target === $("modalBack")) closeModal();
-    });
+    $("modalBack").addEventListener("click", (e)=>{ if(e.target === $("modalBack")) closeModal(); });
 
-    /* ============================
-       Steps
-    ============================ */
+    // Steps (mesmos do seu)
     const steps = [
       { key:"matricula", label:"MATRÍCULA DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Ex.: 12345", inputmode:"numeric" },
       { key:"nome_funcionario", label:"NOME DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Nome completo" },
@@ -385,70 +234,21 @@
       },
 
       { key:"observacoes", label:"OBSERVAÇÕES (OPCIONAL)", type:"textarea", placeholder:"Detalhes adicionais..." },
-
       { key:"__review__", label:"REVISAR E ENVIAR", type:"review" }
     ];
 
     const answers = {};
     let cursor = 0;
 
-    function isShown(step){
-      if(typeof step.showIf === "function") return !!step.showIf(answers);
-      return true;
-    }
-    function isRequired(step){
-      if(step.required) return true;
-      if(typeof step.requiredIf === "function") return !!step.requiredIf(answers);
-      return false;
-    }
-    function currentStepIndex(){
-      let i = cursor;
-      while(i < steps.length && !isShown(steps[i])) i++;
-      return i;
-    }
-    function prevVisibleIndex(from){
-      let i = from - 1;
-      while(i >= 0 && !isShown(steps[i])) i--;
-      return i;
-    }
-    function nextVisibleIndex(from){
-      let i = from + 1;
-      while(i < steps.length && !isShown(steps[i])) i++;
-      return i;
-    }
-    function shownCountUpTo(index){
-      let count = 0;
-      for(let i=0;i<=index;i++) if(isShown(steps[i])) count++;
-      return count;
-    }
-    function totalShownCount(){
-      let count = 0;
-      for(const s of steps) if(isShown(s)) count++;
-      return count;
-    }
-
-    function showBox(kind, msg){
-      ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
-      const el = kind==="ok" ? $("okBox") : (kind==="warn" ? $("warnBox") : $("errBox"));
-      el.textContent = msg;
-      el.style.display = "block";
-    }
-    function clearBoxes(){
-      ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
-    }
-
-    function updateNet(){
-      const online = navigator.onLine;
-      $("netDot").className = "dot " + (online ? "ok" : "off");
-      $("netText").textContent = online ? "Online" : "Offline";
-    }
-    window.addEventListener("online", updateNet);
-    window.addEventListener("offline", updateNet);
-    updateNet();
+    function isShown(step){ return (typeof step.showIf==="function") ? !!step.showIf(answers) : true; }
+    function isRequired(step){ return step.required || ((typeof step.requiredIf==="function") ? !!step.requiredIf(answers) : false); }
+    function currentStepIndex(){ let i=cursor; while(i<steps.length && !isShown(steps[i])) i++; return i; }
+    function prevVisibleIndex(from){ let i=from-1; while(i>=0 && !isShown(steps[i])) i--; return i; }
+    function nextVisibleIndex(from){ let i=from+1; while(i<steps.length && !isShown(steps[i])) i++; return i; }
+    function shownCountUpTo(index){ let c=0; for(let i=0;i<=index;i++) if(isShown(steps[i])) c++; return c; }
+    function totalShownCount(){ let c=0; for(const s of steps) if(isShown(s)) c++; return c; }
 
     function render(){
-      clearBoxes();
-
       const i = currentStepIndex();
       cursor = i;
 
@@ -520,22 +320,18 @@
         }
         el.value = val;
 
-      }else if(step.type === "textarea"){
+      } else if(step.type === "textarea"){
         el = document.createElement("textarea");
         el.placeholder = step.placeholder || "";
         el.value = val;
 
-      }else{
+      } else {
         el = document.createElement("input");
         el.type = step.type || "text";
         el.placeholder = step.placeholder || "";
         el.value = val;
-
         if(step.inputmode) el.setAttribute("inputmode", step.inputmode);
-        if(step.type === "number"){
-          el.min = "0";
-          el.max = "120";
-        }
+        if(step.type === "number"){ el.min="0"; el.max="120"; }
       }
 
       el.id = "fieldInput";
@@ -555,7 +351,7 @@
       const req = isRequired(step);
       if(!req) return true;
       if(value === "" || value === "N/A"){
-        showBox("err", "Este campo é obrigatório.");
+        openModal("err","Campo obrigatório","Este campo é obrigatório.","");
         return false;
       }
       return true;
@@ -621,18 +417,13 @@
 
     function onOk(){
       const step = steps[cursor];
-
-      if(step.type === "review"){
-        submitAll();
-        return;
-      }
+      if(step.type === "review"){ submitAll(); return; }
 
       const v = readCurrentValue();
       if(!validateStep(v)) return;
 
       answers[step.key] = v;
       autoClearDependents(step);
-
       cursor = nextVisibleIndex(cursor);
       render();
     }
@@ -640,29 +431,30 @@
     function onNA(){
       const step = steps[cursor];
       if(isRequired(step) || step.type==="review") return;
-
       answers[step.key] = "N/A";
       autoClearDependents(step);
-
       cursor = nextVisibleIndex(cursor);
       render();
     }
 
     function onBack(){
       const p = prevVisibleIndex(cursor);
-      if(p >= 0){
-        cursor = p;
-        render();
-      }
+      if(p >= 0){ cursor = p; render(); }
     }
 
     $("btnOk").addEventListener("click", onOk);
     $("btnNA").addEventListener("click", onNA);
     $("btnBack").addEventListener("click", onBack);
 
-    function buildPayload(){
+    // ======= ENVIO + CONFIRMAÇÃO REAL =======
+    function genUid(){
+      return String(Date.now()) + "_" + Math.random().toString(16).slice(2);
+    }
+
+    function buildPayload(uid){
       return {
         action: ACTION,
+        client_uid: uid,
         client_time: new Date().toISOString(),
         client_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
 
@@ -701,14 +493,8 @@
       };
     }
 
-    /*
-      ✅ ENVIO DIRETO (SEM FILA)
-      ✅ Resolve CORS no GitHub Pages usando mode:"no-cors"
-      ⚠️ No-cors não permite ler resposta. Se não der erro de rede, consideramos enviado.
-    */
-    async function postPayloadNoCors(payload){
+    async function postNoCors(payload){
       const body = new URLSearchParams(payload);
-
       await fetch(API_URL, {
         method:"POST",
         body,
@@ -717,45 +503,89 @@
         redirect:"follow",
         credentials:"omit"
       });
+    }
 
-      // Se chegou aqui, não houve erro de rede.
-      return { ok:true, opaque:true };
+    // JSONP: exige que o backend tenha action=check_uid&uid=...&callback=...
+    function checkUidJsonp(uid){
+      return new Promise((resolve, reject)=>{
+        const cb = "__tst_cb_" + Math.random().toString(16).slice(2);
+        const timeout = setTimeout(()=>{
+          cleanup();
+          reject(new Error("Timeout ao confirmar gravação."));
+        }, 6500);
+
+        let script = null;
+
+        function cleanup(){
+          clearTimeout(timeout);
+          try{ delete window[cb]; }catch(e){}
+          if(script && script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[cb] = (data)=>{
+          cleanup();
+          resolve(data);
+        };
+
+        const url = API_URL + "?action=check_uid&uid=" + encodeURIComponent(uid) + "&callback=" + encodeURIComponent(cb);
+        script = document.createElement("script");
+        script.src = url;
+        script.onerror = ()=>{
+          cleanup();
+          reject(new Error("Falha no JSONP (check_uid)."));
+        };
+        document.head.appendChild(script);
+      });
+    }
+
+    async function confirmSent(uid){
+      for(let i=0;i<8;i++){
+        const r = await checkUidJsonp(uid);
+        if(r && r.found) return true;
+        await new Promise(res=>setTimeout(res, 700));
+      }
+      return false;
     }
 
     async function submitAll(){
-      clearBoxes();
-
+      if(!navigator.onLine){
+        openModal("err","Sem internet","Conecte-se à internet para enviar.","");
+        return;
+      }
       if(!answers.matricula || answers.matricula==="N/A"){
-        cursor = steps.findIndex(s=>s.key==="matricula");
-        render();
-        openModal("err","Campo obrigatório","Informe a matrícula do funcionário.","");
+        cursor = steps.findIndex(s=>s.key==="matricula"); render();
+        openModal("err","Campo obrigatório","Informe a matrícula.","");
         return;
       }
       if(!answers.nome_funcionario || answers.nome_funcionario==="N/A"){
-        cursor = steps.findIndex(s=>s.key==="nome_funcionario");
-        render();
-        openModal("err","Campo obrigatório","Informe o nome do funcionário.","");
+        cursor = steps.findIndex(s=>s.key==="nome_funcionario"); render();
+        openModal("err","Campo obrigatório","Informe o nome.","");
         return;
       }
 
-      const payload = buildPayload();
+      const uid = genUid();
+      const payload = buildPayload(uid);
 
       $("btnOk").disabled = true;
       $("btnNA").disabled = true;
       $("btnBack").disabled = true;
 
       try{
-        if(!navigator.onLine){
-          openModal("err","Sem internet","Conecte-se à internet para enviar.","(Envio direto sem fila)");
+        await postNoCors(payload);
+
+        const ok = await confirmSent(uid);
+        if(!ok){
+          openModal(
+            "warn",
+            "Envio disparado, mas sem confirmação",
+            "Eu enviei a requisição, mas não consegui confirmar a gravação na aba INICIO.",
+            "⚠️ Isso acontece quando o WebApp não foi reimplantado com o check_uid, ou o script está gravando em outra planilha/aba."
+          );
           return;
         }
 
-        await postPayloadNoCors(payload);
+        openModal("ok","Enviado com sucesso","Registro gravado na planilha (aba INICIO).","UID: " + uid);
 
-        // ✅ POPUP de confirmação
-        openModal("ok","Enviado com sucesso","Registro enviado para a planilha.","Se quiser confirmar: abra a planilha e veja a nova linha.");
-
-        // limpa respostas e reinicia
         for(const k in answers) delete answers[k];
         cursor = 0;
         render();
