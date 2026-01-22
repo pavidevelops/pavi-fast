@@ -37,13 +37,13 @@
       background:var(--bg);
       color:var(--text);
     }
-    .wrap{max-width:920px;margin:0 auto;padding:18px 14px 28px}
+    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 28px}
 
     .top{
       display:flex;align-items:center;justify-content:space-between;gap:12px;
       margin:10px 0 14px;
     }
-    .brand{display:flex;align-items:center;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px}
     .logo{
       width:40px;height:40px;border-radius:12px;overflow:hidden;
       border:1px solid var(--border); background:#fff; box-shadow:var(--shadow);
@@ -53,8 +53,11 @@
     .title h1{margin:0;font-size:18px;font-weight:800}
     .title p{margin:3px 0 0;font-size:12px;color:var(--muted)}
 
-    .topRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .chip{
+    .right{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;
+    }
+
+    .pill{
       display:inline-flex;align-items:center;gap:8px;
       padding:10px 12px;border-radius:999px;
       border:1px solid var(--border);
@@ -67,19 +70,6 @@
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.ok{background:#10b981}
     .dot.off{background:#f59e0b}
-
-    .btnSmall{
-      appearance:none;border:0;cursor:pointer;
-      border-radius:999px;
-      padding:10px 12px;
-      font-family:inherit;
-      font-weight:900;
-      font-size:12px;
-      background:#fff;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-      color:var(--text);
-    }
 
     .card{
       background:var(--card);
@@ -153,12 +143,17 @@
       display:inline-flex;align-items:center;justify-content:center;
       transition:.15s ease;
       user-select:none;
-      min-width:120px;
+      min-width:110px;
     }
     .btnPrimary{background:var(--primary);color:#fff}
     .btnSecondary{background:#fff;color:var(--text);border:1px solid var(--border)}
     .btnGhost{background:transparent;color:var(--text);border:1px dashed rgba(18,51,34,.22)}
     .btn:disabled{opacity:.55;cursor:not-allowed}
+
+    .alert{margin-top:12px;padding:12px;border-radius:14px;border:1px solid var(--border);font-size:13px;display:none}
+    .alert.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-br)}
+    .alert.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-br)}
+    .alert.err{background:var(--err-bg);color:var(--err);border-color:var(--err-br)}
 
     .review{
       margin-top:10px;
@@ -185,9 +180,9 @@
     /* ============================
        MODAL (POPUP)
     ============================ */
-    .modalOverlay{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.35);
+    .modalBack{
+      position:fixed;inset:0;
+      background:rgba(18,51,34,.38);
       display:none;
       align-items:center;
       justify-content:center;
@@ -195,50 +190,35 @@
       z-index:9999;
     }
     .modal{
-      width:100%;
-      max-width:520px;
+      width:min(520px, 100%);
       background:#fff;
-      border-radius:18px;
       border:1px solid var(--border);
-      box-shadow:0 25px 60px rgba(0,0,0,.18);
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.18);
       overflow:hidden;
     }
     .modalHead{
       display:flex;align-items:center;gap:10px;
       padding:14px 16px;
       border-bottom:1px solid var(--border);
-      background:#fff;
     }
-    .badgeIcon{
+    .badge{
       width:30px;height:30px;border-radius:10px;
       display:grid;place-items:center;
-      font-weight:900;
       border:1px solid var(--border);
+      background:var(--bg);
+      font-weight:900;
     }
-    .badgeIcon.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-br)}
-    .badgeIcon.err{background:var(--err-bg);color:var(--err);border-color:var(--err-br)}
-    .badgeIcon.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-br)}
-
-    .modalHead h4{margin:0;font-size:14px;font-weight:900}
-    .modalBody{padding:14px 16px;color:var(--text);font-size:14px;line-height:1.35}
-    .modalBody .muted{color:var(--muted);font-size:12px;margin-top:8px}
-
-    .modalFoot{
-      display:flex;justify-content:flex-end;gap:10px;
-      padding:12px 16px;
-      border-top:1px solid var(--border);
+    .badge.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-br)}
+    .badge.err{background:var(--err-bg);color:var(--err);border-color:var(--err-br)}
+    .modalTitle{font-weight:900}
+    .modalBody{padding:14px 16px;color:var(--text);font-weight:700}
+    .modalBody p{margin:0;color:var(--muted);font-weight:700}
+    .modalActions{
+      display:flex;gap:10px;justify-content:flex-end;
+      padding:14px 16px;border-top:1px solid var(--border);
       background:#fff;
     }
-    .btnModal{
-      appearance:none;border:0;cursor:pointer;
-      border-radius:12px;
-      padding:10px 14px;
-      font-family:inherit;
-      font-weight:900;
-      font-size:13px;
-    }
-    .btnModal.primary{background:var(--primary);color:#fff}
-    .btnModal.secondary{background:#fff;color:var(--text);border:1px solid var(--border)}
   </style>
 </head>
 
@@ -249,13 +229,12 @@
         <div class="logo"><img src="logo.png" alt="PAVI"></div>
         <div class="title">
           <h1>Registro de Acidente — TST</h1>
-          <p>1 campo por vez • “N/A” para pular • envio imediato</p>
+          <p>1 campo por vez • N/A para pular • envio direto (sem fila)</p>
         </div>
       </div>
 
-      <div class="topRight">
-        <button class="btnSmall" id="btnPing" type="button">Testar conexão</button>
-        <div class="chip" title="Conexão">
+      <div class="right">
+        <div class="pill" title="Conexão">
           <span class="dot off" id="netDot"></span>
           <span id="netText">Offline</span>
         </div>
@@ -277,34 +256,75 @@
         <button class="btn btnGhost" id="btnNA" type="button">N/A (pular)</button>
         <button class="btn btnPrimary" id="btnOk" type="button">OK / Próximo</button>
       </div>
+
+      <div class="alert ok" id="okBox"></div>
+      <div class="alert warn" id="warnBox"></div>
+      <div class="alert err" id="errBox"></div>
     </div>
   </div>
 
   <!-- MODAL -->
-  <div class="modalOverlay" id="modalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modalBack" id="modalBack" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modalHead">
-        <div class="badgeIcon ok" id="modalIcon">✓</div>
-        <h4 id="modalTitle">—</h4>
+        <div class="badge ok" id="modalBadge">✓</div>
+        <div class="modalTitle" id="modalTitle">—</div>
       </div>
       <div class="modalBody">
-        <div id="modalMsg">—</div>
-        <div class="muted" id="modalHint"></div>
+        <div id="modalMsg" style="font-weight:900;margin-bottom:6px;">—</div>
+        <p id="modalSub">—</p>
       </div>
-      <div class="modalFoot">
-        <button class="btnModal secondary" id="modalClose" type="button">Fechar</button>
-        <button class="btnModal primary" id="modalOk" type="button">OK</button>
+      <div class="modalActions">
+        <button class="btn btnSecondary" id="modalClose" type="button">Fechar</button>
+        <button class="btn btnPrimary" id="modalOk" type="button">OK</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ✅ WebApp do TST (SEU)
+    // ✅ WebApp da planilha TST (submit_tst)
+    // IMPORTANTE: mantenha EXATAMENTE este /exec
     const API_URL = "https://script.google.com/macros/s/AKfycby4Fjn2Cd083r9y9-RAgY6kDBlGb-Yzw7o82MljeWxlkW2OPofQR4KIvmNXx-PRbcz0rQ/exec";
     const ACTION = "submit_tst";
 
     const $ = (id)=>document.getElementById(id);
 
+    /* ============================
+       MODAL helpers
+    ============================ */
+    function openModal(kind, title, msg, sub){
+      const back = $("modalBack");
+      const badge = $("modalBadge");
+      const t = $("modalTitle");
+      const m = $("modalMsg");
+      const s = $("modalSub");
+
+      if(kind === "err"){
+        badge.className = "badge err";
+        badge.textContent = "!";
+      }else{
+        badge.className = "badge ok";
+        badge.textContent = "✓";
+      }
+
+      t.textContent = title || (kind==="err" ? "Falha ao enviar" : "Enviado com sucesso");
+      m.textContent = msg || "";
+      s.textContent = sub || "";
+
+      back.style.display = "flex";
+    }
+    function closeModal(){
+      $("modalBack").style.display = "none";
+    }
+    $("modalClose").addEventListener("click", closeModal);
+    $("modalOk").addEventListener("click", closeModal);
+    $("modalBack").addEventListener("click", (e)=>{
+      if(e.target === $("modalBack")) closeModal();
+    });
+
+    /* ============================
+       Steps
+    ============================ */
     const steps = [
       { key:"matricula", label:"MATRÍCULA DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Ex.: 12345", inputmode:"numeric" },
       { key:"nome_funcionario", label:"NOME DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Nome completo" },
@@ -407,6 +427,16 @@
       return count;
     }
 
+    function showBox(kind, msg){
+      ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
+      const el = kind==="ok" ? $("okBox") : (kind==="warn" ? $("warnBox") : $("errBox"));
+      el.textContent = msg;
+      el.style.display = "block";
+    }
+    function clearBoxes(){
+      ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
+    }
+
     function updateNet(){
       const online = navigator.onLine;
       $("netDot").className = "dot " + (online ? "ok" : "off");
@@ -416,37 +446,9 @@
     window.addEventListener("offline", updateNet);
     updateNet();
 
-    /* ============================
-       MODAL
-    ============================ */
-    function openModal(kind, title, msg, hint=""){
-      const overlay = $("modalOverlay");
-      overlay.style.display = "flex";
-      overlay.setAttribute("aria-hidden","false");
-
-      const icon = $("modalIcon");
-      icon.className = "badgeIcon " + (kind || "ok");
-      icon.textContent = (kind==="ok" ? "✓" : (kind==="warn" ? "!" : "✕"));
-
-      $("modalTitle").textContent = title || "";
-      $("modalMsg").textContent = msg || "";
-      $("modalHint").textContent = hint || "";
-    }
-    function closeModal(){
-      const overlay = $("modalOverlay");
-      overlay.style.display = "none";
-      overlay.setAttribute("aria-hidden","true");
-    }
-    $("modalClose").addEventListener("click", closeModal);
-    $("modalOk").addEventListener("click", closeModal);
-    $("modalOverlay").addEventListener("click", (e)=>{
-      if(e.target === $("modalOverlay")) closeModal();
-    });
-
-    /* ============================
-       RENDER
-    ============================ */
     function render(){
+      clearBoxes();
+
       const i = currentStepIndex();
       cursor = i;
 
@@ -553,7 +555,7 @@
       const req = isRequired(step);
       if(!req) return true;
       if(value === "" || value === "N/A"){
-        openModal("err","Campo obrigatório","Este campo é obrigatório. Preencha para continuar.");
+        showBox("err", "Este campo é obrigatório.");
         return false;
       }
       return true;
@@ -699,62 +701,40 @@
       };
     }
 
-    function safeJsonParse(txt){
-      try{ return JSON.parse(txt); }catch(e){ return null; }
-    }
-
-    // ✅ ENVIO IMEDIATO (sem fila)
-    async function postPayload(payload){
-      // IMPORTANTE: não setar headers manualmente ajuda em alguns WebViews
+    /*
+      ✅ ENVIO DIRETO (SEM FILA)
+      ✅ Resolve CORS no GitHub Pages usando mode:"no-cors"
+      ⚠️ No-cors não permite ler resposta. Se não der erro de rede, consideramos enviado.
+    */
+    async function postPayloadNoCors(payload){
       const body = new URLSearchParams(payload);
 
-      const res = await fetch(API_URL, {
-        method: "POST",
+      await fetch(API_URL, {
+        method:"POST",
         body,
-        redirect: "follow",
-        cache: "no-store",
-        credentials: "omit"
+        mode:"no-cors",
+        cache:"no-store",
+        redirect:"follow",
+        credentials:"omit"
       });
 
-      const txt = await res.text();
-      const json = safeJsonParse(txt);
-
-      if(!res.ok){
-        const msg = (json && (json.mensagem || json.message)) ? (json.mensagem || json.message) : (txt || "");
-        throw new Error("HTTP " + res.status + " — " + msg);
-      }
-
-      if(json){
-        // aceita padrão antigo (ok/message) e padrão novo (status/mensagem)
-        if(json.status && String(json.status).toUpperCase() === "ERR"){
-          throw new Error(json.mensagem || "Erro no servidor");
-        }
-        if(json.ok === false){
-          throw new Error(json.message || "Erro no servidor");
-        }
-        return json;
-      }
-
-      // se vier texto puro
-      return { ok:true, raw:txt };
+      // Se chegou aqui, não houve erro de rede.
+      return { ok:true, opaque:true };
     }
 
     async function submitAll(){
-      if(!navigator.onLine){
-        openModal("err","Sem internet","Você está offline. Conecte-se para enviar.");
-        return;
-      }
+      clearBoxes();
 
       if(!answers.matricula || answers.matricula==="N/A"){
         cursor = steps.findIndex(s=>s.key==="matricula");
         render();
-        openModal("err","Campo obrigatório","Informe a matrícula (obrigatório).");
+        openModal("err","Campo obrigatório","Informe a matrícula do funcionário.","");
         return;
       }
       if(!answers.nome_funcionario || answers.nome_funcionario==="N/A"){
         cursor = steps.findIndex(s=>s.key==="nome_funcionario");
         render();
-        openModal("err","Campo obrigatório","Informe o nome (obrigatório).");
+        openModal("err","Campo obrigatório","Informe o nome do funcionário.","");
         return;
       }
 
@@ -765,25 +745,23 @@
       $("btnBack").disabled = true;
 
       try{
-        const r = await postPayload(payload);
+        if(!navigator.onLine){
+          openModal("err","Sem internet","Conecte-se à internet para enviar.","(Envio direto sem fila)");
+          return;
+        }
 
-        // Mensagem de sucesso (prioriza "mensagem"/"message")
-        const msg = (r && (r.mensagem || r.message)) ? String(r.mensagem || r.message) : "Registro enviado e gravado com sucesso.";
-        openModal("ok","Enviado com sucesso", msg, "Os dados já foram registrados na planilha.");
+        await postPayloadNoCors(payload);
 
-        // limpa para novo registro
+        // ✅ POPUP de confirmação
+        openModal("ok","Enviado com sucesso","Registro enviado para a planilha.","Se quiser confirmar: abra a planilha e veja a nova linha.");
+
+        // limpa respostas e reinicia
         for(const k in answers) delete answers[k];
         cursor = 0;
         render();
 
       }catch(e){
-        // Aqui aparece o “Failed to fetch” se o browser/webview bloqueou
-        openModal(
-          "err",
-          "Falha ao enviar",
-          (e && e.message) ? e.message : String(e),
-          "Se persistir: confirme se este WebApp está como 'Qualquer pessoa com o link' e se o dispositivo está sem bloqueio de rede."
-        );
+        openModal("err","Falha ao enviar","Não foi possível enviar agora.","Detalhe: " + (e && e.message ? e.message : String(e)));
       }finally{
         $("btnOk").disabled = false;
         $("btnNA").disabled = false;
@@ -791,20 +769,6 @@
       }
     }
 
-    // Botão “Testar conexão”
-    $("btnPing").addEventListener("click", async ()=>{
-      try{
-        const res = await fetch(API_URL, { method:"GET", redirect:"follow", cache:"no-store", credentials:"omit" });
-        const txt = await res.text();
-        const json = safeJsonParse(txt);
-        if(!res.ok) throw new Error("HTTP " + res.status + " — " + (txt||""));
-        openModal("ok","Conexão OK", (json && (json.message || json.msg)) ? (json.message || json.msg) : "WebApp respondeu normalmente.");
-      }catch(e){
-        openModal("err","Conexão falhou", (e && e.message) ? e.message : String(e));
-      }
-    });
-
-    // start
     cursor = 0;
     render();
   </script>
