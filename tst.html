@@ -42,7 +42,6 @@
     .top{
       display:flex;align-items:center;justify-content:space-between;gap:12px;
       margin:10px 0 14px;
-      flex-wrap:wrap;
     }
     .brand{display:flex;align-items:center;gap:10px}
     .logo{
@@ -54,7 +53,6 @@
     .title h1{margin:0;font-size:18px;font-weight:800}
     .title p{margin:3px 0 0;font-size:12px;color:var(--muted)}
 
-    .rightTools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
     .pill{
       display:inline-flex;align-items:center;gap:8px;
       padding:10px 12px;border-radius:999px;
@@ -105,6 +103,7 @@
       letter-spacing:.2px;
     }
     .req{color:#dc2626;font-weight:900;margin-left:6px}
+
     .hint{font-size:12px;color:var(--muted);margin-top:-2px;margin-bottom:10px}
 
     input, select, textarea{
@@ -140,21 +139,11 @@
       display:inline-flex;align-items:center;justify-content:center;
       transition:.15s ease;
       user-select:none;
-      white-space:nowrap;
     }
-    .btnPrimary{background:linear-gradient(135deg,var(--primary),var(--primary-600));color:#fff}
+    .btnPrimary{background:var(--primary);color:#fff}
     .btnSecondary{background:#fff;color:var(--text);border:1px solid var(--border)}
     .btnGhost{background:transparent;color:var(--text);border:1px dashed rgba(18,51,34,.22)}
-    .btnDanger{background:#fff;color:#991b1b;border:1px solid #fecaca}
     .btn:disabled{opacity:.55;cursor:not-allowed}
-
-    .alert{
-      margin-top:12px;padding:12px;border-radius:14px;border:1px solid var(--border);
-      font-size:13px;display:none
-    }
-    .alert.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-br)}
-    .alert.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-br)}
-    .alert.err{background:var(--err-bg);color:var(--err);border-color:var(--err-br)}
 
     .review{
       margin-top:10px;
@@ -178,7 +167,65 @@
     .item span{display:block;font-size:13px;font-weight:800;color:var(--text);word-break:break-word}
     .item small{color:var(--muted);font-size:12px;font-weight:800}
 
-    .mini{font-size:12px;color:var(--muted);margin-top:10px}
+    /* ===== Modal (pop-up) ===== */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.30);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:9999;
+    }
+    .modal{
+      width:100%;
+      max-width:420px;
+      background:#fff;
+      border-radius:18px;
+      border:1px solid var(--border);
+      box-shadow:0 20px 50px rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border-bottom:1px solid var(--border);
+      background:#ffffff;
+    }
+    .badge{
+      width:34px;height:34px;border-radius:12px;
+      display:grid;place-items:center;
+      font-weight:900;
+    }
+    .badge.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-br)}
+    .badge.err{background:var(--err-bg);color:var(--err);border:1px solid var(--err-br)}
+    .modalHead h4{margin:0;font-size:14px;font-weight:900}
+    .modalBody{padding:14px 16px;color:var(--text);font-size:14px;line-height:1.35}
+    .modalFoot{
+      padding:14px 16px;
+      border-top:1px solid var(--border);
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      background:#fff;
+    }
+    .btnMini{
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      font-family:inherit;
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+    }
+    .btnMini.primary{
+      border:0;
+      background:var(--primary);
+      color:#fff;
+    }
   </style>
 </head>
 
@@ -189,17 +236,13 @@
         <div class="logo"><img src="logo.png" alt="PAVI"></div>
         <div class="title">
           <h1>Registro de Acidente — TST</h1>
-          <p>1 campo por vez • N/A para pular • fila offline com reenvio</p>
+          <p>1 campo por vez • N/A para pular • envio imediato</p>
         </div>
       </div>
 
-      <div class="rightTools">
-        <button class="btn btnSecondary" id="btnTest" type="button">Testar conexão</button>
-
-        <div class="pill" title="Conexão">
-          <span class="dot off" id="netDot"></span>
-          <span id="netText">Offline</span>
-        </div>
+      <div class="pill" title="Conexão">
+        <span class="dot off" id="netDot"></span>
+        <span id="netText">Offline</span>
       </div>
     </div>
 
@@ -217,502 +260,515 @@
         <button class="btn btnSecondary" id="btnBack" type="button">Voltar</button>
         <button class="btn btnGhost" id="btnNA" type="button">N/A (pular)</button>
         <button class="btn btnPrimary" id="btnOk" type="button">OK / Próximo</button>
-        <button class="btn btnDanger" id="btnClearQueue" type="button">Limpar fila</button>
       </div>
-
-      <div class="alert ok" id="okBox"></div>
-      <div class="alert warn" id="warnBox"></div>
-      <div class="alert err" id="errBox"></div>
-
-      <div class="mini" id="queueInfo"></div>
     </div>
   </div>
 
-<script>
-  /*********************************************************
-   * ✅ CONFIG
-   * Cole aqui o /exec do WebApp TST
-   *********************************************************/
-  const API_URL = "COLE_AQUI_SEU_LINK_EXEC_DO_TST";
-  const ACTION = "submit_tst";
-  const QUEUE_KEY = "PAVI_FAST_TST_QUEUE_V3";
+  <!-- Modal -->
+  <div class="modalBackdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="badge ok" id="modalBadge">✓</div>
+        <h4 id="modalTitle">—</h4>
+      </div>
+      <div class="modalBody" id="modalMsg">—</div>
+      <div class="modalFoot">
+        <button class="btnMini" id="modalClose">Fechar</button>
+        <button class="btnMini primary" id="modalOk">OK</button>
+      </div>
+    </div>
+  </div>
 
-  const $ = (id)=>document.getElementById(id);
+  <script>
+    // ✅ WebApp da planilha TST (submit_tst)
+    const API_URL = "https://script.google.com/macros/s/AKfycby4Fjn2Cd083r9y9-RAgY6kDBlGb-Yzw7o82MljeWxlkW2OPofQR4KIvmNXx-PRbcz0rQ/exec";
+    const ACTION = "submit_tst";
 
-  const steps = [
-    { key:"matricula", label:"MATRÍCULA DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Ex.: 12345", inputmode:"numeric" },
-    { key:"nome_funcionario", label:"NOME DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Nome completo" },
+    const $ = (id)=>document.getElementById(id);
 
-    { key:"idade", label:"IDADE", type:"number", placeholder:"Ex.: 34" },
-    { key:"funcao", label:"FUNÇÃO", type:"text", placeholder:"Ex.: Coletor" },
-    { key:"setor", label:"SETOR", type:"text", placeholder:"Ex.: Operação" },
+    const steps = [
+      { key:"matricula", label:"MATRÍCULA DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Ex.: 12345", inputmode:"numeric" },
+      { key:"nome_funcionario", label:"NOME DO FUNCIONÁRIO", type:"text", required:true, placeholder:"Nome completo" },
 
-    { key:"data_acidente", label:"DATA DO ACIDENTE", type:"date" },
+      { key:"idade", label:"IDADE", type:"number", placeholder:"Ex.: 34" },
+      { key:"funcao", label:"FUNÇÃO", type:"text", placeholder:"Ex.: Coletor" },
+      { key:"setor", label:"SETOR", type:"text", placeholder:"Ex.: Operação" },
 
-    { key:"regiao", label:"REGIÃO", type:"select", options:["PARANAGUÁ","CIANORTE","MARINGÁ","OUTRO"] },
-    { key:"regiao_outro", label:"REGIÃO (OUTRO) — ESCREVER", type:"text", placeholder:"Descreva a região",
-      showIf:(a)=>a.regiao==="OUTRO", requiredIf:(a)=>a.regiao==="OUTRO"
-    },
+      { key:"data_acidente", label:"DATA DO ACIDENTE", type:"date" },
 
-    { key:"gravidade", label:"GRAVIDADE", type:"select", options:["LEVE","SÉRIO","GRAVE"] },
-    { key:"periodo_evento", label:"PERÍODO DO EVENTO", type:"select",
-      options:[
-        "MANHÃ (05:00 às 12:00)",
-        "TARDE (12:01 às 18:00)",
-        "NOITE (18:01 às 23:59)",
-        "MADRUGADA (00:00 às 04:59)"
-      ]
-    },
+      { key:"regiao", label:"REGIÃO", type:"select", options:["PARANAGUÁ","CIANORTE","MARINGÁ","OUTRO"] },
+      { key:"regiao_outro", label:"REGIÃO (OUTRO) — ESCREVER", type:"text", placeholder:"Descreva a região",
+        showIf:(a)=>a.regiao==="OUTRO", requiredIf:(a)=>a.regiao==="OUTRO"
+      },
 
-    { key:"tipo_lesao", label:"TIPO DE LESÃO", type:"select",
-      options:["ESCORIAÇÃO","TORÇÃO","CORTE/PERFURAÇÃO","MORDIDA","OUTROS"]
-    },
-    { key:"tipo_lesao_outro", label:"TIPO DE LESÃO (OUTROS) — DESCREVER", type:"text", placeholder:"Descreva a lesão",
-      showIf:(a)=>a.tipo_lesao==="OUTROS", requiredIf:(a)=>a.tipo_lesao==="OUTROS"
-    },
+      { key:"gravidade", label:"GRAVIDADE", type:"select", options:["LEVE","SÉRIO","GRAVE"] },
+      { key:"periodo_evento", label:"PERÍODO DO EVENTO", type:"select",
+        options:[
+          "MANHÃ (05:00 às 12:00)",
+          "TARDE (12:01 às 18:00)",
+          "NOITE (18:01 às 23:59)",
+          "MADRUGADA (00:00 às 04:59)"
+        ]
+      },
 
-    { key:"parte_corpo", label:"PARTE DO CORPO ATINGIDO", type:"select",
-      options:["PERNA/JOELHO","SEM LESÃO","OMBRO","MULTIPLAS PARTES","PÉ","DEDOS","BRAÇO","PERNA","OUTRO"]
-    },
-    { key:"parte_corpo_outro", label:"PARTE DO CORPO (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a parte do corpo",
-      showIf:(a)=>a.parte_corpo==="OUTRO", requiredIf:(a)=>a.parte_corpo==="OUTRO"
-    },
+      { key:"tipo_lesao", label:"TIPO DE LESÃO", type:"select",
+        options:["ESCORIAÇÃO","TORÇÃO","CORTE/PERFURAÇÃO","MORDIDA","OUTROS"]
+      },
+      { key:"tipo_lesao_outro", label:"TIPO DE LESÃO (OUTROS) — DESCREVER", type:"text", placeholder:"Descreva a lesão",
+        showIf:(a)=>a.tipo_lesao==="OUTROS", requiredIf:(a)=>a.tipo_lesao==="OUTROS"
+      },
 
-    { key:"samu", label:"ATENDIMENTO SAMU?", type:"select", options:["SIM","NÃO"] },
-    { key:"local_ocorrencia", label:"LOCAL OCORRÊNCIA (ENDEREÇO)", type:"text", placeholder:"Rua, número, bairro, referência…" },
+      { key:"parte_corpo", label:"PARTE DO CORPO ATINGIDO", type:"select",
+        options:["PERNA/JOELHO","SEM LESÃO","OMBRO","MULTIPLAS PARTES","PÉ","DEDOS","BRAÇO","PERNA","OUTRO"]
+      },
+      { key:"parte_corpo_outro", label:"PARTE DO CORPO (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a parte do corpo",
+        showIf:(a)=>a.parte_corpo==="OUTRO", requiredIf:(a)=>a.parte_corpo==="OUTRO"
+      },
 
-    { key:"cid", label:"CID", type:"text", placeholder:"Ex.: S93.4" },
-    { key:"cat", label:"CAT", type:"text", placeholder:"Número/identificação" },
+      { key:"samu", label:"ATENDIMENTO SAMU?", type:"select", options:["SIM","NÃO"] },
+      { key:"local_ocorrencia", label:"LOCAL OCORRÊNCIA (ENDEREÇO)", type:"text", placeholder:"Rua, número, bairro, referência…" },
 
-    { key:"razao", label:"RAZÃO ACIDENTE", type:"select",
-      options:["ATAQUE ANIMAL","FALTA DE ATENÇÃO","COLISÃO COM TERCEIRO","IMPRUDENCIAS","OUTRO"]
-    },
-    { key:"razao_outro", label:"RAZÃO (OUTRO) — DESCREVA", type:"text", placeholder:"Descreva a razão",
-      showIf:(a)=>a.razao==="OUTRO", requiredIf:(a)=>a.razao==="OUTRO"
-    },
+      { key:"cid", label:"CID", type:"text", placeholder:"Ex.: S93.4" },
+      { key:"cat", label:"CAT", type:"text", placeholder:"Número/identificação" },
 
-    { key:"acao_preventiva", label:"AÇÃO PREVENTIVA", type:"select",
-      options:["ORIENTAÇÃO FUNIONARIO","TREINAMENTO INDIVIDUAL","SUPERVISÃO CAMPO","REGISTRO EM ELATORIO","AFASTAMENTO COLABORADOR","OUTRO"]
-    },
-    { key:"acao_preventiva_outro", label:"AÇÃO PREVENTIVA (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a ação preventiva",
-      showIf:(a)=>a.acao_preventiva==="OUTRO", requiredIf:(a)=>a.acao_preventiva==="OUTRO"
-    },
+      { key:"razao", label:"RAZÃO ACIDENTE", type:"select",
+        options:["ATAQUE ANIMAL","FALTA DE ATENÇÃO","COLISÃO COM TERCEIRO","IMPRUDENCIAS","OUTRO"]
+      },
+      { key:"razao_outro", label:"RAZÃO (OUTRO) — DESCREVA", type:"text", placeholder:"Descreva a razão",
+        showIf:(a)=>a.razao==="OUTRO", requiredIf:(a)=>a.razao==="OUTRO"
+      },
 
-    { key:"observacoes", label:"OBSERVAÇÕES (OPCIONAL)", type:"textarea", placeholder:"Detalhes adicionais..." },
+      { key:"acao_preventiva", label:"AÇÃO PREVENTIVA", type:"select",
+        options:["ORIENTAÇÃO FUNIONARIO","TREINAMENTO INDIVIDUAL","SUPERVISÃO CAMPO","REGISTRO EM ELATORIO","AFASTAMENTO COLABORADOR","OUTRO"]
+      },
+      { key:"acao_preventiva_outro", label:"AÇÃO PREVENTIVA (OUTRO) — DESCREVER", type:"text", placeholder:"Descreva a ação preventiva",
+        showIf:(a)=>a.acao_preventiva==="OUTRO", requiredIf:(a)=>a.acao_preventiva==="OUTRO"
+      },
 
-    { key:"__review__", label:"REVISAR E ENVIAR", type:"review" }
-  ];
+      { key:"observacoes", label:"OBSERVAÇÕES (OPCIONAL)", type:"textarea", placeholder:"Detalhes adicionais..." },
 
-  const answers = {};
-  let cursor = 0;
+      { key:"__review__", label:"REVISAR E ENVIAR", type:"review" }
+    ];
 
-  function isShown(step){ return (typeof step.showIf==="function") ? !!step.showIf(answers) : true; }
-  function isRequired(step){ return !!step.required || ((typeof step.requiredIf==="function") ? !!step.requiredIf(answers) : false); }
-  function currentStepIndex(){ let i=cursor; while(i<steps.length && !isShown(steps[i])) i++; return i; }
-  function prevVisibleIndex(from){ let i=from-1; while(i>=0 && !isShown(steps[i])) i--; return i; }
-  function nextVisibleIndex(from){ let i=from+1; while(i<steps.length && !isShown(steps[i])) i++; return i; }
-  function shownCountUpTo(index){ let c=0; for(let i=0;i<=index;i++) if(isShown(steps[i])) c++; return c; }
-  function totalShownCount(){ let c=0; for(const s of steps) if(isShown(s)) c++; return c; }
+    const answers = {};
+    let cursor = 0;
 
-  function showBox(kind, msg){
-    ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; });
-    const el = kind==="ok" ? $("okBox") : (kind==="warn" ? $("warnBox") : $("errBox"));
-    el.textContent = msg;
-    el.style.display = "block";
-  }
-  function clearBoxes(){ ["okBox","warnBox","errBox"].forEach(id=>{ $(id).style.display="none"; $(id).textContent=""; }); }
-
-  function updateNet(){
-    const online = navigator.onLine;
-    $("netDot").className = "dot " + (online ? "ok" : "off");
-    $("netText").textContent = online ? "Online" : "Offline";
-  }
-
-  function getQueue(){ try{ return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); } catch(e){ return []; } }
-  function setQueue(q){ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); updateQueueInfo(); }
-  function updateQueueInfo(){
-    const q = getQueue();
-    $("queueInfo").textContent = q.length ? `Fila: ${q.length} registro(s) aguardando envio.` : "Fila: vazia.";
-  }
-
-  window.addEventListener("online", ()=>{ updateNet(); flushQueue(); });
-  window.addEventListener("offline", updateNet);
-  updateNet();
-  updateQueueInfo();
-
-  function render(){
-    clearBoxes();
-
-    cursor = currentStepIndex();
-    const step = steps[cursor];
-
-    const shownPos = shownCountUpTo(cursor);
-    const total = totalShownCount();
-
-    $("progressText").textContent = `Campo ${shownPos} de ${total}`;
-    $("barFill").style.width = Math.round((shownPos/Math.max(1,total))*100) + "%";
-
-    $("btnBack").disabled = prevVisibleIndex(cursor) < 0;
-    $("btnOk").textContent = (step.type==="review") ? "Enviar" : "OK / Próximo";
-
-    const req = isRequired(step);
-    $("btnNA").disabled = req || step.type==="review";
-
-    const area = $("stepArea");
-    area.innerHTML = "";
-
-    if(step.type === "review"){ area.appendChild(renderReview()); return; }
-
-    const label = document.createElement("label");
-    label.textContent = step.label;
-    if(req){
-      const star = document.createElement("span");
-      star.className = "req";
-      star.textContent = "*";
-      label.appendChild(star);
+    function isShown(step){
+      if(typeof step.showIf === "function") return !!step.showIf(answers);
+      return true;
     }
-    area.appendChild(label);
-
-    const hint = document.createElement("div");
-    hint.className = "hint";
-    hint.textContent = req ? "Obrigatório" : "Opcional (use N/A para pular)";
-    area.appendChild(hint);
-
-    const input = buildInput(step);
-    area.appendChild(input);
-
-    setTimeout(()=>{ try{ input.focus(); }catch(e){} }, 10);
-
-    input.addEventListener("keydown", (ev)=>{
-      if(ev.key === "Enter" && step.type !== "textarea"){
-        ev.preventDefault();
-        onOk();
-      }
-    });
-  }
-
-  function buildInput(step){
-    const val = (answers[step.key] ?? "");
-    let el;
-
-    if(step.type === "select"){
-      el = document.createElement("select");
-      const opt0 = document.createElement("option");
-      opt0.value = "";
-      opt0.textContent = "Selecione…";
-      el.appendChild(opt0);
-
-      for(const o of (step.options || [])){
-        const opt = document.createElement("option");
-        opt.value = o;
-        opt.textContent = o;
-        el.appendChild(opt);
-      }
-      el.value = val;
-
-    }else if(step.type === "textarea"){
-      el = document.createElement("textarea");
-      el.placeholder = step.placeholder || "";
-      el.value = val;
-
-    }else{
-      el = document.createElement("input");
-      el.type = step.type || "text";
-      el.placeholder = step.placeholder || "";
-      el.value = val;
-
-      if(step.inputmode) el.setAttribute("inputmode", step.inputmode);
-      if(step.type === "number"){ el.min="0"; el.max="120"; }
-    }
-
-    el.id = "fieldInput";
-    return el;
-  }
-
-  function readCurrentValue(){
-    const input = $("fieldInput");
-    if(!input) return "";
-    let v = (input.value ?? "");
-    if(typeof v === "string") v = v.trim();
-    return v;
-  }
-
-  function validateStep(value){
-    const step = steps[cursor];
-    const req = isRequired(step);
-    if(!req) return true;
-    if(value === "" || value === "N/A"){
-      showBox("err", "Este campo é obrigatório.");
+    function isRequired(step){
+      if(step.required) return true;
+      if(typeof step.requiredIf === "function") return !!step.requiredIf(answers);
       return false;
     }
-    return true;
-  }
-
-  function prettyValue(v){
-    if(v === undefined || v === null || v === "") return "—";
-    return String(v);
-  }
-
-  function renderReview(){
-    const wrap = document.createElement("div");
-    wrap.className = "review";
-
-    const h = document.createElement("h3");
-    h.textContent = "Confira antes de enviar (toque para editar)";
-    wrap.appendChild(h);
-
-    const list = document.createElement("div");
-    list.className = "list";
-
-    for(let i=0;i<steps.length;i++){
-      const s = steps[i];
-      if(s.type === "review") continue;
-      if(!isShown(s)) continue;
-
-      const item = document.createElement("div");
-      item.className = "item";
-
-      const left = document.createElement("div");
-      const b = document.createElement("b");
-      b.textContent = s.label;
-      const span = document.createElement("span");
-      span.textContent = prettyValue(answers[s.key]);
-      left.appendChild(b);
-      left.appendChild(span);
-
-      const right = document.createElement("small");
-      right.textContent = (isRequired(s) ? "obrig." : "opcional");
-
-      item.appendChild(left);
-      item.appendChild(right);
-
-      item.addEventListener("click", ()=>{ cursor = i; render(); });
-
-      list.appendChild(item);
+    function currentStepIndex(){
+      let i = cursor;
+      while(i < steps.length && !isShown(steps[i])) i++;
+      return i;
+    }
+    function prevVisibleIndex(from){
+      let i = from - 1;
+      while(i >= 0 && !isShown(steps[i])) i--;
+      return i;
+    }
+    function nextVisibleIndex(from){
+      let i = from + 1;
+      while(i < steps.length && !isShown(steps[i])) i++;
+      return i;
+    }
+    function shownCountUpTo(index){
+      let count = 0;
+      for(let i=0;i<=index;i++) if(isShown(steps[i])) count++;
+      return count;
+    }
+    function totalShownCount(){
+      let count = 0;
+      for(const s of steps) if(isShown(s)) count++;
+      return count;
     }
 
-    wrap.appendChild(list);
-    return wrap;
-  }
+    function updateNet(){
+      const online = navigator.onLine;
+      $("netDot").className = "dot " + (online ? "ok" : "off");
+      $("netText").textContent = online ? "Online" : "Offline";
+    }
+    window.addEventListener("online", updateNet);
+    window.addEventListener("offline", updateNet);
+    updateNet();
 
-  function autoClearDependents(step){
-    if(step.key === "regiao" && answers.regiao !== "OUTRO") answers.regiao_outro = "";
-    if(step.key === "tipo_lesao" && answers.tipo_lesao !== "OUTROS") answers.tipo_lesao_outro = "";
-    if(step.key === "parte_corpo" && answers.parte_corpo !== "OUTRO") answers.parte_corpo_outro = "";
-    if(step.key === "razao" && answers.razao !== "OUTRO") answers.razao_outro = "";
-    if(step.key === "acao_preventiva" && answers.acao_preventiva !== "OUTRO") answers.acao_preventiva_outro = "";
-  }
+    /* ===== Modal helpers ===== */
+    function openModal(kind, title, message){
+      const bd = $("modalBackdrop");
+      const badge = $("modalBadge");
+      const t = $("modalTitle");
+      const m = $("modalMsg");
 
-  function onOk(){
-    const step = steps[cursor];
-    if(step.type === "review"){ submitAll(); return; }
+      if(kind === "ok"){
+        badge.className = "badge ok";
+        badge.textContent = "✓";
+      }else{
+        badge.className = "badge err";
+        badge.textContent = "!";
+      }
 
-    const v = readCurrentValue();
-    if(!validateStep(v)) return;
+      t.textContent = title || "";
+      m.textContent = message || "";
 
-    answers[step.key] = v;
-    autoClearDependents(step);
-
-    cursor = nextVisibleIndex(cursor);
-    render();
-  }
-
-  function onNA(){
-    const step = steps[cursor];
-    if(isRequired(step) || step.type==="review") return;
-
-    answers[step.key] = "N/A";
-    autoClearDependents(step);
-
-    cursor = nextVisibleIndex(cursor);
-    render();
-  }
-
-  function onBack(){
-    const p = prevVisibleIndex(cursor);
-    if(p >= 0){ cursor = p; render(); }
-  }
-
-  $("btnOk").addEventListener("click", onOk);
-  $("btnNA").addEventListener("click", onNA);
-  $("btnBack").addEventListener("click", onBack);
-
-  $("btnClearQueue").addEventListener("click", ()=>{
-    localStorage.removeItem(QUEUE_KEY);
-    updateQueueInfo();
-    showBox("ok","Fila limpa.");
-  });
-
-  function buildPayload(){
-    return {
-      action: ACTION,
-      client_time: new Date().toISOString(),
-      client_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
-
-      matricula: answers.matricula || "",
-      nome_funcionario: answers.nome_funcionario || "",
-      idade: answers.idade || "",
-      funcao: answers.funcao || "",
-      setor: answers.setor || "",
-      data_acidente: answers.data_acidente || "",
-
-      regiao: answers.regiao || "",
-      regiao_outro: answers.regiao_outro || "",
-
-      gravidade: answers.gravidade || "",
-      periodo_evento: answers.periodo_evento || "",
-
-      tipo_lesao: answers.tipo_lesao || "",
-      tipo_lesao_outro: answers.tipo_lesao_outro || "",
-
-      parte_corpo: answers.parte_corpo || "",
-      parte_corpo_outro: answers.parte_corpo_outro || "",
-
-      samu: answers.samu || "",
-      local_ocorrencia: answers.local_ocorrencia || "",
-
-      cid: answers.cid || "",
-      cat: answers.cat || "",
-
-      razao: answers.razao || "",
-      razao_outro: answers.razao_outro || "",
-
-      acao_preventiva: answers.acao_preventiva || "",
-      acao_preventiva_outro: answers.acao_preventiva_outro || "",
-
-      observacoes: answers.observacoes || ""
-    };
-  }
-
-  async function postPayload(payload){
-    const body = new URLSearchParams(payload);
-
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
-      body
+      bd.style.display = "flex";
+      bd.setAttribute("aria-hidden","false");
+    }
+    function closeModal(){
+      const bd = $("modalBackdrop");
+      bd.style.display = "none";
+      bd.setAttribute("aria-hidden","true");
+    }
+    $("modalClose").onclick = closeModal;
+    $("modalOk").onclick = closeModal;
+    $("modalBackdrop").addEventListener("click", (e)=>{
+      if(e.target === $("modalBackdrop")) closeModal();
     });
 
-    const txt = await res.text();
-    let json=null; try{ json=JSON.parse(txt);}catch(e){}
+    function render(){
+      const i = currentStepIndex();
+      cursor = i;
 
-    if(!res.ok){
-      const msg = (json && (json.message || json.mensagem)) ? (json.message || json.mensagem) : (txt || "");
-      throw new Error("HTTP " + res.status + " — " + msg);
-    }
+      const step = steps[i];
+      const shownPos = shownCountUpTo(i);
+      const total = totalShownCount();
 
-    if(json){
-      if(json.ok === false) throw new Error(json.message || "Erro no servidor");
-      if(String(json.status || "").toUpperCase() === "ERR") throw new Error(json.mensagem || "Erro no servidor");
-      return json;
-    }
+      $("progressText").textContent = `Campo ${shownPos} de ${total}`;
+      $("barFill").style.width = Math.round((shownPos/Math.max(1,total))*100) + "%";
 
-    return { ok:true, message:"OK", raw:txt };
-  }
+      $("btnBack").disabled = prevVisibleIndex(i) < 0;
+      $("btnOk").textContent = (step.type==="review") ? "Enviar" : "OK / Próximo";
 
-  async function testConnection(){
-    clearBoxes();
-    try{
-      const r = await fetch(API_URL, { method:"GET", cache:"no-store" });
-      const t = await r.text();
-      showBox("ok","Conexão OK. Resposta do servidor: " + (t || "(vazio)"));
-    }catch(e){
-      showBox("err","Falha ao conectar no WebApp. Detalhe: " + (e.message || e));
-    }
-  }
+      const req = isRequired(step);
+      $("btnNA").disabled = req || step.type==="review";
 
-  $("btnTest").addEventListener("click", testConnection);
+      const area = $("stepArea");
+      area.innerHTML = "";
 
-  async function flushQueue(){
-    if(!navigator.onLine) return;
-
-    const q = getQueue();
-    if(q.length === 0) return;
-
-    let sent = 0;
-
-    while(q.length){
-      try{
-        await postPayload(q[0].payload);
-        q.shift();
-        sent++;
-        setQueue(q);
-      }catch(e){
-        if(sent > 0) showBox("warn","Reenviados "+sent+" item(ns). Ainda restam "+q.length+" na fila.");
+      if(step.type === "review"){
+        area.appendChild(renderReview());
         return;
+      }
+
+      const label = document.createElement("label");
+      label.textContent = step.label;
+      if(req){
+        const star = document.createElement("span");
+        star.className = "req";
+        star.textContent = "*";
+        label.appendChild(star);
+      }
+      area.appendChild(label);
+
+      const hint = document.createElement("div");
+      hint.className = "hint";
+      hint.textContent = req ? "Obrigatório" : "Opcional (use N/A para pular)";
+      area.appendChild(hint);
+
+      const input = buildInput(step);
+      area.appendChild(input);
+
+      setTimeout(()=>{ try{ input.focus(); }catch(e){} }, 10);
+
+      input.addEventListener("keydown", (ev)=>{
+        if(ev.key === "Enter" && step.type !== "textarea"){
+          ev.preventDefault();
+          onOk();
+        }
+      });
+    }
+
+    function buildInput(step){
+      const val = (answers[step.key] ?? "");
+      let el;
+
+      if(step.type === "select"){
+        el = document.createElement("select");
+        const opt0 = document.createElement("option");
+        opt0.value = "";
+        opt0.textContent = "Selecione…";
+        el.appendChild(opt0);
+
+        for(const o of step.options || []){
+          const opt = document.createElement("option");
+          opt.value = o;
+          opt.textContent = o;
+          el.appendChild(opt);
+        }
+        el.value = val;
+
+      }else if(step.type === "textarea"){
+        el = document.createElement("textarea");
+        el.placeholder = step.placeholder || "";
+        el.value = val;
+
+      }else{
+        el = document.createElement("input");
+        el.type = step.type || "text";
+        el.placeholder = step.placeholder || "";
+        el.value = val;
+
+        if(step.inputmode) el.setAttribute("inputmode", step.inputmode);
+        if(step.type === "number"){
+          el.min = "0";
+          el.max = "120";
+        }
+      }
+
+      el.id = "fieldInput";
+      return el;
+    }
+
+    function readCurrentValue(){
+      const input = $("fieldInput");
+      if(!input) return "";
+      let v = (input.value ?? "");
+      if(typeof v === "string") v = v.trim();
+      return v;
+    }
+
+    function validateStep(value){
+      const step = steps[cursor];
+      const req = isRequired(step);
+      if(!req) return true;
+      if(value === "" || value === "N/A"){
+        openModal("err","Campo obrigatório","Este campo é obrigatório. Preencha para continuar.");
+        return false;
+      }
+      return true;
+    }
+
+    function prettyValue(v){
+      if(v === undefined || v === null || v === "") return "—";
+      return String(v);
+    }
+
+    function renderReview(){
+      const wrap = document.createElement("div");
+      wrap.className = "review";
+
+      const h = document.createElement("h3");
+      h.textContent = "Confira antes de enviar (toque para editar)";
+      wrap.appendChild(h);
+
+      const list = document.createElement("div");
+      list.className = "list";
+
+      for(let i=0;i<steps.length;i++){
+        const s = steps[i];
+        if(s.type === "review") continue;
+        if(!isShown(s)) continue;
+
+        const item = document.createElement("div");
+        item.className = "item";
+
+        const left = document.createElement("div");
+        const b = document.createElement("b");
+        b.textContent = s.label;
+        const span = document.createElement("span");
+        span.textContent = prettyValue(answers[s.key]);
+        left.appendChild(b);
+        left.appendChild(span);
+
+        const right = document.createElement("small");
+        right.textContent = (isRequired(s) ? "obrig." : "opcional");
+
+        item.appendChild(left);
+        item.appendChild(right);
+
+        item.addEventListener("click", ()=>{
+          cursor = i;
+          render();
+        });
+
+        list.appendChild(item);
+      }
+
+      wrap.appendChild(list);
+      return wrap;
+    }
+
+    function autoClearDependents(step){
+      if(step.key === "regiao" && answers.regiao !== "OUTRO") answers.regiao_outro = "";
+      if(step.key === "tipo_lesao" && answers.tipo_lesao !== "OUTROS") answers.tipo_lesao_outro = "";
+      if(step.key === "parte_corpo" && answers.parte_corpo !== "OUTRO") answers.parte_corpo_outro = "";
+      if(step.key === "razao" && answers.razao !== "OUTRO") answers.razao_outro = "";
+      if(step.key === "acao_preventiva" && answers.acao_preventiva !== "OUTRO") answers.acao_preventiva_outro = "";
+    }
+
+    function onOk(){
+      const step = steps[cursor];
+
+      if(step.type === "review"){
+        submitAll();
+        return;
+      }
+
+      const v = readCurrentValue();
+      if(!validateStep(v)) return;
+
+      answers[step.key] = v;
+      autoClearDependents(step);
+
+      cursor = nextVisibleIndex(cursor);
+      render();
+    }
+
+    function onNA(){
+      const step = steps[cursor];
+      if(isRequired(step) || step.type==="review") return;
+
+      answers[step.key] = "N/A";
+      autoClearDependents(step);
+
+      cursor = nextVisibleIndex(cursor);
+      render();
+    }
+
+    function onBack(){
+      const p = prevVisibleIndex(cursor);
+      if(p >= 0){
+        cursor = p;
+        render();
       }
     }
 
-    if(sent>0) showBox("ok","✅ Fila enviada com sucesso ("+sent+" item(ns)).");
-  }
+    $("btnOk").addEventListener("click", onOk);
+    $("btnNA").addEventListener("click", onNA);
+    $("btnBack").addEventListener("click", onBack);
 
-  function resetForm(){
-    for(const k in answers) delete answers[k];
+    function buildPayload(){
+      return {
+        action: ACTION,
+
+        client_time: new Date().toISOString(),
+        client_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+
+        matricula: answers.matricula || "",
+        nome_funcionario: answers.nome_funcionario || "",
+        idade: answers.idade || "",
+        funcao: answers.funcao || "",
+        setor: answers.setor || "",
+        data_acidente: answers.data_acidente || "",
+
+        regiao: answers.regiao || "",
+        regiao_outro: answers.regiao_outro || "",
+
+        gravidade: answers.gravidade || "",
+        periodo_evento: answers.periodo_evento || "",
+
+        tipo_lesao: answers.tipo_lesao || "",
+        tipo_lesao_outro: answers.tipo_lesao_outro || "",
+
+        parte_corpo: answers.parte_corpo || "",
+        parte_corpo_outro: answers.parte_corpo_outro || "",
+
+        samu: answers.samu || "",
+        local_ocorrencia: answers.local_ocorrencia || "",
+
+        cid: answers.cid || "",
+        cat: answers.cat || "",
+
+        razao: answers.razao || "",
+        razao_outro: answers.razao_outro || "",
+
+        acao_preventiva: answers.acao_preventiva || "",
+        acao_preventiva_outro: answers.acao_preventiva_outro || "",
+
+        observacoes: answers.observacoes || ""
+      };
+    }
+
+    function parseServerMessage(json, fallback){
+      if(!json) return fallback || "";
+      // aceita ambos formatos:
+      // {ok:true, message:"..."}  OU  {status:"OK", mensagem:"..."}
+      if(typeof json.message === "string" && json.message.trim()) return json.message.trim();
+      if(typeof json.mensagem === "string" && json.mensagem.trim()) return json.mensagem.trim();
+      return fallback || "";
+    }
+
+    async function postPayload(payload){
+      const body = new URLSearchParams(payload);
+
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+        body
+      });
+
+      const txt = await res.text();
+      let json=null; try{ json=JSON.parse(txt);}catch(e){}
+
+      if(!res.ok){
+        const msg = parseServerMessage(json, txt || "Falha na requisição.");
+        throw new Error("HTTP " + res.status + " — " + msg);
+      }
+
+      // se veio JSON e indica erro:
+      if(json){
+        const st = String(json.status || "").toUpperCase();
+        if(st === "ERR") throw new Error(parseServerMessage(json, "Erro no servidor."));
+        if(json.ok === false) throw new Error(parseServerMessage(json, "Erro no servidor."));
+        return json;
+      }
+
+      // fallback: considerou OK
+      return { status:"OK", raw: txt };
+    }
+
+    async function submitAll(){
+      // obrigatórios
+      if(!answers.matricula || answers.matricula==="N/A"){
+        cursor = steps.findIndex(s=>s.key==="matricula");
+        render();
+        openModal("err","Não enviado","Informe a matrícula (obrigatório).");
+        return;
+      }
+      if(!answers.nome_funcionario || answers.nome_funcionario==="N/A"){
+        cursor = steps.findIndex(s=>s.key==="nome_funcionario");
+        render();
+        openModal("err","Não enviado","Informe o nome (obrigatório).");
+        return;
+      }
+
+      // ✅ SEM FILA: se offline, não envia
+      if(!navigator.onLine){
+        openModal("err","Sem internet","Você está offline. Conecte-se para enviar para a planilha.");
+        return;
+      }
+
+      const payload = buildPayload();
+      $("btnOk").disabled = true;
+      $("btnNA").disabled = true;
+      $("btnBack").disabled = true;
+
+      try{
+        const r = await postPayload(payload);
+        const msg = parseServerMessage(r, "Registro enviado com sucesso para a planilha.");
+
+        openModal("ok","Enviado com sucesso", msg);
+
+        // limpa formulário e volta ao início
+        for(const k in answers) delete answers[k];
+        cursor = 0;
+        render();
+
+      }catch(e){
+        openModal("err","Falha ao enviar", (e && e.message) ? e.message : String(e));
+      }finally{
+        $("btnOk").disabled = false;
+        $("btnNA").disabled = false;
+        $("btnBack").disabled = false;
+      }
+    }
+
     cursor = 0;
     render();
-  }
-
-  async function submitAll(){
-    clearBoxes();
-
-    if(!answers.matricula || answers.matricula==="N/A"){
-      cursor = steps.findIndex(s=>s.key==="matricula");
-      render();
-      showBox("err","Informe a matrícula (obrigatório).");
-      return;
-    }
-    if(!answers.nome_funcionario || answers.nome_funcionario==="N/A"){
-      cursor = steps.findIndex(s=>s.key==="nome_funcionario");
-      render();
-      showBox("err","Informe o nome (obrigatório).");
-      return;
-    }
-
-    const payload = buildPayload();
-
-    $("btnOk").disabled = true;
-    $("btnNA").disabled = true;
-    $("btnBack").disabled = true;
-
-    try{
-      if(!navigator.onLine){
-        const q = getQueue();
-        q.push({ payload });
-        setQueue(q);
-        showBox("warn","Sem internet. Registro salvo na fila e será enviado automaticamente.");
-        resetForm();
-        return;
-      }
-
-      // ✅ envio real e espera confirmação do servidor
-      const r = await postPayload(payload);
-      const msg = (r && (r.message || r.mensagem)) ? (r.message || r.mensagem) : "✅ Enviado com sucesso.";
-      showBox("ok", msg);
-
-      // ✅ só reseta depois de mostrar confirmação
-      resetForm();
-
-      await flushQueue();
-
-    }catch(e){
-      const q = getQueue();
-      q.push({ payload });
-      setQueue(q);
-
-      const detalhe = (e && e.message) ? e.message : String(e);
-      showBox("warn","Falha ao enviar agora. Salvei na fila para reenviar automaticamente. Detalhe: " + detalhe);
-
-      resetForm();
-    }finally{
-      $("btnOk").disabled = false;
-      $("btnNA").disabled = false;
-      $("btnBack").disabled = false;
-    }
-  }
-
-  // inicialização
-  render();
-  flushQueue();
-</script>
+  </script>
 </body>
 </html>
