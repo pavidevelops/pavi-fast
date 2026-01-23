@@ -1293,60 +1293,35 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 });
 
 /* ==========================================================
-   Init
-========================================================== */
-(async function init(){
-  const usuario = localStorage.getItem(LS_USER);
-  const nome = localStorage.getItem(LS_NAME) || usuario;
-
-  if(!usuario){
-    window.location.href = 'index.html';
-    return;
-  }
-
-  $('#who').textContent = nome || usuario;
-  $('#kUser').textContent = nome || usuario;
-
-  setOnlineBadge();
-  setCamUI('idle');
-
-  await loadActivitiesOnOpen();
-})();
-</script>
-
-<script>
-/* ==========================================================
-   INIT — GUARDA DE SESSÃO ROBUSTO (FIX DEFINITIVO)
+   Init ÚNICO (conforme solicitado)
 ========================================================== */
 (async function init(){
   function redirectLogin(){
     window.location.replace('index.html');
   }
 
-  const usuario = localStorage.getItem('PAVI_FAST_USER');
-  const nome = localStorage.getItem('PAVI_FAST_NAME') || usuario;
+  let usuario = localStorage.getItem('PAVI_FAST_USER');
+  let nome = localStorage.getItem('PAVI_FAST_NAME') || usuario;
 
-  // ✅ Tentativa imediata
-  if(usuario){
-    document.getElementById('who').textContent = nome || usuario;
-    document.getElementById('kUser').textContent = nome || usuario;
+  if(!usuario){
+    await new Promise(r => setTimeout(r, 300));
+    usuario = localStorage.getItem('PAVI_FAST_USER');
+    nome = localStorage.getItem('PAVI_FAST_NAME') || usuario;
+  }
+
+  if(!usuario){
+    redirectLogin();
     return;
   }
 
-  // ✅ Retry para WebView (evita falso logout)
-  setTimeout(()=>{
-    const retryUser = localStorage.getItem('PAVI_FAST_USER');
-    const retryName = localStorage.getItem('PAVI_FAST_NAME') || retryUser;
+  document.getElementById('who').textContent = nome || usuario;
+  document.getElementById('kUser').textContent = nome || usuario;
 
-    if(!retryUser){
-      redirectLogin();
-      return;
-    }
-
-    document.getElementById('who').textContent = retryName || retryUser;
-    document.getElementById('kUser').textContent = retryName || retryUser;
-  }, 300);
+  setOnlineBadge();
+  setCamUI('idle');
+  await loadActivitiesOnOpen();
 })();
+
 </script>
 
 <script>
