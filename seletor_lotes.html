@@ -1293,7 +1293,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
 });
 
 /* ==========================================================
-   Init (ÚNICO E EXCLUSIVO)
+   Init
 ========================================================== */
 (async function init(){
   const usuario = localStorage.getItem(LS_USER);
@@ -1311,6 +1311,41 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   setCamUI('idle');
 
   await loadActivitiesOnOpen();
+})();
+</script>
+
+<script>
+/* ==========================================================
+   INIT — GUARDA DE SESSÃO ROBUSTO (FIX DEFINITIVO)
+========================================================== */
+(async function init(){
+  function redirectLogin(){
+    window.location.replace('index.html');
+  }
+
+  const usuario = localStorage.getItem('PAVI_FAST_USER');
+  const nome = localStorage.getItem('PAVI_FAST_NAME') || usuario;
+
+  // ✅ Tentativa imediata
+  if(usuario){
+    document.getElementById('who').textContent = nome || usuario;
+    document.getElementById('kUser').textContent = nome || usuario;
+    return;
+  }
+
+  // ✅ Retry para WebView (evita falso logout)
+  setTimeout(()=>{
+    const retryUser = localStorage.getItem('PAVI_FAST_USER');
+    const retryName = localStorage.getItem('PAVI_FAST_NAME') || retryUser;
+
+    if(!retryUser){
+      redirectLogin();
+      return;
+    }
+
+    document.getElementById('who').textContent = retryName || retryUser;
+    document.getElementById('kUser').textContent = retryName || retryUser;
+  }, 300);
 })();
 </script>
 
