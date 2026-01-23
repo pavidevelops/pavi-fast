@@ -205,15 +205,39 @@ const $ = s => document.querySelector(s);
 /* ==========================================================
    Sessão
 ========================================================== */
-let sess;
-try{ sess = JSON.parse(localStorage.getItem(LS_SESSION_V1)); }catch{}
+function guardSession(){
+  let sess = null;
 
-if(!sess || !sess.usuario){
-  location.href = LOGIN_PAGE;
+  try{
+    sess = JSON.parse(localStorage.getItem(LS_SESSION_V1));
+  }catch{}
+
+  if(sess && sess.usuario){
+    return sess;
+  }
+
+  // 🔁 retry para WebView (evita falso logout)
+  setTimeout(()=>{
+    let retry = null;
+    try{
+      retry = JSON.parse(localStorage.getItem(LS_SESSION_V1));
+    }catch{}
+
+    if(!retry || !retry.usuario){
+      window.location.replace(LOGIN_PAGE);
+    }
+  }, 300);
+
+  return null;
+}
+
+const sess = guardSession();
+if(!sess) {
+  // interrompe execução até o retry
+  throw new Error('Aguardando sessão estabilizar');
 }
 
 $('#who').textContent = sess.nome || sess.usuario;
-
 const allowedLotes = Array.isArray(sess.lotes) ? sess.lotes : [];
 
 /* ==========================================================
@@ -232,7 +256,7 @@ function saveCache(map){
 
 function loadCache(){
   try{
-    const c = JSON.parse(localStorage.getItem(CACHE_LOD));
+    const c = JSON.parse(localStorage.getItem(CACHE_LOTE_ROD));
     return c?.map || null;
   }catch{ return null; }
 }
@@ -274,7 +298,11 @@ function render(map){
         localStorage.setItem(LS_LOTE, lote);
         localStorage.setItem(LS_LOTE_SELECTED, lote);
         localStorage.setItem(LS_RODOVIA_PRE, r);
-        location.href = NEXT_PAGE;
+
+        // 🔒 garante flush do storage
+        setTimeout(()=>{
+          window.location.replace(NEXT_PAGE);
+        }, 150);
       };
       list.appendChild(b);
     });
