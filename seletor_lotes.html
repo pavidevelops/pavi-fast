@@ -592,6 +592,35 @@ const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
 })();
 
 /* ==========================================================
+   COMPRESSÃO DE IMAGEM
+========================================================== */
+async function compressImage(dataUrl, maxWidth = 1280, quality = 0.65) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+
+      if (width > maxWidth) {
+        height = Math.round(height * (maxWidth / width));
+        width = maxWidth;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const out = canvas.toDataURL('image/jpeg', quality);
+      resolve(out);
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+/* ==========================================================
    Helpers
 ========================================================== */
 const $ = (s)=>document.querySelector(s);
@@ -1115,6 +1144,16 @@ async function sendOne(rec){
       total: String(rec.totalBR || rec.total || ''),
       trecho: rec.trecho || ''
     };
+
+    // ✅ Comprimir foto se existir
+    if (rec.photoDataUrl) {
+      try {
+        params.foto = await compressImage(rec.photoDataUrl);
+      } catch (err) {
+        console.warn('Falha ao comprimir foto:', err);
+        params.foto = rec.photoDataUrl; // fallback para original
+      }
+    }
 
     const body = new URLSearchParams(params);
 
