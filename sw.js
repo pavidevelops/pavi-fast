@@ -1,13 +1,13 @@
 /*
   PAVI FAST — Service Worker (offline inteligente)
-  Versao: 2026.01.15-02
+  Versão: 2026.01.15-03
 
   ✔ HTML: cache-first (SEM fallback para index.html)
   ✔ Assets: stale-while-revalidate
   ✔ Apps Script (/exec): network-only
 */
 
-const VERSION = '2026.01.15-02';
+const VERSION = '2026.01.15-03';
 
 const CACHE_CORE   = `pavi-fast-core-${VERSION}`;
 const CACHE_ASSETS = `pavi-fast-assets-${VERSION}`;
@@ -53,7 +53,11 @@ self.addEventListener('activate', (event) => {
     const keys = await caches.keys();
     await Promise.all(
       keys.map((k) => {
-        if (k.startsWith('pavi-fast-') && k !== CACHE_CORE && k !== CACHE_ASSETS) {
+        if (
+          k.startsWith('pavi-fast-') &&
+          k !== CACHE_CORE &&
+          k !== CACHE_ASSETS
+        ) {
           return caches.delete(k);
         }
       })
@@ -127,13 +131,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2️⃣ HTML (navegação) → cache-first SEM fallback indevido
+  // 2️⃣ HTML (navegação) → cache-first SEM fallback
   if (isHtmlRequest(request) && url.origin === self.location.origin) {
     event.respondWith((async () => {
       try {
         return await cacheFirst(request);
       } catch (e) {
-        // ❌ NÃO redireciona para index.html
+        // ❌ NUNCA redireciona para index.html
         return Response.error();
       }
     })());
@@ -146,7 +150,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4️⃣ Mesma origem (imagens, fontes, css, js)
+  // 4️⃣ Mesma origem (css, js, imagens, fontes locais)
   if (url.origin === self.location.origin) {
     event.respondWith(staleWhileRevalidate(request));
     return;
