@@ -108,7 +108,7 @@
     <label>Senha</label>
     <div class="field">
       <input id="password" type="password" autocomplete="current-password" required placeholder="••••">
-      <button type="button" class="toggle-password" aria-label="Mostrar/ocultar senha">👁️</button>
+      <button type="button" class="toggle-password">👁️</button>
     </div>
 
     <button class="btn" id="submitBtn" type="submit">Entrar</button>
@@ -125,7 +125,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ✅ WEBAPP PRINCIPAL (login, register, activities, lote_rodovias, submit)
   const API_URL = "https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec";
 
   const form = document.getElementById('loginForm');
@@ -135,10 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const username = document.getElementById('username');
   const password = document.getElementById('password');
-  const firstAccess = document.getElementById('firstAccess');
 
-  // ✅ chaves de sessão usadas no projeto
-  const SESSION_KEY = 'PAVI_FAST_SESSION';
+  const FIRST_OK_KEY = 'PAVI_FAST_FIRST_OK';
   const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
 
   function show(el, txt){ el.textContent = txt; el.style.display='block'; }
@@ -148,42 +145,32 @@ document.addEventListener('DOMContentLoaded', () => {
     password.type = (password.type === 'password') ? 'text' : 'password';
   };
 
-  function safeJsonParse(txt){
-    try{ return JSON.parse(txt); }catch(e){ return null; }
-  }
-
-  // ✅ normaliza destino para evitar "TST.HTML", "/tst.html", " tst.html ", etc
-  function normalizeDestino(raw){
-    let d = (raw ?? "").toString().trim();
-    if(!d) return "";
-    d = d.replace(/\\/g, "/");
-    d = d.replace(/^\/+/, "");     // remove "/" do começo
-    d = d.replace(/\s+/g, "");     // remove espaços
-    d = d.toLowerCase();
-
-    // se digitarem só "tst", vira "tst.html"
-    if(d && !d.includes(".")) d = d + ".html";
-
-    return d;
-  }
-
-  // ✅ evita cache no Android/WebView/GitHub Pages
-  function withCacheBuster(path){
-    const v = Date.now(); // simples e efetivo
-    return path + (path.includes("?") ? "&" : "?") + "v=" + v;
+  function getLocalSession(){
+    try{
+      const s = localStorage.getItem(LS_SESSION_V1);
+      return s ? JSON.parse(s) : null;
+    }catch{ return null; }
   }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     hide();
 
+    const firstOk = localStorage.getItem(FIRST_OK_KEY) === '1';
+    const localSession = getLocalSession();
+
+    /* ✅ LOGIN OFFLINE PERMITIDO SE JÁ EXISTIR SESSÃO */
     if(!navigator.onLine){
+      if(firstOk && localSession){
+        window.location.replace((localSession.destino || 'poslog.html'));
+        return;
+      }
       show(err,'Sem internet. Conecte-se para o primeiro acesso.');
       return;
     }
 
-    const u = (username.value || "").trim();
-    const s = (password.value || "").trim();
+    const u = username.value.trim();
+    const s = password.value.trim();
 
     if(!u || !u.includes("@")){
       show(err,"Informe um e-mail válido.");
@@ -200,83 +187,37 @@ document.addEventListener('DOMContentLoaded', () => {
     try{
       const body = new URLSearchParams({
         action:'login',
-        usuario: u,
-        senha: s
+        usuario:u,
+        senha:s
       });
 
-      const r = await fetch(API_URL, { method:'POST', body });
+      const r = await fetch(API_URL,{ method:'POST', body });
       const t = await r.text();
-      const d = safeJsonParse(t);
+      const d = JSON.parse(t);
 
-      if(!r.ok){
-        throw new Error("HTTP " + r.status + " — " + (t || "Falha na requisição"));
-      }
-      if(!d){
-        throw new Error("Resposta inválida do servidor: " + (t || ""));
-      }
-      if(String(d.status || "").toUpperCase() !== 'OK'){
-        throw new Error(d.mensagem || 'Login inválido');
-      }
+      if(d.status !== 'OK') throw new Error(d.mensagem || 'Login inválido');
 
-      // Persistências usadas no projeto
-      localStorage.setItem('PAVI_FAST_USER', d.email || u);
-      localStorage.setItem('PAVI_FAST_NAME', d.nome || u);
+      localStorage.setItem(FIRST_OK_KEY,'1');
 
-      // Lotes (array ou string)
-      let lotes = [];
-      if (Array.isArray(d.lotes)) {
-        lotes = d.lotes;
-      } else if (typeof d.lotes === 'string' && d.lotes.trim()) {
-        lotes = d.lotes.split(',').map(x => x.trim()).filter(Boolean);
-      }
-
-      // ✅ destino (coluna W) normalizado
-      const destino = normalizeDestino(d.destino);
-
-      const sessV1 = {
-        usuario: (d.email || u || '').trim(),
-        nome: (d.nome || u || '').trim(),
-        lotes: lotes,
-        destino: destino,
-        semLote: !!d.semLote,
-        lastLoginAt: Date.now()
-      };
-
-      localStorage.setItem(LS_SESSION_V1, JSON.stringify(sessV1));
-
-      // Compat (fluxos antigos)
-      const sessCompat = {
-        email: sessV1.usuario,
-        name: sessV1.nome,
-        allowedLotes: sessV1.lotes
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(sessCompat));
-
-      // ✅ debug rápido (se quiser ver no console)
-      // console.log("DESTINO RAW:", d.destino, "DESTINO NORMAL:", destino);
+      const destino = (d.destino || '').toLowerCase().trim();
+      localStorage.setItem(LS_SESSION_V1, JSON.stringify({
+        usuario:d.email || u,
+        nome:d.nome || u,
+        lotes:d.lotes || [],
+        destino:destino,
+        lastLoginAt:Date.now()
+      }));
 
       show(ok,'Login OK. Entrando...');
-
-      // ✅ redirecionamento por DESTINO (W)
-      // se vazio: poslog.html
-      const go = destino ? destino : 'poslog.html';
-
-      // cache buster pra não ficar preso no poslog antigo
-      setTimeout(()=> window.location.replace(withCacheBuster(go)), 250);
+      setTimeout(()=>location.replace(destino || 'poslog.html'),300);
 
     }catch(e){
-      show(err,'Não foi possível entrar: ' + (e.message || e));
+      show(err,'Não foi possível entrar: ' + e.message);
     }finally{
       btn.disabled=false;
       btn.textContent='Entrar';
     }
   });
-
-  firstAccess.onclick = e=>{
-    e.preventDefault();
-    window.location.replace('primeiro_acesso.html');
-  };
-
 });
 </script>
 
