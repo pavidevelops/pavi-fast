@@ -1116,10 +1116,6 @@ async function sendOne(rec){
       trecho: rec.trecho || ''
     };
 
-    if(rec.photoDataUrl && String(rec.photoDataUrl).startsWith('data:image/')){
-      params.foto = rec.photoDataUrl;
-    }
-
     const body = new URLSearchParams(params);
 
     const resp = await fetch(WEBAPP_URL, { method:'POST', body });
