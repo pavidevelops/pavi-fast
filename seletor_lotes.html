@@ -1296,16 +1296,30 @@ $('#btnSalvar').addEventListener('click', async ()=>{
    Init ÚNICO (conforme solicitado)
 ========================================================== */
 (async function init(){
+
   function redirectLogin(){
     window.location.replace('index.html');
   }
 
-  let usuario = localStorage.getItem('PAVI_FAST_USER');
-  let nome = localStorage.getItem('PAVI_FAST_NAME') || usuario;
+  // 🔑 tenta sessão completa primeiro
+  let sess = null;
+  try{
+    sess = JSON.parse(localStorage.getItem('PAVI_FAST_SESSION_V1'));
+  }catch{}
 
-  if(!usuario){
-    await new Promise(r => setTimeout(r, 300));
-    usuario = localStorage.getItem('PAVI_FAST_USER');
+  let usuario = '';
+  let nome = '';
+
+  if(sess && sess.usuario){
+    usuario = sess.usuario;
+    nome = sess.nome || sess.usuario;
+
+    // 🔁 garante compatibilidade com HTMLs antigos
+    localStorage.setItem('PAVI_FAST_USER', usuario);
+    localStorage.setItem('PAVI_FAST_NAME', nome);
+  } else {
+    // fallback sessão simples (TST)
+    usuario = localStorage.getItem('PAVI_FAST_USER') || '';
     nome = localStorage.getItem('PAVI_FAST_NAME') || usuario;
   }
 
@@ -1314,12 +1328,13 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     return;
   }
 
-  document.getElementById('who').textContent = nome || usuario;
-  document.getElementById('kUser').textContent = nome || usuario;
+  document.getElementById('who').textContent = nome;
+  document.getElementById('kUser').textContent = nome;
 
   setOnlineBadge();
   setCamUI('idle');
   await loadActivitiesOnOpen();
+
 })();
 
 </script>
