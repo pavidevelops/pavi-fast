@@ -16,10 +16,10 @@
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap;}
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap;}
     @font-face{font-family:'FunnelSans';src:url('FunnelSans-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap;}
+    @font-face{font-family:'FunnelSans';src:url('FunnelSans-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap;}
 
-    html, body, * {
-      font-family:'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important;
-    }
+    html, body, * { font-family:'FunnelSans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important; }
 
     :root{
       --bg:#f8fdf9;
@@ -31,12 +31,12 @@
       --primary-700:#0b8c61;
       --border:#d1fae5;
       --shadow:0 15px 35px rgba(16,185,129,0.10), 0 5px 15px rgba(0,0,0,0.06);
-      --warn-bg:#fff7ed; --warn:#9a3412; --warn-br:#fed7aa;
+      --ok-bg:#ecfdf5; --ok:#065f46; --ok-br:#a7f3d0;
       --err-bg:#fef2f2; --err:#991b1b; --err-br:#fecaca;
+      --warn-bg:#fff7ed; --warn:#9a3412; --warn-br:#fed7aa;
     }
 
     *{ box-sizing:border-box; }
-
     body{
       margin:0;
       background:var(--bg);
@@ -46,30 +46,29 @@
       padding-bottom:90px;
     }
 
+    /* Topbar */
     .topbar{
       position:sticky; top:0; z-index:10;
       background:rgba(248,253,249,.92);
       backdrop-filter: blur(10px);
       border-bottom:1px solid #e5f7ef;
       padding:10px 14px;
-      display:flex; align-items:center; justify-content:space-between;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-    .brand b{ font-size:15px; font-weight:900; }
-    .brand small{ font-size:12px; color:var(--muted); font-weight:800; }
+    .brand{ display:flex; flex-direction:column; line-height:1.1; }
+    .brand b{ font-size:15px; font-weight:800; }
+    .brand small{ font-size:12px; color:var(--muted); font-weight:700; margin-top:3px; }
     .pillUser{
-      padding:8px 12px;
-      border-radius:999px;
-      border:2px solid var(--border);
-      background:#fff;
-      font-size:12px;
-      font-weight:900;
-      max-width:55vw;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      padding:8px 12px; border-radius:999px;
+      border:2px solid var(--border); background:#fff;
+      font-size:12px; font-weight:800;
       white-space:nowrap;
+      max-width: 52vw;
+      overflow:hidden; text-overflow:ellipsis;
     }
 
     .wrap{ max-width:980px; margin:0 auto; padding:14px; }
+
     .panel{
       background:var(--card);
       border:1px solid var(--border);
@@ -78,210 +77,491 @@
       padding:16px;
     }
 
+    .kpis{ display:flex; gap:10px; flex-wrap:wrap; }
+    .kpi{
+      flex:1; min-width:220px;
+      background:#fbfffd;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:12px 12px;
+    }
+    .kpi small{ display:block; color:var(--muted); font-weight:800; }
+    .kpi b{ font-size:18px; font-weight:900; }
+    .hint{ font-size:12px; color:var(--muted); margin-top:6px; font-style:italic; }
+    .hint strong{ color:var(--primary-700); font-style:normal; }
+
+    .sep{ height:1px; background:#e5f7ef; margin:14px 0; }
+
+    /* Cards de lote */
     .grid{
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap:12px;
     }
-    @media(max-width:720px){ .grid{grid-template-columns:1fr} }
+    @media (max-width:720px){
+      .grid{ grid-template-columns: 1fr; }
+    }
 
     .loteCard{
       border:1px solid var(--border);
       border-radius:18px;
       background:#fff;
+      overflow:hidden;
     }
     .loteHead{
-      padding:12px;
+      padding:12px 12px 10px;
       background:#fbfffd;
       border-bottom:1px solid #e5f7ef;
-      display:flex; justify-content:space-between; gap:10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
     }
-    .loteTitle b{ font-weight:900; }
-    .loteTitle small{ font-size:12px; color:var(--muted); font-weight:800; }
+    .loteTitle{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .loteTitle b{ font-size:15px; font-weight:900; }
+    .loteTitle small{ color:var(--muted); font-weight:800; font-size:12px; }
+    .badge{
+      padding:6px 10px;
+      border-radius:999px;
+      border:2px solid var(--border);
+      background:#fff;
+      font-size:12px;
+      font-weight:900;
+      white-space:nowrap;
+    }
 
     .rodList{
       padding:12px;
-      display:flex; flex-wrap:wrap; gap:8px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
     }
     .rodBtn{
       border:2px solid var(--border);
       background:#fbfffd;
+      color:var(--text);
       font-weight:900;
       padding:10px 12px;
       border-radius:999px;
       cursor:pointer;
+      transition:.15s ease;
       font-size:13px;
+      white-space:nowrap;
     }
-    .rodBtn:hover{ background:#f0fdf9; }
+    .rodBtn:hover{
+      background:#f0fdf9;
+      transform: translateY(-1px);
+    }
 
     .msg{
+      border-radius:14px;
+      border:2px solid var(--warn-br);
+      background:var(--warn-bg);
+      color:var(--warn);
+      padding:12px;
+      font-weight:900;
       display:none;
       margin-top:12px;
-      padding:12px;
-      border-radius:14px;
+      font-size:13px;
+    }
+    .msg.err{
+      border-color: var(--err-br);
+      background: var(--err-bg);
+      color: var(--err);
+    }
+    .loading{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
       font-weight:900;
       font-size:13px;
     }
-    .msg.warn{ background:var(--warn-bg); color:var(--warn); border:2px solid var(--warn-br); }
-    .msg.err{ background:var(--err-bg); color:var(--err); border:2px solid var(--err-br); }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--primary);
+      box-shadow: 0 0 0 6px rgba(16,185,129,0.12);
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse{
+      0%{ transform: scale(1); opacity:1; }
+      60%{ transform: scale(1.15); opacity:.85; }
+      100%{ transform: scale(1); opacity:1; }
+    }
 
-    .actions{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:14px;
+    }
     .btn{
       flex:1; min-width:180px;
       padding:14px;
       border-radius:16px;
       border:none;
-      font-weight:900;
       cursor:pointer;
-    }
-    .btn.primary{
-      background:linear-gradient(135deg,var(--primary),var(--primary-600));
+      font-weight:900;
+      font-size:15px;
+      background:linear-gradient(135deg, var(--primary), var(--primary-600));
       color:#fff;
+      box-shadow:0 10px 25px rgba(16,185,129,0.25);
+      transition:.2s ease;
     }
+    .btn:hover{ background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); transform:translateY(-1px); }
     .btn.secondary{
       background:#fff;
       color:var(--primary-700);
       border:2px solid var(--border);
+      box-shadow:none;
     }
+    .btn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; }
   </style>
 </head>
 
 <body>
-
-<div class="topbar">
-  <div class="brand">
-    <b>PAVI Fast</b>
-    <small>Selecione a rodovia</small>
-  </div>
-  <div class="pillUser" id="who">—</div>
-</div>
-
-<div class="wrap">
-  <div class="panel">
-    <div class="msg warn" id="msg"></div>
-    <div class="grid" id="grid"></div>
-
-    <div class="actions">
-      <button class="btn secondary" id="btnLogout">Sair</button>
-      <button class="btn primary" id="btnNext" disabled>Continuar</button>
+  <div class="topbar">
+    <div class="brand">
+      <b>PAVI Fast</b>
+      <small>Escolha a rodovia do lote</small>
     </div>
+    <div class="pillUser" id="who">—</div>
   </div>
-</div>
 
-<script>
-/* ==========================================================
-   CONFIG / CHAVES PADRÃO DO PROJETO
-========================================================== */
-const LOGIN_PAGE = 'index.html';
-const NEXT_PAGE  = 'seletor_lotes.html';
-
-const LS_USER  = 'PAVI_FAST_USER';
-const LS_NAME  = 'PAVI_FAST_NAME';
-const LS_SESS  = 'PAVI_FAST_SESSION_V1';
-
-const LS_LOTE  = 'PAVI_FAST_LOTE';
-const LS_LOTE_SELECTED = 'PAVI_FAST_LOTE_SELECTED';
-const LS_RODOVIA_PRE   = 'PAVI_FAST_RODOVIA_PRESELECT';
-
-/* ==========================================================
-   Sessão (guard)
-========================================================== */
-const sessRaw = localStorage.getItem(LS_SESS);
-const user = localStorage.getItem(LS_USER);
-
-if(!user && !sessRaw){
-  location.replace(LOGIN_PAGE);
-}
-
-const sess = sessRaw ? JSON.parse(sessRaw) : {};
-const nome = sess.nome || localStorage.getItem(LS_NAME) || user;
-
-document.getElementById('who').textContent = nome || '—';
-
-/* ==========================================================
-   Dados simulados (já vêm do cache no projeto real)
-========================================================== */
-const allowedLotes = Array.isArray(sess.lotes) ? sess.lotes : [];
-const fakeRodovias = {
-  "L1": ["PR-082","PR-323"],
-  "L2": ["PR-445"]
-};
-
-/* ==========================================================
-   Render
-========================================================== */
-let selectedLote = '';
-let selectedRodovia = '';
-
-function setSelection(lote, rodovia){
-  selectedLote = lote;
-  selectedRodovia = rodovia;
-
-  localStorage.setItem(LS_LOTE, lote);
-  localStorage.setItem(LS_LOTE_SELECTED, lote);
-  localStorage.setItem(LS_RODOVIA_PRE, rodovia);
-
-  document.getElementById('btnNext').disabled = false;
-}
-
-function render(){
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-
-  if(!allowedLotes.length){
-    const m = document.getElementById('msg');
-    m.textContent = 'Nenhum lote liberado para este usuário.';
-    m.className = 'msg err';
-    m.style.display = 'block';
-    return;
-  }
-
-  allowedLotes.forEach(lote=>{
-    const card = document.createElement('div');
-    card.className = 'loteCard';
-
-    card.innerHTML = `
-      <div class="loteHead">
-        <div class="loteTitle">
-          <b>Lote ${lote}</b>
-          <small>${lote}</small>
+  <div class="wrap">
+    <div class="panel">
+      <div class="kpis">
+        <div class="kpi">
+          <small>Usuário</small>
+          <b id="kUser">—</b>
+          <div class="hint">Você verá somente o que estiver <strong>liberado</strong> para seu usuário.</div>
+        </div>
+        <div class="kpi">
+          <small>Ação</small>
+          <b>Selecione a rodovia</b>
+          <div class="hint">Ao tocar em uma rodovia, ela já ficará pré-selecionada no formulário.</div>
         </div>
       </div>
-      <div class="rodList"></div>
-    `;
 
-    const list = card.querySelector('.rodList');
-    (fakeRodovias[lote] || []).forEach(r=>{
-      const b = document.createElement('button');
-      b.className = 'rodBtn';
-      b.textContent = r;
-      b.onclick = ()=> setSelection(lote, r);
-      list.appendChild(b);
+      <div class="sep"></div>
+
+      <div class="loading" id="loading">
+        <span class="dot"></span>
+        <span>Carregando lotes e rodovias…</span>
+      </div>
+
+      <div class="msg" id="msg"></div>
+
+      <div class="grid" id="grid" style="margin-top:12px; display:none;"></div>
+
+      <div class="actions">
+        <button class="btn secondary" id="btnLogout">Sair</button>
+        <button class="btn" id="btnGoSeletor" disabled title="Selecione uma rodovia primeiro">Ir para seletor</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== CONFIG ======
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec';
+
+  const SESSION_KEY = 'PAVI_FAST_SESSION';
+  const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1'; // ✅ offline (30 dias)
+  const SESSION_MAX_DAYS = 30;
+  const SESSION_MAX_MS = SESSION_MAX_DAYS * 24 * 60 * 60 * 1000;
+
+  const LS_USER = 'PAVI_FAST_USER';
+  const LS_NAME = 'PAVI_FAST_NAME';
+
+  const LS_LOTE_ATIVO = 'PAVI_FAST_LOTE_ATIVO';
+  const LS_RODOVIA_PRE = 'PAVI_FAST_RODOVIA_PRESELECT';
+
+  const CACHE_LOTE_RODOVIAS = 'PAVI_FAST_LOTE_RODOVIAS_CACHE_V1'; // ✅ cache p/ offline
+
+  const NEXT_PAGE = 'seletor_lotes.html';
+  const LOGIN_PAGE = 'index.html';
+
+  // ====== Helpers ======
+  const $ = (s)=>document.querySelector(s);
+
+  function loteLabel(loteId){
+    const n = String(loteId||'').replace(/[^0-9]/g,'');
+    if(!n) return String(loteId||'Lote');
+    return 'Lote ' + (n.length===1 ? ('0'+n) : n);
+  }
+
+  function showMsg(text, kind){
+    const el = $('#msg');
+    el.className = 'msg' + (kind==='err' ? ' err' : '');
+    el.textContent = text;
+    el.style.display = 'block';
+  }
+
+  function hideMsg(){
+    const el = $('#msg');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+
+  function setLoading(on){
+    $('#loading').style.display = on ? 'flex' : 'none';
+  }
+
+  async function post(params){
+    const body = new URLSearchParams(params);
+    const resp = await fetch(WEBAPP_URL, { method:'POST', body });
+    const text = await resp.text();
+    let json=null; try{ json = JSON.parse(text); }catch{}
+    if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
+    if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha na resposta');
+    return json;
+  }
+
+  function ensureSessionCompat(){
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    try{ return JSON.parse(raw); }catch{ return null; }
+  }
+
+  function loadSessionV1(){
+    try{
+      const raw = localStorage.getItem(LS_SESSION_V1);
+      if(!raw) return null;
+      const s = JSON.parse(raw);
+      return (s && typeof s === 'object') ? s : null;
+    }catch(e){ return null; }
+  }
+
+  function sessionV1IsValid(sess){
+    if(!sess) return false;
+    const ts = Number(sess.lastLoginAt || 0);
+    if(!ts) return false;
+    return (Date.now() - ts) <= SESSION_MAX_MS;
+  }
+
+  function loadLoteRodoviasCache(){
+    try{
+      const raw = localStorage.getItem(CACHE_LOTE_RODOVIAS);
+      if(!raw) return null;
+      const c = JSON.parse(raw);
+      return (c && typeof c === 'object') ? c : null;
+    }catch(e){ return null; }
+  }
+
+  function saveLoteRodoviasCache(map){
+    try{
+      localStorage.setItem(CACHE_LOTE_RODOVIAS, JSON.stringify({
+        ts: Date.now(),
+        map: map || {}
+      }));
+    }catch(e){}
+  }
+
+  function pickMapForAllowed(mapAll, allowed){
+    const out = {};
+    (allowed || []).forEach(l => { out[l] = Array.isArray(mapAll?.[l]) ? mapAll[l] : []; });
+    return out;
+  }
+
+  // ====== Sessão ======
+  let sessionCompat = ensureSessionCompat();
+  let sessionV1 = loadSessionV1();
+
+  // ✅ Fallback seguro: se não tem sessão, mas tem usuário salvo pelo login, cria uma sessão mínima
+  if(!sessionCompat && !sessionV1IsValid(sessionV1)){
+    const u = (localStorage.getItem(LS_USER) || '').trim();
+    const n = (localStorage.getItem(LS_NAME) || '').trim();
+    if(u){
+      sessionV1 = {
+        usuario: u,
+        nome: n || u,
+        lotes: [],
+        lastLoginAt: Date.now()
+      };
+      try{ localStorage.setItem(LS_SESSION_V1, JSON.stringify(sessionV1)); }catch(e){}
+    }else{
+      location.href = LOGIN_PAGE;
+    }
+  }
+
+  // Nome do usuário (preferindo V1)
+  const userName =
+    (sessionV1?.nome) ||
+    (sessionCompat?.name) ||
+    localStorage.getItem(LS_NAME) ||
+    (sessionV1?.usuario) ||
+    (sessionCompat?.email) ||
+    localStorage.getItem(LS_USER) ||
+    '—';
+
+  $('#who').textContent = userName;
+  $('#kUser').textContent = userName;
+
+  // Lotes permitidos (preferindo V1)
+  const allowedLotes =
+    (Array.isArray(sessionV1?.lotes) ? sessionV1.lotes : null) ||
+    (Array.isArray(sessionCompat?.allowedLotes) ? sessionCompat.allowedLotes : null) ||
+    [];
+
+  // ====== Estado da seleção ======
+  let selectedLote = '';
+  let selectedRodovia = '';
+
+  function setSelection(lote, rodovia){
+    selectedLote = String(lote||'').trim().toUpperCase();
+    selectedRodovia = String(rodovia||'').trim();
+
+    localStorage.setItem(LS_LOTE_ATIVO, selectedLote);
+    localStorage.setItem(LS_RODOVIA_PRE, selectedRodovia);
+
+    const btn = $('#btnGoSeletor');
+    btn.disabled = false;
+    btn.title = '';
+  }
+
+  // ====== Render ======
+  function renderGrid(map){
+    const grid = $('#grid');
+    grid.innerHTML = '';
+    grid.style.display = 'grid';
+
+    allowedLotes.forEach(lote=>{
+      const rods = (map && map[lote]) ? map[lote] : [];
+      const card = document.createElement('div');
+      card.className = 'loteCard';
+
+      const head = document.createElement('div');
+      head.className = 'loteHead';
+
+      const t = document.createElement('div');
+      t.className = 'loteTitle';
+      t.innerHTML = `<b>${loteLabel(lote)}</b><small>${lote}</small>`;
+
+      const badge = document.createElement('div');
+      badge.className = 'badge';
+      badge.textContent = (rods.length ? `${rods.length} rodovias` : '0 rodovias');
+
+      head.appendChild(t);
+      head.appendChild(badge);
+
+      const list = document.createElement('div');
+      list.className = 'rodList';
+
+      if(!rods.length){
+        const empty = document.createElement('div');
+        empty.style.color = 'var(--muted)';
+        empty.style.fontWeight = '900';
+        empty.style.fontSize = '13px';
+        empty.textContent = 'Nenhuma rodovia liberada para este lote.';
+        list.appendChild(empty);
+      }else{
+        rods.forEach(r=>{
+          const b = document.createElement('button');
+          b.className = 'rodBtn';
+          b.type = 'button';
+          b.textContent = r;
+
+          b.addEventListener('click', ()=>{
+            setSelection(lote, r);
+            location.href = NEXT_PAGE;
+          });
+
+          list.appendChild(b);
+        });
+      }
+
+      card.appendChild(head);
+      card.appendChild(list);
+      grid.appendChild(card);
     });
+  }
 
-    grid.appendChild(card);
+  // ====== Load lotes + rodovias (com cache p/ offline) ======
+  (async function init(){
+    hideMsg();
+
+    if(!allowedLotes.length){
+      setLoading(false);
+      showMsg('Sem lote definido, entre em contato com suporte.', 'err');
+      $('#grid').style.display = 'none';
+      $('#btnGoSeletor').disabled = true;
+      return;
+    }
+
+    if(!navigator.onLine){
+      const cache = loadLoteRodoviasCache();
+      const mapAll = cache?.map || null;
+      const map = mapAll ? pickMapForAllowed(mapAll, allowedLotes) : null;
+
+      setLoading(false);
+
+      if(map){
+        renderGrid(map);
+        showMsg('Modo offline: usando rodovias salvas no aparelho.', 'warn');
+        return;
+      }
+
+      showMsg('Sem internet e sem cache de rodovias neste aparelho. Conecte-se uma vez para carregar.', 'err');
+      $('#grid').style.display = 'none';
+      return;
+    }
+
+    try{
+      setLoading(true);
+
+      const json = await post({ action:'lote_rodovias', lotes: allowedLotes.join(',') });
+      const mapAll = json.lotes || {};
+      const map = pickMapForAllowed(mapAll, allowedLotes);
+
+      setLoading(false);
+      renderGrid(map);
+
+      saveLoteRodoviasCache(mapAll);
+
+      const anyZero = allowedLotes.some(l => !((map[l]||[]).length));
+      if(anyZero){
+        showMsg('Alguns lotes não possuem rodovias liberadas. Verifique a aba LOTE_RODOVIAS no Sheets.', 'warn');
+      }
+
+    }catch(err){
+      setLoading(false);
+
+      const cache = loadLoteRodoviasCache();
+      const mapAll = cache?.map || null;
+      const map = mapAll ? pickMapForAllowed(mapAll, allowedLotes) : null;
+
+      if(map){
+        renderGrid(map);
+        showMsg('Falha ao atualizar rodovias. Mostrando dados salvos no aparelho.', 'warn');
+        return;
+      }
+
+      showMsg('Falha ao carregar rodovias: ' + (err.message || 'erro'), 'err');
+      $('#grid').style.display = 'none';
+    }
+  })();
+
+  // ====== Botões ======
+  $('#btnGoSeletor').addEventListener('click', ()=>{
+    location.href = NEXT_PAGE;
   });
-}
 
-render();
-
-/* ==========================================================
-   Botões
-========================================================== */
-document.getElementById('btnNext').onclick = ()=>{
-  location.replace(NEXT_PAGE);
-};
-
-document.getElementById('btnLogout').onclick = ()=>{
-  localStorage.clear();
-  location.replace(LOGIN_PAGE);
-};
+  $('#btnLogout').addEventListener('click', ()=>{
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LS_SESSION_V1);
+    localStorage.removeItem(LS_USER);
+    localStorage.removeItem(LS_NAME);
+    localStorage.removeItem(LS_LOTE_ATIVO);
+    localStorage.removeItem(LS_RODOVIA_PRE);
+    location.href = LOGIN_PAGE;
+  });
 </script>
 
 <script>
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
+  // PWA / Offline inteligente
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
 </script>
 
 </body>
