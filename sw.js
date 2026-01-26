@@ -1,19 +1,23 @@
 /*
   PAVI FAST — Service Worker (offline inteligente)
-  Versão: 2026.01.15-03
+  Versão: 2026.01.15-04
 
   ✔ HTML: cache-first (SEM fallback para index.html)
   ✔ Assets: stale-while-revalidate
   ✔ Apps Script (/exec): network-only
+  ✔ Seguro para Android WebView
 */
 
-const VERSION = '2026.01.15-03';
+const VERSION = '2026.01.15-04';
 
 const CACHE_CORE   = `pavi-fast-core-${VERSION}`;
 const CACHE_ASSETS = `pavi-fast-assets-${VERSION}`;
 
+/* ==========================================================
+   CORE (HTML + manifest + fontes locais)
+   ⚠️ NÃO usar './' para evitar bug no WebView
+========================================================== */
 const CORE_URLS = [
-  './',
   './index.html',
   './poslog.html',
   './seletor_lotes.html',
@@ -29,7 +33,7 @@ const CORE_URLS = [
   './FunnelSans-Italic.ttf',
   './FunnelSans-BoldItalic.ttf',
 
-  // Roboto (se estiver local)
+  // Roboto local (se existir)
   './Roboto-VariableFont_wdth,wght.ttf',
   './Roboto-Italic-VariableFont_wdth,wght.ttf'
 ];
@@ -115,7 +119,8 @@ async function staleWhileRevalidate(request) {
     })
     .catch(() => null);
 
-  return cached || fetchPromise;
+  // fallback defensivo
+  return cached || fetchPromise || fetch(request);
 }
 
 /* ==========================================================
@@ -125,7 +130,7 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // 1️⃣ Apps Script → SEMPRE REDE
+  // 1️⃣ Apps Script → SEMPRE REDE (não cachear)
   if (isAppsScript(url)) {
     event.respondWith(fetch(request));
     return;
@@ -137,7 +142,7 @@ self.addEventListener('fetch', (event) => {
       try {
         return await cacheFirst(request);
       } catch (e) {
-        // ❌ NUNCA redireciona para index.html
+        // ❌ NUNCA redirecionar para index.html
         return Response.error();
       }
     })());
@@ -150,12 +155,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4️⃣ Mesma origem (css, js, imagens, fontes locais)
-  if (url.origin === self.location.origin) {
+  // 4️⃣ Assets da mesma origem (CSS, JS, IMG, FONTES)
+  if (
+    url.origin === self.location.origin &&
+    !isHtmlRequest(request)
+  ) {
     event.respondWith(staleWhileRevalidate(request));
     return;
   }
 
-  // 5️⃣ Outros → rede padrão
+  // 5️⃣ Demais requisições → rede padrão
   event.respondWith(fetch(request));
 });
