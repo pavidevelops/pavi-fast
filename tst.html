@@ -602,5 +602,11 @@
     cursor = 0;
     render();
   </script>
+  <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(console.warn);
+}
+</script>
+
 </body>
 </html>
