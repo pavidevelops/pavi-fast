@@ -1273,13 +1273,30 @@ $('#btnResend').addEventListener('click', async ()=>{ await resendAll(); await r
 $('#btnRefreshList').addEventListener('click', async ()=>{ await renderQueue(); });
 
 /* ==========================================================
-   Salvar novo registro
+   Função auxiliar para limpar formulário
+========================================================== */
+function limparFormulario(){
+  $('#atividade').value='';
+  selectedAtvKey='';
+  showAtvList();
+  $('#trecho').value='';
+  $('#rodovia').value='';
+  $('#total').value='';
+  $('#prazoDe').value='';
+  $('#prazoAte').value='';
+  capturedDataUrl='';
+  $('#camShot').src='';
+  setCamUI('idle');
+  clearCamError();
+}
+
+/* ==========================================================
+   Salvar novo registro (CORRIGIDO - sem duplicação)
 ========================================================== */
 $('#btnSalvar').addEventListener('click', async ()=>{
   const usuario = localStorage.getItem(LS_USER) || '';
   const nome = localStorage.getItem(LS_NAME) || usuario;
-
-  const lote = getSelectedLote(); // pode ser vazio
+  const lote = getSelectedLote();
 
   const atividade = $('#atividade').value.trim();
   const trecho = $('#trecho').value.trim();
@@ -1287,8 +1304,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const totalBR = $('#total').value.trim();
   const prazoDe = $('#prazoDe').value;
   const prazoAte = $('#prazoAte').value;
-
-  const photoDataUrl = capturedDataUrl; // opcional
+  const photoDataUrl = capturedDataUrl;
 
   if(!atividade) return toast('Informe a atividade.');
   if(!rodovia) return toast('Informe a rodovia.');
@@ -1298,67 +1314,32 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   if(total === null) return toast('Total inválido. Use número e vírgula.');
 
   $('#btnSalvar').disabled = true;
-  $('#saveMsg').textContent = 'Preparando envio...';
+  $('#saveMsg').textContent = 'Enviando...';
 
-  try{
-    const rec = {
-      id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + '_' + Math.random()),
-      createdAt: Date.now(),
-      status: 'PENDING',
-      errorMsg: '',
-      usuario, nome,
-      lote,
-      atividade, trecho,
-      rodovia,
-      prazoDe, prazoAte,
-      total, totalBR,
-      unidade: 'm',
-      photoDataUrl: photoDataUrl || ''
-    };
+  const rec = {
+    id: crypto?.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random(),
+    createdAt: Date.now(),
+    status: 'PENDING',
+    errorMsg: '',
+    usuario, nome, lote,
+    atividade, trecho, rodovia,
+    prazoDe, prazoAte,
+    total, totalBR,
+    unidade: 'm',
+    photoDataUrl: photoDataUrl || ''
+  };
 
-// 🔥 NOVA LÓGICA CORRETA - ENVIAR PRIMEIRO SE ONLINE
-if (navigator.onLine) {
   try {
-    // Faz uma cópia do registro para enviar
-    const recToSend = { ...rec };
+    // 🔥 ONLINE → TENTA ENVIAR PRIMEIRO
+    if (navigator.onLine) {
+      try {
+        const recToSend = { ...rec };
+        await sendOne(recToSend);
 
-    await sendOne(recToSend); // 🔥 tenta enviar primeiro
-
-    if (recToSend.status === 'SENT') {
-      toast('Registro enviado com sucesso.');
-
-      // ⛔ NÃO salva na fila
-      return;
-    }
-
-    // se chegou aqui, falhou
-    rec.status = recToSend.status;
-    rec.errorMsg = recToSend.errorMsg;
-
-  } catch (err) {
-    console.warn('Falha ao enviar online:', err);
-    rec.errorMsg = err.message || 'Erro no envio';
-  }
-}
-
-          
-          // limpa campos
-          $('#atividade').value='';
-          selectedAtvKey = '';      // ✅ limpa seleção de atividade também
-          showAtvList();            // ✅ volta lista pro estado padrão
-          $('#trecho').value='';
-          $('#rodovia').value='';
-          $('#total').value='';
-          $('#prazoDe').value='';
-          $('#prazoAte').value='';
-          capturedDataUrl = '';
-          $('#camShot').src = '';
-          setCamUI('idle');
-          clearCamError();
-          $('#saveMsg').textContent = '';
-          $('#btnSalvar').disabled = false;
-          
-          return; // ⛔ NÃO salva na fila - SAI DIRETAMENTE
+        if (recToSend.status === 'SENT') {
+          toast('Registro enviado com sucesso.');
+          limparFormulario();
+          return; // ⛔ NÃO salva na fila
         }
         
         // Se chegou aqui, o envio falhou
@@ -1370,30 +1351,14 @@ if (navigator.onLine) {
       }
     }
 
-    // ⬇️ SÓ CHEGA AQUI SE:
-    // - offline
-    // - erro no envio
+    // ⬇️ OFFLINE OU ERRO → SALVA NA FILA
     await idbPut(rec);
     toast('Registro salvo para envio posterior.');
+    limparFormulario();
 
-    // limpa campos (apenas se salvou na fila)
-    $('#atividade').value='';
-    selectedAtvKey = '';      // ✅ limpa seleção de atividade também
-    showAtvList();            // ✅ volta lista pro estado padrão
-    $('#trecho').value='';
-    $('#rodovia').value='';
-    $('#total').value='';
-    $('#prazoDe').value='';
-    $('#prazoAte').value='';
-    capturedDataUrl = '';
-    $('#camShot').src = '';
-    setCamUI('idle');
-    clearCamError();
-    $('#saveMsg').textContent = '';
-    
-  }catch(err){
+  } catch(err) {
     await alertModal('Erro: ' + err.message, 'Falha');
-  }finally{
+  } finally {
     $('#btnSalvar').disabled = false;
     $('#saveMsg').textContent = '';
   }
@@ -1448,7 +1413,7 @@ if (navigator.onLine) {
 
 <script>
   // PWA / Offline inteligente
-
+  // (Espaço para futuras implementações PWA)
 </script>
 
 </body>
