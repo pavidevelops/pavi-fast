@@ -1127,7 +1127,6 @@ async function sendOne(rec){
   if(!navigator.onLine){
     rec.status = 'PENDING';
     rec.errorMsg = 'Sem internet';
-    await idbPut(rec);
     return;
   }
 
@@ -1162,22 +1161,20 @@ async function sendOne(rec){
     });
 
     const text = await resp.text();
-    let json=null; try{ json = JSON.parse(text); }catch{}
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
 
-    if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
-    if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao enviar');
+    if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP ' + resp.status));
+    if(!json || json.status !== 'OK') throw new Error(json?.mensagem || 'Falha ao enviar');
 
     rec.status = 'SENT';
     rec.errorMsg = '';
     await idbDel(rec.id);
-  }catch(err){
+
+  } catch(err){
     rec.status = 'ERROR';
     rec.errorMsg = err.message || 'Erro';
-    await idbPut(rec);
-
-    if (navigator.onLine) {
-      toast('Erro ao enviar: ' + rec.errorMsg);
-    }
+    throw err; // deixa o chamador decidir salvar na fila
   }
 }
 
