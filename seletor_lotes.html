@@ -986,11 +986,6 @@ $('#atividade').addEventListener('change', ()=>{
   if(rod) $('#rodovia').value = rod;
 });
 
-/* ✅ removido: incluir novo (front-only)
-   - não existe listener do btnAddAtv
-   - não mostra/oculta hintNew
-*/
-
 /* ==========================================================
    FOTO (CÂMERA)
 ========================================================== */
@@ -1121,7 +1116,7 @@ $('#btnOpenCam').addEventListener('click', startCamera);
 $('#btnTakePhoto').addEventListener('click', takePhoto);
 
 /* ==========================================================
-   Envio
+   Envio - CORREÇÃO CRÍTICA AQUI (CORS)
 ========================================================== */
 async function sendOne(rec){
   if(!navigator.onLine){
@@ -1154,10 +1149,14 @@ async function sendOne(rec){
       }
     }
 
+    // ✅ CORREÇÃO CRÍTICA: usar URLSearchParams em vez de JSON
+    // Isso evita o preflight OPTIONS que causa "Failed to fetch"
+    const body = new URLSearchParams(params);
+    
     const resp = await fetch(WEBAPP_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
+      body: body
+      // ❌ NÃO usar headers Content-Type (deixa padrão application/x-www-form-urlencoded)
     });
 
     const text = await resp.text();
