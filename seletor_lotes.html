@@ -1180,10 +1180,22 @@ async function sendOne(rec){
 
 async function resendAll(){
   const all = await idbGetAll();
+  let erros = 0;
+
   for(const rec of all){
-    await sendOne(rec);
+    try{
+      await sendOne(rec);
+    }catch(err){
+      erros++;
+      console.warn('Falha ao reenviar:', err);
+    }
   }
-  toast('Reenvio concluído.');
+
+  if(erros){
+    toast(`Reenvio concluído com ${erros} erro(s).`);
+  }else{
+    toast('Todos os registros reenviados com sucesso.');
+  }
 }
 
 async function renderQueue(){
@@ -1304,15 +1316,31 @@ $('#btnSalvar').addEventListener('click', async ()=>{
       photoDataUrl: photoDataUrl || ''
     };
 
-    // 🔥 NOVA LÓGICA CORRETA - ENVIAR PRIMEIRO SE ONLINE
-    if (navigator.onLine) {
-      try {
-        // Faz uma cópia do registro para enviar
-        const recToSend = { ...rec };
-        await sendOne(recToSend);
+// 🔥 NOVA LÓGICA CORRETA - ENVIAR PRIMEIRO SE ONLINE
+if (navigator.onLine) {
+  try {
+    // Faz uma cópia do registro para enviar
+    const recToSend = { ...rec };
 
-        if (recToSend.status === 'SENT') {
-          toast('Registro enviado com sucesso.');
+    await sendOne(recToSend); // 🔥 tenta enviar primeiro
+
+    if (recToSend.status === 'SENT') {
+      toast('Registro enviado com sucesso.');
+
+      // ⛔ NÃO salva na fila
+      return;
+    }
+
+    // se chegou aqui, falhou
+    rec.status = recToSend.status;
+    rec.errorMsg = recToSend.errorMsg;
+
+  } catch (err) {
+    console.warn('Falha ao enviar online:', err);
+    rec.errorMsg = err.message || 'Erro no envio';
+  }
+}
+
           
           // limpa campos
           $('#atividade').value='';
