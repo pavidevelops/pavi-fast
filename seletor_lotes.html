@@ -1155,9 +1155,12 @@ async function sendOne(rec){
       }
     }
 
-    const body = new URLSearchParams(params);
+    const resp = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
 
-    const resp = await fetch(WEBAPP_URL, { method:'POST', body });
     const text = await resp.text();
     let json=null; try{ json = JSON.parse(text); }catch{}
 
@@ -1171,6 +1174,10 @@ async function sendOne(rec){
     rec.status = 'ERROR';
     rec.errorMsg = err.message || 'Erro';
     await idbPut(rec);
+
+    if (navigator.onLine) {
+      toast('Erro ao enviar: ' + rec.errorMsg);
+    }
   }
 }
 
@@ -1318,7 +1325,12 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     $('#saveMsg').textContent = '';
 
     await sendOne(rec);
-    toast('Registro salvo.');
+
+    if (rec.status === 'SENT') {
+      toast('Registro enviado com sucesso.');
+    } else {
+      toast('Registro salvo para envio posterior.');
+    }
   }catch(err){
     await alertModal('Erro: ' + err.message, 'Falha');
   }finally{
