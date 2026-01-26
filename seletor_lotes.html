@@ -1307,9 +1307,51 @@ $('#btnSalvar').addEventListener('click', async ()=>{
       photoDataUrl: photoDataUrl || ''
     };
 
-    await idbPut(rec);
+    // 🔥 NOVA LÓGICA CORRETA - ENVIAR PRIMEIRO SE ONLINE
+    if (navigator.onLine) {
+      try {
+        // Faz uma cópia do registro para enviar
+        const recToSend = { ...rec };
+        await sendOne(recToSend);
 
-    // limpa campos
+        if (recToSend.status === 'SENT') {
+          toast('Registro enviado com sucesso.');
+          
+          // limpa campos
+          $('#atividade').value='';
+          selectedAtvKey = '';      // ✅ limpa seleção de atividade também
+          showAtvList();            // ✅ volta lista pro estado padrão
+          $('#trecho').value='';
+          $('#rodovia').value='';
+          $('#total').value='';
+          $('#prazoDe').value='';
+          $('#prazoAte').value='';
+          capturedDataUrl = '';
+          $('#camShot').src = '';
+          setCamUI('idle');
+          clearCamError();
+          $('#saveMsg').textContent = '';
+          $('#btnSalvar').disabled = false;
+          
+          return; // ⛔ NÃO salva na fila - SAI DIRETAMENTE
+        }
+        
+        // Se chegou aqui, o envio falhou
+        rec.status = recToSend.status;
+        rec.errorMsg = recToSend.errorMsg;
+      } catch (err) {
+        console.warn('Falha ao enviar online:', err);
+        rec.errorMsg = err.message || 'Erro no envio';
+      }
+    }
+
+    // ⬇️ SÓ CHEGA AQUI SE:
+    // - offline
+    // - erro no envio
+    await idbPut(rec);
+    toast('Registro salvo para envio posterior.');
+
+    // limpa campos (apenas se salvou na fila)
     $('#atividade').value='';
     selectedAtvKey = '';      // ✅ limpa seleção de atividade também
     showAtvList();            // ✅ volta lista pro estado padrão
@@ -1323,14 +1365,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     setCamUI('idle');
     clearCamError();
     $('#saveMsg').textContent = '';
-
-    await sendOne(rec);
-
-    if (rec.status === 'SENT') {
-      toast('Registro enviado com sucesso.');
-    } else {
-      toast('Registro salvo para envio posterior.');
-    }
+    
   }catch(err){
     await alertModal('Erro: ' + err.message, 'Falha');
   }finally{
