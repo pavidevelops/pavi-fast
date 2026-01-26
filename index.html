@@ -124,6 +124,34 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // ✅ 1. Função única de leitura de sessão
+  function getSession() {
+    try {
+      const raw = localStorage.getItem('PAVI_FAST_SESSION_V1');
+      if (!raw) return null;
+
+      const s = JSON.parse(raw);
+
+      if (!s.usuario || !s.nome) return null;
+
+      return {
+        usuario: s.usuario,
+        nome: s.nome,
+        destino: (s.destino || '').trim().toLowerCase(),
+        lotes: Array.isArray(s.lotes) ? s.lotes : []
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  // ✅ 2. Auto-redirect imediato ao carregar a página
+  const session = getSession();
+  if (session && session.usuario) {
+    const dest = session.destino || 'poslog.html';
+    location.replace(dest);
+    return;
+  }
 
   const API_URL = "https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec";
 
@@ -135,9 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const username = document.getElementById('username');
   const password = document.getElementById('password');
 
-  const FIRST_OK_KEY = 'PAVI_FAST_FIRST_OK';
-  const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
-
   function show(el, txt){ el.textContent = txt; el.style.display='block'; }
   function hide(){ ok.style.display='none'; err.style.display='none'; }
 
@@ -145,29 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
     password.type = (password.type === 'password') ? 'text' : 'password';
   };
 
-  function getLocalSession(){
-    try{
-      const s = localStorage.getItem(LS_SESSION_V1);
-      return s ? JSON.parse(s) : null;
-    }catch{ return null; }
-  }
-
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     hide();
-
-    const firstOk = localStorage.getItem(FIRST_OK_KEY) === '1';
-    const localSession = getLocalSession();
-
-    /* ✅ LOGIN OFFLINE PERMITIDO SE JÁ EXISTIR SESSÃO */
-    if(!navigator.onLine){
-      if(firstOk && localSession){
-        window.location.replace((localSession.destino || 'poslog.html'));
-        return;
-      }
-      show(err,'Sem internet. Conecte-se para o primeiro acesso.');
-      return;
-    }
 
     const u = username.value.trim();
     const s = password.value.trim();
@@ -178,6 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if(!s){
       show(err,"Informe a senha.");
+      return;
+    }
+
+    // ✅ 3. Login offline SIMPLES e correto
+    if (!navigator.onLine) {
+      const localSession = getSession();
+      if (localSession) {
+        location.replace(localSession.destino || 'poslog.html');
+        return;
+      }
+      show(err, 'Sem internet. Conecte-se para o primeiro acesso.');
       return;
     }
 
@@ -197,19 +213,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if(d.status !== 'OK') throw new Error(d.mensagem || 'Login inválido');
 
-      localStorage.setItem(FIRST_OK_KEY,'1');
-
-      const destino = (d.destino || '').toLowerCase().trim();
-      localStorage.setItem(LS_SESSION_V1, JSON.stringify({
-        usuario:d.email || u,
-        nome:d.nome || u,
-        lotes:d.lotes || [],
-        destino:destino,
-        lastLoginAt:Date.now()
+      // ✅ 4. Após login online, salvar sessão "blindada"
+      localStorage.setItem('PAVI_FAST_SESSION_V1', JSON.stringify({
+        usuario: d.email || u,
+        nome: d.nome || u,
+        destino: (d.destino || '').toLowerCase().trim(),
+        lotes: d.lotes || [],
+        loginAt: Date.now()
       }));
 
       show(ok,'Login OK. Entrando...');
-      setTimeout(()=>location.replace(destino || 'poslog.html'),300);
+      setTimeout(()=>{
+        const destino = (d.destino || '').toLowerCase().trim() || 'poslog.html';
+        location.replace(destino);
+      },300);
 
     }catch(e){
       show(err,'Não foi possível entrar: ' + e.message);
