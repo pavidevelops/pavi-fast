@@ -1415,5 +1415,12 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   // (Espaço para futuras implementações PWA)
 </script>
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.warn);
+}
+
+
+
+  
 </body>
 </html>
