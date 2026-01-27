@@ -494,8 +494,25 @@
 
         <div>
           <!-- ✅ HTML (mínima alteração, só no label) -->
-          <label for="total">
-            Total <span id="unitBadge" class="unit"></span>
+          <label style="display:flex;align-items:center;gap:8px">
+            <span>Total</span>
+
+            <span
+              id="unitBadge"
+              style="
+                display:none;
+                padding:4px 10px;
+                border-radius:999px;
+                background:#fef2f2;
+                color:#dc2626;
+                font-weight:800;
+                font-size:12px;
+                border:2px solid #fecaca;
+                white-space:nowrap;
+              "
+            >
+              —
+            </span>
           </label>
           <input id="total" inputmode="decimal" placeholder="Ex.: 10,5" />
           <div class="hint">Informe apenas o número</div>
@@ -591,11 +608,19 @@ const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
 // ✅ CONTROLE DE UNIDADE
 let selectedUnit = '';
 
-// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE (AJUSTADA)
+// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE (AJUSTADA para o novo badge)
 function setUnit(unit){
   selectedUnit = unit || '';
   const badge = document.getElementById('unitBadge');
-  if (badge) badge.textContent = selectedUnit ? `(${selectedUnit})` : '';
+  if (badge) {
+    if (selectedUnit) {
+      badge.textContent = selectedUnit;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.textContent = '—';
+      badge.style.display = 'none';
+    }
+  }
 }
 
 /* ==========================================================
