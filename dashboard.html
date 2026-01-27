@@ -8,13 +8,14 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- PapaParse (CSV correto) -->
+<!-- PapaParse -->
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
 :root{
   --blue:#0f3d68;
   --blue-light:#eaf2fb;
+  --bg:#f5f7fa;
   --card:#ffffff;
   --text:#1f2933;
   --muted:#6b7280;
@@ -23,26 +24,61 @@
 
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 
-body{margin:0;background:#f5f7fa;color:var(--text)}
+body{margin:0;background:var(--bg);color:var(--text)}
 
 header{
+  height:56px;
   background:var(--blue);
   color:#fff;
-  padding:18px 28px;
-  font-size:20px;
-  font-weight:600;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:12px;
 }
 
-.container{padding:24px;max-width:1400px;margin:auto}
+.menu-btn{
+  font-size:22px;
+  cursor:pointer;
+}
+
+.container{
+  padding:24px;
+  max-width:1400px;
+  margin:auto;
+}
+
+.sidebar{
+  position:fixed;
+  top:0; left:-240px;
+  width:240px;
+  height:100%;
+  background:#0c2f52;
+  color:#fff;
+  padding-top:56px;
+  transition:.3s;
+  z-index:1000;
+}
+
+.sidebar a{
+  display:block;
+  padding:14px 20px;
+  color:#fff;
+  text-decoration:none;
+  font-size:14px;
+}
+
+.sidebar a:hover{background:#164a7a}
+
+.sidebar.open{left:0}
 
 .filters{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
   gap:12px;
   margin-bottom:20px;
 }
 
-select{
+.filters input, .filters select{
   padding:10px;
   border-radius:6px;
   border:1px solid var(--border);
@@ -57,13 +93,13 @@ select{
 }
 
 .kpi{
-  background:#fff;
+  background:var(--card);
   padding:16px;
   border-radius:10px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
 
-.kpi h3{margin:0;font-size:14px;color:var(--muted)}
+.kpi h3{margin:0;font-size:13px;color:var(--muted)}
 .kpi span{font-size:26px;font-weight:700;color:var(--blue)}
 
 .charts{
@@ -74,7 +110,7 @@ select{
 }
 
 .card{
-  background:#fff;
+  background:var(--card);
   border-radius:12px;
   padding:16px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
@@ -89,14 +125,26 @@ a{color:var(--blue)}
 
 <body>
 
-<header>PAVI FAST — Dashboard Operacional</header>
+<div class="sidebar" id="sidebar">
+  <a href="#">INÍCIO</a>
+  <a href="#">ATIVIDADES</a>
+  <a href="#">USUÁRIOS</a>
+  <a href="#">LOTES E RODOVIAS</a>
+</div>
+
+<header>
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <strong>PAVI FAST — Dashboard</strong>
+</header>
 
 <div class="container">
 
 <div class="filters">
+  <input type="date" id="fDataIni">
+  <input type="date" id="fDataFim">
   <select id="fAtividade"><option value="">Todas as atividades</option></select>
-  <select id="fLote"><option value="">Todos os lotes</option></select>
   <select id="fRodovia"><option value="">Todas as rodovias</option></select>
+  <select id="fLote"><option value="">Todos os lotes</option></select>
   <select id="fNome"><option value="">Todos os responsáveis</option></select>
 </div>
 
@@ -116,13 +164,8 @@ a{color:var(--blue)}
 <table>
 <thead>
 <tr>
-<th>Data</th>
-<th>Nome</th>
-<th>Atividade</th>
-<th>Rodovia</th>
-<th>Total</th>
-<th>Lote</th>
-<th>Imagem</th>
+<th>Data</th><th>Nome</th><th>Atividade</th><th>Rodovia</th>
+<th>Total</th><th>Lote</th><th>Imagem</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
@@ -132,99 +175,91 @@ a{color:var(--blue)}
 </div>
 
 <script>
-const SHEET_ID = '1L3HcV7vRoiiIkfqFoFTedfaEuMDHLxZrUZly36_QLWI';
-const CSV_URL =
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+function toggleMenu(){
+  sidebar.classList.toggle('open');
+}
 
-let rawData = [];
-let barChart, pieChart;
+const SHEET_ID='1L3HcV7vRoiiIkfqFoFTedfaEuMDHLxZrUZly36_QLWI';
+const CSV_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
-Papa.parse(CSV_URL, {
-  download: true,
-  header: true,
-  skipEmptyLines: true,
-  complete: function(results){
-    rawData = results.data.map(r => ({
-      data: r['DATA'],
-      nome: r['NOME'],
-      atividade: r['ATIVIDADE'],
-      rodovia: r['RODOVIA'],
-      total: Number(r['TOTAL'] || 0),
-      imagem: r['IMAGEM'],
-      lote: r['LOTE']
+let raw=[], barChart, pieChart;
+
+Papa.parse(CSV_URL,{
+  download:true,
+  header:true,
+  complete:r=>{
+    raw=r.data.map(i=>({
+      data:new Date(i.DATA),
+      dataStr:i.DATA,
+      nome:i.NOME,
+      atividade:i.ATIVIDADE,
+      rodovia:i.RODOVIA,
+      total:Number(i.TOTAL||0),
+      imagem:i.IMAGEM,
+      lote:i.LOTE
     }));
-
-    initFilters();
-    applyFilters();
+    init();
+    apply();
   }
 });
 
-function initFilters(){
+function init(){
   fill('fAtividade','atividade');
-  fill('fLote','lote');
   fill('fRodovia','rodovia');
+  fill('fLote','lote');
   fill('fNome','nome');
-
-  document.querySelectorAll('select')
-    .forEach(s => s.onchange = applyFilters);
+  document.querySelectorAll('.filters input, .filters select')
+    .forEach(e=>e.onchange=apply);
 }
 
-function fill(id, field){
-  const s = document.getElementById(id);
-  [...new Set(rawData.map(r => r[field]).filter(Boolean))]
-    .sort()
-    .forEach(v => s.innerHTML += `<option value="${v}">${v}</option>`);
+function fill(id,f){
+  const s=document.getElementById(id);
+  [...new Set(raw.map(i=>i[f]).filter(Boolean))]
+    .sort().forEach(v=>s.innerHTML+=`<option>${v}</option>`);
 }
 
-function applyFilters(){
-  const d = rawData.filter(r =>
-    (!fAtividade.value || r.atividade === fAtividade.value) &&
-    (!fLote.value || r.lote === fLote.value) &&
-    (!fRodovia.value || r.rodovia === fRodovia.value) &&
-    (!fNome.value || r.nome === fNome.value)
+function apply(){
+  const di=fDataIni.value?new Date(fDataIni.value):null;
+  const df=fDataFim.value?new Date(fDataFim.value):null;
+
+  const d=raw.filter(i=>
+    (!di||i.data>=di)&&(!df||i.data<=df)&&
+    (!fAtividade.value||i.atividade===fAtividade.value)&&
+    (!fRodovia.value||i.rodovia===fRodovia.value)&&
+    (!fLote.value||i.lote===fLote.value)&&
+    (!fNome.value||i.nome===fNome.value)
   );
 
-  updateKPIs(d);
+  kTotal.innerText=d.reduce((s,i)=>s+i.total,0);
+  kReg.innerText=d.length;
+  kLotes.innerText=new Set(d.map(i=>i.lote)).size;
+  kRod.innerText=new Set(d.map(i=>i.rodovia)).size;
+
   drawCharts(d);
   drawTable(d);
 }
 
-function updateKPIs(d){
-  kTotal.innerText = d.reduce((s,i)=>s+i.total,0);
-  kReg.innerText = d.length;
-  kLotes.innerText = new Set(d.map(i=>i.lote)).size;
-  kRod.innerText = new Set(d.map(i=>i.rodovia)).size;
-}
-
 function drawCharts(d){
-  const byAct = {}, byLot = {};
-
+  const byAct={}, byLot={};
   d.forEach(i=>{
-    byAct[i.atividade] = (byAct[i.atividade]||0) + i.total;
-    byLot[i.lote] = (byLot[i.lote]||0) + i.total;
+    byAct[i.atividade]=(byAct[i.atividade]||0)+i.total;
+    byLot[i.lote]=(byLot[i.lote]||0)+i.total;
   });
 
   barChart?.destroy();
   pieChart?.destroy();
 
-  barChart = new Chart(barChart || document.getElementById('barChart'),{
+  barChart=new Chart(barChart||barChart?.ctx||document.getElementById('barChart'),{
     type:'bar',
-    data:{
-      labels:Object.keys(byAct),
-      datasets:[{
-        data:Object.values(byAct),
-        backgroundColor:'#0f3d68'
-      }]
-    },
+    data:{labels:Object.keys(byAct),
+      datasets:[{data:Object.values(byAct),backgroundColor:'#0f3d68'}]},
     options:{plugins:{legend:{display:false}}}
   });
 
-  pieChart = new Chart(pieChart || document.getElementById('pieChart'),{
+  pieChart=new Chart(pieChart||pieChart?.ctx||document.getElementById('pieChart'),{
     type:'doughnut',
-    data:{
-      labels:Object.keys(byLot),
-      datasets:[{data:Object.values(byLot)}]
-    }
+    data:{labels:Object.keys(byLot),
+      datasets:[{data:Object.values(byLot)}]}
   });
 }
 
@@ -233,13 +268,10 @@ function drawTable(d){
   d.forEach(i=>{
     tbody.innerHTML+=`
     <tr>
-      <td>${i.data}</td>
-      <td>${i.nome}</td>
-      <td>${i.atividade}</td>
-      <td>${i.rodovia}</td>
-      <td>${i.total}</td>
+      <td>${i.dataStr}</td><td>${i.nome}</td><td>${i.atividade}</td>
+      <td>${i.rodovia}</td><td>${i.total}</td>
       <td>${i.lote}</td>
-      <td>${i.imagem ? `<a href="${i.imagem}" target="_blank">ver</a>` : ''}</td>
+      <td>${i.imagem?`<a href="${i.imagem}" target="_blank">ver</a>`:''}</td>
     </tr>`;
   });
 }
