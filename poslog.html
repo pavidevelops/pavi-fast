@@ -128,6 +128,8 @@
       font-weight:900;
       display:none;
       font-size:13px;
+      white-space:pre-line;
+      line-height:1.35;
     }
     .msg.warn{ background:var(--warn-bg); color:var(--warn); border:2px solid var(--warn-br); }
     .msg.err{ background:var(--err-bg); color:var(--err); border:2px solid var(--err-br); }
@@ -250,8 +252,16 @@ function showMsg(text, type){
   el.style.display = 'block';
 }
 
+function hideMsg(){
+  const el = $('#msg');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
 function saveCache(map){
-  localStorage.setItem(CACHE_LOTE_ROD, JSON.stringify({ ts: Date.now(), map }));
+  try{
+    localStorage.setItem(CACHE_LOTE_ROD, JSON.stringify({ ts: Date.now(), map }));
+  }catch{}
 }
 
 function loadCache(){
@@ -278,7 +288,7 @@ function render(map){
   grid.innerHTML = '';
 
   allowedLotes.forEach(lote=>{
-    const rods = map[lote] || [];
+    const rods = map?.[lote] || [];
 
     const card = document.createElement('div');
     card.className = 'loteCard';
@@ -290,29 +300,39 @@ function render(map){
 
     const list = card.querySelector('.rodList');
 
-    rods.forEach(r=>{
-      const b = document.createElement('button');
-      b.className = 'rodBtn';
-      b.textContent = r;
-      b.onclick = ()=>{
-        localStorage.setItem(LS_LOTE, lote);
-        localStorage.setItem(LS_LOTE_SELECTED, lote);
-        localStorage.setItem(LS_RODOVIA_PRE, r);
+    if(!rods.length){
+      const empty = document.createElement('div');
+      empty.style.padding = '10px 12px';
+      empty.style.color = 'var(--muted)';
+      empty.style.fontWeight = '900';
+      empty.textContent = 'Sem rodovias neste lote.';
+      list.appendChild(empty);
+    }else{
+      rods.forEach(r=>{
+        const b = document.createElement('button');
+        b.className = 'rodBtn';
+        b.type = 'button';
+        b.textContent = r;
+        b.onclick = ()=>{
+          localStorage.setItem(LS_LOTE, lote);
+          localStorage.setItem(LS_LOTE_SELECTED, lote);
+          localStorage.setItem(LS_RODOVIA_PRE, r);
 
-        // 🔒 garante flush do storage
-        setTimeout(()=>{
-          window.location.replace(NEXT_PAGE);
-        }, 150);
-      };
-      list.appendChild(b);
-    });
+          // 🔒 garante flush do storage
+          setTimeout(()=>{
+            window.location.replace(NEXT_PAGE);
+          }, 150);
+        };
+        list.appendChild(b);
+      });
+    }
 
     grid.appendChild(card);
   });
 }
 
 /* ==========================================================
-   Init
+   Init (OFFLINE OK: usa cache quando sem internet)
 ========================================================== */
 (async ()=>{
   if(!allowedLotes.length){
@@ -320,12 +340,39 @@ function render(map){
     return;
   }
 
+  // 1) Renderiza cache primeiro (se existir) -> funciona offline
+  const cached = loadCache();
+  if(cached){
+    render(cached);
+    // mensagem leve (opcional)
+    if(!navigator.onLine){
+      showMsg('Modo offline: exibindo dados do cache.\n(Conecte 1x para atualizar.)', 'warn');
+    }else{
+      hideMsg();
+    }
+  }else{
+    if(!navigator.onLine){
+      showMsg('Offline e sem cache ainda.\nConecte-se 1 vez para carregar as rodovias.', 'warn');
+      return;
+    }
+  }
+
+  // 2) Se estiver online, tenta atualizar do servidor e sobrescreve cache
+  if(!navigator.onLine) return;
+
   try{
     const j = await post({ action:'lote_rodovias', lotes: allowedLotes.join(',') });
-    render(j.lotes || {});
-    saveCache(j.lotes || {});
+    const map = j.lotes || {};
+    render(map);
+    saveCache(map);
+    hideMsg();
   }catch{
-    showMsg('Falha ao carregar rodovias. Conecte-se à internet.', 'warn');
+    // se falhar online mas havia cache, mantém cache
+    if(cached){
+      showMsg('Não foi possível atualizar agora.\nExibindo cache salvo.', 'warn');
+    }else{
+      showMsg('Falha ao carregar rodovias.\nConecte-se à internet.', 'warn');
+    }
   }
 })();
 
@@ -338,7 +385,7 @@ $('#btnLogout').onclick = ()=>{
 };
 </script>
 
-<!-- ✅ Service Worker: 1 registro, correto, dentro de <script> -->
+<!-- ✅ Service Worker: registro correto -->
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
