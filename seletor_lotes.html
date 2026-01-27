@@ -402,13 +402,23 @@
     #hintNew{ display:none !important; }
 
     /* ==========================================================
-       ✅ ESTILO PARA O BADGE DA UNIDADE
+       ✅ ESTILO DO "BADGE" DA MEDIDA
     ========================================================== */
-    .unit{
-      color:#dc2626;
-      font-weight:800;
-      margin-left:4px;
-      font-size:13px;
+    .label-total {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .badge-medida {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
     }
   </style>
 </head>
@@ -493,29 +503,25 @@
         </div>
 
         <div>
-          <!-- ✅ HTML (mínima alteração, só no label) -->
-          <label style="display:flex;align-items:center;gap:8px">
-            <span>Total</span>
+          <!-- ✅ NOVO BLOCO DO CAMPO TOTAL -->
+          <div class="field">
+            <label class="label-total">
+              <span id="badgeMedida" class="badge-medida" style="display:none;">M²</span>
+              <span>Total</span>
+            </label>
 
-            <span
-              id="unitBadge"
-              style="
-                display:none;
-                padding:4px 10px;
-                border-radius:999px;
-                background:#fef2f2;
-                color:#dc2626;
-                font-weight:800;
-                font-size:12px;
-                border:2px solid #fecaca;
-                white-space:nowrap;
-              "
-            >
-              —
-            </span>
-          </label>
-          <input id="total" inputmode="decimal" placeholder="Ex.: 10,5" />
-          <div class="hint">Informe apenas o número</div>
+            <input
+              type="number"
+              id="total"
+              inputmode="decimal"
+              placeholder="Ex.: 10,5"
+            />
+
+            <small>Informe apenas o número</small>
+          </div>
+
+          <!-- campo oculto que será enviado -->
+          <input type="hidden" id="unidade" />
         </div>
       </div>
 
@@ -605,20 +611,22 @@ const LS_NAME = 'PAVI_FAST_NAME';
 const LS_LOTE_A = 'PAVI_FAST_LOTE';
 const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
 
-// ✅ CONTROLE DE UNIDADE
-let selectedUnit = '';
+// ✅ CONTROLE DE UNIDADE E MAPA DE MEDIDAS
+let MAPA_MEDIDAS = {}; // atividade → medida
 
-// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE (AJUSTADA para o novo badge)
-function setUnit(unit){
-  selectedUnit = unit || '';
-  const badge = document.getElementById('unitBadge');
-  if (badge) {
-    if (selectedUnit) {
-      badge.textContent = selectedUnit;
+// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE
+function setUnidadeBadge(medida){
+  const badge = document.getElementById('badgeMedida');
+  const inputUnidade = document.getElementById('unidade');
+  
+  if (badge && inputUnidade) {
+    if (medida) {
+      badge.textContent = medida;
       badge.style.display = 'inline-flex';
+      inputUnidade.value = medida;
     } else {
-      badge.textContent = '—';
       badge.style.display = 'none';
+      inputUnidade.value = '';
     }
   }
 }
@@ -958,17 +966,19 @@ function renderAtvList(list){
     div.textContent = (it.atividade || '—');
 
     div.addEventListener('click', () => {
-      $('#atividade').value = it.atividade || '';
+      const atividadeSelecionada = it.atividade || '';
+      $('#atividade').value = atividadeSelecionada;
 
       // ✅ REMOVIDO: NÃO mexe na rodovia
       // const rod = it.rodovia;
       // if (rod) $('#rodovia').value = rod;
 
-      // ✅ SÓ define unidade
-      setUnit(it.medida);
+      // ✅ Define unidade no badge e campo hidden
+      const medida = MAPA_MEDIDAS[atividadeSelecionada] || '';
+      setUnidadeBadge(medida);
       
       // marca selecionada (para esconder a lista depois)
-      selectedAtvKey = normText(it.atividade || '');
+      selectedAtvKey = normText(atividadeSelecionada);
       
       // após selecionar: esconde a lista
       hideAtvList();
@@ -994,6 +1004,13 @@ function filterActivities(q){
 
 async function loadActivitiesOnOpen(){
   activities = dedupeActivitiesByName(loadActivitiesCache());
+  
+  // ✅ Preenche o MAPA_MEDIDAS com dados do cache
+  MAPA_MEDIDAS = {};
+  activities.forEach(item => {
+    MAPA_MEDIDAS[item.atividade] = item.medida || '';
+  });
+  
   if(!Array.isArray(activities)) activities = [];
   activities.sort((a,b)=> (a.atividade||'').localeCompare((b.atividade||''), 'pt-BR'));
   filtered = filterActivities('');
@@ -1003,6 +1020,13 @@ async function loadActivitiesOnOpen(){
     try{
       const list = await fetchActivities();
       activities = dedupeActivitiesByName(list || []);
+      
+      // ✅ Atualiza o MAPA_MEDIDAS com dados atualizados
+      MAPA_MEDIDAS = {};
+      activities.forEach(item => {
+        MAPA_MEDIDAS[item.atividade] = item.medida || '';
+      });
+      
       saveActivitiesCache(activities);
       activities.sort((a,b)=> (a.atividade||'').localeCompare((b.atividade||''), 'pt-BR'));
       filtered = filterActivities($('#atividade').value);
@@ -1319,8 +1343,7 @@ function limparFormulario(){
   document.getElementById('prazoAte').value = '';
   
   // ✅ Limpa unidade
-  selectedUnit = '';
-  setUnit('');
+  setUnidadeBadge('');
   
   selectedAtvKey = '';
   capturedDataUrl = '';
@@ -1345,6 +1368,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const totalBR = document.getElementById('total').value.trim();
   const prazoDe = document.getElementById('prazoDe').value;
   const prazoAte = document.getElementById('prazoAte').value;
+  const unidade = document.getElementById('unidade').value; // ✅ Agora pega do campo hidden
   const photoDataUrl = capturedDataUrl;
 
   if(!atividade) return toast('Informe a atividade.');
@@ -1367,7 +1391,7 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     prazoDe, prazoAte,
     total, totalBR,
     // ✅ ENVIO continua correto (sem mudar backend)
-    unidade: selectedUnit,
+    unidade: unidade || '',
     photoDataUrl: photoDataUrl || ''
   };
 
