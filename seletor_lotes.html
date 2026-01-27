@@ -400,6 +400,16 @@
        ✅ REMOVER "INCLUIR NOVO" APENAS NO FRONT
     ========================================================== */
     #hintNew{ display:none !important; }
+
+    /* ==========================================================
+       ✅ ESTILO PARA O BADGE DA UNIDADE
+    ========================================================== */
+    .unit{
+      color:#dc2626;
+      font-weight:800;
+      margin-left:4px;
+      font-size:13px;
+    }
   </style>
 </head>
 
@@ -485,8 +495,7 @@
         <div>
           <!-- ✅ HTML (mínima alteração, só no label) -->
           <label for="total">
-            Total
-            <span id="unitBadge" style="color:#dc2626;font-weight:800;margin-left:6px"></span>
+            Total <span id="unitBadge" class="unit"></span>
           </label>
           <input id="total" inputmode="decimal" placeholder="Ex.: 10,5" />
           <div class="hint">Informe apenas o número</div>
@@ -582,11 +591,11 @@ const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
 // ✅ CONTROLE DE UNIDADE
 let selectedUnit = '';
 
-// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE
+// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE (AJUSTADA)
 function setUnit(unit){
   selectedUnit = unit || '';
   const badge = document.getElementById('unitBadge');
-  if (badge) badge.textContent = selectedUnit ? `· ${selectedUnit}` : '';
+  if (badge) badge.textContent = selectedUnit ? `(${selectedUnit})` : '';
 }
 
 /* ==========================================================
