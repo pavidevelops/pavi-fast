@@ -5,15 +5,13 @@
 <title>PAVI FAST — Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- PapaParse -->
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
 :root{
   --blue:#0f3d68;
+  --blue-dark:#0c2f52;
   --blue-light:#eaf2fb;
   --bg:#f5f7fa;
   --card:#ffffff;
@@ -23,7 +21,6 @@
 }
 
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-
 body{margin:0;background:var(--bg);color:var(--text)}
 
 header{
@@ -36,40 +33,44 @@ header{
   gap:12px;
 }
 
-.menu-btn{
-  font-size:22px;
-  cursor:pointer;
-}
-
-.container{
-  padding:24px;
-  max-width:1400px;
-  margin:auto;
-}
+.menu-btn{font-size:22px;cursor:pointer}
 
 .sidebar{
   position:fixed;
-  top:0; left:-240px;
-  width:240px;
-  height:100%;
-  background:#0c2f52;
+  top:0;left:-260px;
+  width:260px;height:100%;
+  background:var(--blue-dark);
   color:#fff;
   padding-top:56px;
   transition:.3s;
   z-index:1000;
 }
 
-.sidebar a{
-  display:block;
-  padding:14px 20px;
+.sidebar.open{left:0}
+
+.sidebar button,.sidebar a{
+  width:100%;
+  background:none;
+  border:none;
   color:#fff;
-  text-decoration:none;
+  text-align:left;
+  padding:14px 20px;
   font-size:14px;
+  cursor:pointer;
 }
 
-.sidebar a:hover{background:#164a7a}
+.sidebar button:hover,.sidebar a:hover{background:#164a7a}
 
-.sidebar.open{left:0}
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.25);
+  display:none;
+  z-index:900;
+}
+.overlay.show{display:block}
+
+.container{padding:24px;max-width:1400px;margin:auto}
 
 .filters{
   display:grid;
@@ -78,11 +79,10 @@ header{
   margin-bottom:20px;
 }
 
-.filters input, .filters select{
+.filters input,.filters select{
   padding:10px;
   border-radius:6px;
   border:1px solid var(--border);
-  background:#fff;
 }
 
 .kpis{
@@ -93,7 +93,7 @@ header{
 }
 
 .kpi{
-  background:var(--card);
+  background:#fff;
   padding:16px;
   border-radius:10px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
@@ -110,30 +110,32 @@ header{
 }
 
 .card{
-  background:var(--card);
+  background:#fff;
   border-radius:12px;
   padding:16px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
 
-table{width:100%;border-collapse:collapse;margin-top:12px}
+table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
 th{background:var(--blue-light);text-align:left}
-a{color:var(--blue)}
 </style>
 </head>
 
 <body>
 
 <div class="sidebar" id="sidebar">
-  <a href="#">INÍCIO</a>
-  <a href="#">ATIVIDADES</a>
-  <a href="#">USUÁRIOS</a>
-  <a href="#">LOTES E RODOVIAS</a>
+  <a onclick="closeMenu()">INÍCIO</a>
+  <button onclick="applyFilters();closeMenu()">🔍 Buscar Dados</button>
+  <a>ATIVIDADES</a>
+  <a>USUÁRIOS</a>
+  <a>LOTES E RODOVIAS</a>
 </div>
 
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
 <header>
-  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <div class="menu-btn" onclick="openMenu()">☰</div>
   <strong>PAVI FAST — Dashboard</strong>
 </header>
 
@@ -163,10 +165,7 @@ a{color:var(--blue)}
 <div class="card">
 <table>
 <thead>
-<tr>
-<th>Data</th><th>Nome</th><th>Atividade</th><th>Rodovia</th>
-<th>Total</th><th>Lote</th><th>Imagem</th>
-</tr>
+<tr><th>Data</th><th>Nome</th><th>Atividade</th><th>Rodovia</th><th>Total</th><th>Lote</th></tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
@@ -175,8 +174,18 @@ a{color:var(--blue)}
 </div>
 
 <script>
-function toggleMenu(){
-  sidebar.classList.toggle('open');
+const sidebar=sidebarEl=sidebar;
+const overlay=overlayEl=overlay;
+
+function openMenu(){sidebar.classList.add('open');overlay.classList.add('show')}
+function closeMenu(){sidebar.classList.remove('open');overlay.classList.remove('show')}
+
+// 🔧 CONVERSÃO DE DATA BR
+function parseBRDate(str){
+  if(!str) return null;
+  const [d,m,yh]=str.split('/');
+  const [y]=yh.split(' ');
+  return new Date(`${y}-${m}-${d}`);
 }
 
 const SHEET_ID='1L3HcV7vRoiiIkfqFoFTedfaEuMDHLxZrUZly36_QLWI';
@@ -185,21 +194,18 @@ const CSV_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=
 let raw=[], barChart, pieChart;
 
 Papa.parse(CSV_URL,{
-  download:true,
-  header:true,
+  download:true,header:true,skipEmptyLines:true,
   complete:r=>{
     raw=r.data.map(i=>({
-      data:new Date(i.DATA),
+      data:parseBRDate(i.DATA),
       dataStr:i.DATA,
       nome:i.NOME,
       atividade:i.ATIVIDADE,
       rodovia:i.RODOVIA,
       total:Number(i.TOTAL||0),
-      imagem:i.IMAGEM,
       lote:i.LOTE
     }));
     init();
-    apply();
   }
 });
 
@@ -208,17 +214,15 @@ function init(){
   fill('fRodovia','rodovia');
   fill('fLote','lote');
   fill('fNome','nome');
-  document.querySelectorAll('.filters input, .filters select')
-    .forEach(e=>e.onchange=apply);
 }
 
 function fill(id,f){
   const s=document.getElementById(id);
-  [...new Set(raw.map(i=>i[f]).filter(Boolean))]
-    .sort().forEach(v=>s.innerHTML+=`<option>${v}</option>`);
+  [...new Set(raw.map(i=>i[f]).filter(Boolean))].sort()
+    .forEach(v=>s.innerHTML+=`<option>${v}</option>`);
 }
 
-function apply(){
+function applyFilters(){
   const di=fDataIni.value?new Date(fDataIni.value):null;
   const df=fDataFim.value?new Date(fDataFim.value):null;
 
@@ -235,44 +239,39 @@ function apply(){
   kLotes.innerText=new Set(d.map(i=>i.lote)).size;
   kRod.innerText=new Set(d.map(i=>i.rodovia)).size;
 
-  drawCharts(d);
-  drawTable(d);
+  draw(d);
 }
 
-function drawCharts(d){
-  const byAct={}, byLot={};
+function draw(d){
+  const byAct={},byLot={};
   d.forEach(i=>{
     byAct[i.atividade]=(byAct[i.atividade]||0)+i.total;
     byLot[i.lote]=(byLot[i.lote]||0)+i.total;
   });
 
-  barChart?.destroy();
-  pieChart?.destroy();
+  barChart?.destroy();pieChart?.destroy();
 
-  barChart=new Chart(barChart||barChart?.ctx||document.getElementById('barChart'),{
+  barChart=new Chart(barChart||document.getElementById('barChart'),{
     type:'bar',
     data:{labels:Object.keys(byAct),
       datasets:[{data:Object.values(byAct),backgroundColor:'#0f3d68'}]},
     options:{plugins:{legend:{display:false}}}
   });
 
-  pieChart=new Chart(pieChart||pieChart?.ctx||document.getElementById('pieChart'),{
+  pieChart=new Chart(pieChart||document.getElementById('pieChart'),{
     type:'doughnut',
     data:{labels:Object.keys(byLot),
       datasets:[{data:Object.values(byLot)}]}
   });
-}
 
-function drawTable(d){
   tbody.innerHTML='';
   d.forEach(i=>{
     tbody.innerHTML+=`
-    <tr>
-      <td>${i.dataStr}</td><td>${i.nome}</td><td>${i.atividade}</td>
-      <td>${i.rodovia}</td><td>${i.total}</td>
-      <td>${i.lote}</td>
-      <td>${i.imagem?`<a href="${i.imagem}" target="_blank">ver</a>`:''}</td>
-    </tr>`;
+      <tr>
+        <td>${i.dataStr}</td><td>${i.nome}</td>
+        <td>${i.atividade}</td><td>${i.rodovia}</td>
+        <td>${i.total}</td><td>${i.lote}</td>
+      </tr>`;
   });
 }
 </script>
