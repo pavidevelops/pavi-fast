@@ -338,14 +338,14 @@ $('#btnLogout').onclick = ()=>{
 };
 </script>
 
+<!-- ✅ Service Worker: 1 registro, correto, dentro de <script> -->
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(console.warn);
+  });
 }
 </script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(console.warn);
-}
 
 </body>
 </html>
