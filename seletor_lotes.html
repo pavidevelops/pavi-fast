@@ -481,7 +481,8 @@
           <div class="hint">Clique para editar, se for necessário</div>
         </div>
         <div>
-          <label>Total (m)</label>
+          <!-- ✅ AJUSTE: Mudado para for="total" -->
+          <label for="total">Total</label>
           <input id="total" inputmode="decimal" placeholder="Ex.: 10,5" />
           <div class="hint">Use números e vírgula.</div>
         </div>
@@ -572,6 +573,9 @@ const LS_NAME = 'PAVI_FAST_NAME';
 // ✅ Lote selecionado (poslog pode gravar em qualquer uma destas chaves)
 const LS_LOTE_A = 'PAVI_FAST_LOTE';
 const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
+
+// ✅ 1️⃣ GUARDAR A UNIDADE SELECIONADA
+let selectedUnit = ''; // unidade da atividade (m, m², un, etc)
 
 /* ==========================================================
    Pré-seleção de Rodovia vinda do poslog.html
@@ -733,6 +737,20 @@ function getSelectedLote(){
   return v ? v.toUpperCase() : '';
 }
 
+// ✅ 4️⃣ CRIAR FUNÇÃO PARA ATUALIZAR O LABEL (visual intacto)
+function updateTotalLabel(){
+  const lbl = document.querySelector('label[for="total"]') 
+           || document.querySelector('label:has(+ #total)');
+
+  if (!lbl) return;
+
+  if (selectedUnit) {
+    lbl.textContent = `Total (${selectedUnit})`;
+  } else {
+    lbl.textContent = 'Total';
+  }
+}
+
 /* ==========================================================
    Drawer
 ========================================================== */
@@ -843,7 +861,7 @@ function saveActivitiesCache(list){
   try{ localStorage.setItem(CACHE_ACTIVITIES_KEY, JSON.stringify(list)); }catch{}
 }
 
-/* ✅ Remove duplicados por nome (case-insensitive) */
+/* ✅ 2️⃣ AJUSTAR O CARREGAMENTO DAS ATIVIDADES (SEM QUEBRAR CACHE) */
 function dedupeActivitiesByName(list){
   const out = [];
   const seen = new Set();
@@ -858,7 +876,9 @@ function dedupeActivitiesByName(list){
 
     out.push({
       atividade: name,
-      rodovia: String(it?.rodovia || '').trim()
+      rodovia: String(it?.rodovia || '').trim(),
+      // ✅ 2️⃣ ADICIONADO: campo medida
+      medida: String(it?.medida || '').trim()
     });
   });
 
@@ -920,6 +940,10 @@ function renderAtvList(list){
 
       const rod = it.rodovia || pickRodoviaByAtividade(it.atividade);
       if(rod) $('#rodovia').value = rod;
+
+      // ✅ 3️⃣ AO CLICAR NA ATIVIDADE → DEFINIR UNIDADE + LABEL
+      selectedUnit = it.medida || '';
+      updateTotalLabel();
 
       // ✅ após selecionar: esconde a lista (não exibe "nenhuma...")
       hideAtvList();
@@ -1130,7 +1154,9 @@ async function sendOne(rec){
       prazoDe: rec.prazoDe || '',
       prazoAte: rec.prazoAte || '',
       total: String(rec.totalBR || rec.total || ''),
-      trecho: rec.trecho || ''
+      trecho: rec.trecho || '',
+      // ✅ 7️⃣ ENVIAR PARA O BACKEND
+      unidade: rec.unidade || ''
     };
 
     // ✅ Comprimir foto se existir
@@ -1204,11 +1230,12 @@ async function renderQueue(){
 
     const el = document.createElement('div');
     el.className = 'item';
+    // ✅ 8️⃣ EXIBIR CORRETAMENTE NOS PENDENTES (UX TOP)
     el.innerHTML = `
       <div class="itemTop">
         <div>
           <b>${rec.atividade || '—'}</b>
-          <div class="meta">${toBRDateTime(rec.createdAt)} • Total: ${rec.totalBR || rec.total || '—'} m</div>
+          <div class="meta">${toBRDateTime(rec.createdAt)} • Total: ${rec.totalBR || rec.total || '—'} ${rec.unidade || ''}</div>
         </div>
         <span class="pill ${pillClass}">${pillLabel}</span>
       </div>
@@ -1235,7 +1262,7 @@ async function renderQueue(){
 
       if(act==='detail'){
         await alertModal(
-          `Atividade: ${rec.atividade}\nTrecho: ${rec.trecho || '—'}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nLote: ${rec.lote || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`,
+          `Atividade: ${rec.atividade}\nTrecho: ${rec.trecho || '—'}\nRodovia: ${rec.rodovia || '—'}\nTotal: ${rec.totalBR || rec.total} ${rec.unidade || ''}\nPrazo: ${rec.prazoDe || '—'} até ${rec.prazoAte || '—'}\nLote: ${rec.lote || '—'}\nStatus: ${rec.status}\n${rec.errorMsg?('Erro: '+rec.errorMsg):''}`,
           'Detalhe'
         );
       }
@@ -1276,6 +1303,9 @@ function limparFormulario(){
   $('#prazoAte').value='';
   capturedDataUrl='';
   $('#camShot').src='';
+  // ✅ Resetar unidade ao limpar formulário
+  selectedUnit = '';
+  updateTotalLabel();
   setCamUI('idle');
   clearCamError();
 }
@@ -1315,7 +1345,8 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     atividade, trecho, rodovia,
     prazoDe, prazoAte,
     total, totalBR,
-    unidade: 'm',
+    // ✅ 6️⃣ ENVIAR A UNIDADE JUNTO NO SUBMIT (sem impacto)
+    unidade: selectedUnit || '',
     photoDataUrl: photoDataUrl || ''
   };
 
