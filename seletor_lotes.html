@@ -614,6 +614,18 @@ const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
 // ✅ CONTROLE DE UNIDADE E MAPA DE MEDIDAS
 let MAPA_MEDIDAS = {}; // atividade → medida
 
+// ✅ FUNÇÃO PARA BUSCAR MEDIDA PELA ATIVIDADE (COMPARAÇÃO CASE-INSENSITIVE)
+function getMedidaByAtividade(nomeAtividade){
+  const key = String(nomeAtividade || '').trim().toLowerCase();
+
+  for (const k in MAPA_MEDIDAS) {
+    if (k.trim().toLowerCase() === key) {
+      return MAPA_MEDIDAS[k] || '';
+    }
+  }
+  return '';
+}
+
 // ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE
 function setUnidadeBadge(medida){
   const badge = document.getElementById('badgeMedida');
@@ -969,12 +981,8 @@ function renderAtvList(list){
       const atividadeSelecionada = it.atividade || '';
       $('#atividade').value = atividadeSelecionada;
 
-      // ✅ REMOVIDO: NÃO mexe na rodovia
-      // const rod = it.rodovia;
-      // if (rod) $('#rodovia').value = rod;
-
-      // ✅ Define unidade no badge e campo hidden
-      const medida = MAPA_MEDIDAS[atividadeSelecionada] || '';
+      // ✅ Define unidade no badge e campo hidden (com busca case-insensitive)
+      const medida = getMedidaByAtividade(atividadeSelecionada);
       setUnidadeBadge(medida);
       
       // marca selecionada (para esconder a lista depois)
