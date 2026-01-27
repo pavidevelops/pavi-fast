@@ -573,20 +573,18 @@
       try{
         await postNoCors(payload);
 
-        const ok = await confirmSent(uid);
-        if(!ok){
-          openModal(
-            "warn",
-            "Envio disparado, mas sem confirmação",
-            "Eu enviei a requisição, mas não consegui confirmar a gravação na aba INICIO.",
-            "⚠️ Isso acontece quando o WebApp não foi reimplantado com o check_uid, ou o script está gravando em outra planilha/aba."
-          );
-          return;
-        }
+        const okTry = async ()=>{
+        try{ return await confirmSent(uid); }catch(e){ return false; }
+      };
+      const confirmed = await okTry();
 
+      if(confirmed){
         openModal("ok","Enviado com sucesso","UID: " + uid);
-
-        for(const k in answers) delete answers[k];
+      }else{
+        // ✅ Evita "falhou" quando o Apps Script não oferece confirmação (check_uid)
+        openModal("ok","Enviado","Registro enviado. (sem confirmação automática)\nUID: " + uid);
+      }
+for(const k in answers) delete answers[k];
         cursor = 0;
         render();
 
