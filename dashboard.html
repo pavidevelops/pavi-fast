@@ -19,66 +19,144 @@
   --muted:#6b7280;
   --border:#dbe3ec;
 }
+
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 body{margin:0;background:var(--bg);color:var(--text)}
 
 header{
-  height:56px;background:var(--blue);color:#fff;
-  display:flex;align-items:center;padding:0 16px;gap:12px;
+  height:56px;
+  background:var(--blue);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:12px;
 }
+
 .menu-btn{font-size:22px;cursor:pointer}
 
 .sidebar{
-  position:fixed;top:0;left:-260px;width:260px;height:100%;
-  background:var(--blue-dark);color:#fff;padding-top:56px;
-  transition:.3s;z-index:1000;
+  position:fixed;
+  top:0;left:-260px;
+  width:260px;height:100%;
+  background:var(--blue-dark);
+  color:#fff;
+  padding-top:56px;
+  transition:.3s;
+  z-index:1000;
 }
+
 .sidebar.open{left:0}
-.sidebar button,.sidebar a{
-  width:100%;background:none;border:none;color:#fff;
-  text-align:left;padding:14px 20px;font-size:14px;cursor:pointer;
+
+.sidebar a{
+  display:block;
+  padding:14px 20px;
+  color:#fff;
+  text-decoration:none;
+  font-size:14px;
 }
-.sidebar button:hover,.sidebar a:hover{background:#164a7a}
+
+.sidebar a:hover{background:#164a7a}
 
 .overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.25);
-  display:none;z-index:900;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.25);
+  display:none;
+  z-index:900;
 }
 .overlay.show{display:block}
 
-.container{padding:24px;max-width:1400px;margin:auto}
+.container{
+  padding:24px;
+  max-width:1400px;
+  margin:auto;
+}
 
 .filters{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:12px;margin-bottom:20px;
-}
-.filters input,.filters select{
-  padding:10px;border-radius:6px;border:1px solid var(--border);
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
 }
 
-.kpis{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:16px;margin-bottom:24px;
+.filters input,
+.filters select{
+  padding:10px;
+  border-radius:6px;
+  border:1px solid var(--border);
 }
+
+.actions{
+  margin:16px 0 24px;
+  display:flex;
+  gap:12px;
+  justify-content:flex-end;
+}
+
+.btn-primary{
+  background:var(--blue);
+  color:#fff;
+  border:none;
+  padding:10px 22px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.btn-primary:hover{background:#0b3256}
+
+.btn-secondary{
+  background:#e5e7eb;
+  color:#111827;
+  border:none;
+  padding:10px 22px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.btn-secondary:hover{background:#d1d5db}
+
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  margin-bottom:24px;
+}
+
 .kpi{
-  background:#fff;padding:16px;border-radius:10px;
+  background:#fff;
+  padding:16px;
+  border-radius:10px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
+
 .kpi h3{margin:0;font-size:13px;color:var(--muted)}
 .kpi span{font-size:26px;font-weight:700;color:var(--blue)}
 
 .charts{
-  display:grid;grid-template-columns:2fr 1fr;
-  gap:20px;margin-bottom:24px;
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+  margin-bottom:24px;
 }
+
 .card{
-  background:#fff;border-radius:12px;padding:16px;
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
 
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
 th{background:var(--blue-light);text-align:left}
+
+.link{
+  color:var(--blue);
+  text-decoration:underline;
+  cursor:pointer;
+}
 </style>
 </head>
 
@@ -86,7 +164,7 @@ th{background:var(--blue-light);text-align:left}
 
 <div id="sidebar" class="sidebar">
   <a onclick="closeMenu()">INÍCIO</a>
-  <button onclick="applyFilters();closeMenu()">🔍 Buscar Dados</button>
+  <a>TST – Segurança do Trabalho</a>
   <a>ATIVIDADES</a>
   <a>USUÁRIOS</a>
   <a>LOTES E RODOVIAS</a>
@@ -101,41 +179,59 @@ th{background:var(--blue-light);text-align:left}
 
 <div class="container">
 
-<div class="filters">
-  <input type="date" id="fDataIni">
-  <input type="date" id="fDataFim">
-  <select id="fAtividade"><option value="">Todas as atividades</option></select>
-  <select id="fRodovia"><option value="">Todas as rodovias</option></select>
-  <select id="fLote"><option value="">Todos os lotes</option></select>
-  <select id="fNome"><option value="">Todos os responsáveis</option></select>
-</div>
+  <!-- FILTROS -->
+  <div class="filters">
+    <input type="date" id="fDataIni">
+    <input type="date" id="fDataFim">
+    <select id="fAtividade"><option value="">Todas as atividades</option></select>
+    <select id="fRodovia"><option value="">Todas as rodovias</option></select>
+    <select id="fLote"><option value="">Todos os lotes</option></select>
+    <select id="fNome"><option value="">Todos os responsáveis</option></select>
+  </div>
 
-<div class="kpis">
-  <div class="kpi"><h3>Total Executado</h3><span id="kTotal">0</span></div>
-  <div class="kpi"><h3>Registros</h3><span id="kReg">0</span></div>
-  <div class="kpi"><h3>Lotes</h3><span id="kLotes">0</span></div>
-  <div class="kpi"><h3>Rodovias</h3><span id="kRod">0</span></div>
-</div>
+  <!-- AÇÕES -->
+  <div class="actions">
+    <button class="btn-secondary" onclick="limparFiltros()">Limpar filtros</button>
+    <button class="btn-primary" onclick="applyFilters()">🔍 Buscar Dados</button>
+  </div>
 
-<div class="charts">
-  <div class="card"><canvas id="barChart"></canvas></div>
-  <div class="card"><canvas id="pieChart"></canvas></div>
-</div>
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi"><h3>Total Executado</h3><span id="kTotal">0</span></div>
+    <div class="kpi"><h3>Registros</h3><span id="kReg">0</span></div>
+    <div class="kpi"><h3>Lotes</h3><span id="kLotes">0</span></div>
+    <div class="kpi"><h3>Rodovias</h3><span id="kRod">0</span></div>
+  </div>
 
-<div class="card">
-<table>
-<thead>
-<tr><th>Data</th><th>Nome</th><th>Atividade</th><th>Rodovia</th><th>Total</th><th>Lote</th></tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
-</div>
+  <!-- GRÁFICOS -->
+  <div class="charts">
+    <div class="card"><canvas id="barChart"></canvas></div>
+    <div class="card"><canvas id="pieChart"></canvas></div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Nome</th>
+          <th>Atividade</th>
+          <th>Rodovia</th>
+          <th>Total</th>
+          <th>Lote</th>
+          <th>Imagem</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 
 </div>
 
 <script>
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
 
 function openMenu(){sidebar.classList.add('open');overlay.classList.add('show')}
 function closeMenu(){sidebar.classList.remove('open');overlay.classList.remove('show')}
@@ -162,7 +258,8 @@ Papa.parse(CSV_URL,{
       atividade:i.ATIVIDADE,
       rodovia:i.RODOVIA,
       total:Number(i.TOTAL||0),
-      lote:i.LOTE
+      lote:i.LOTE,
+      imagem:i.IMAGEM
     }));
     initFilters();
   }
@@ -177,8 +274,17 @@ function initFilters(){
 
 function fill(id,f){
   const s=document.getElementById(id);
-  [...new Set(raw.map(i=>i[f]).filter(Boolean))].sort()
-    .forEach(v=>s.innerHTML+=`<option>${v}</option>`);
+  [...new Set(raw.map(i=>i[f]).filter(Boolean))]
+    .sort().forEach(v=>s.innerHTML+=`<option>${v}</option>`);
+}
+
+function limparFiltros(){
+  fDataIni.value='';
+  fDataFim.value='';
+  fAtividade.value='';
+  fRodovia.value='';
+  fLote.value='';
+  fNome.value='';
 }
 
 function applyFilters(){
@@ -237,6 +343,7 @@ function drawTable(d){
         <td>${i.rodovia}</td>
         <td>${i.total}</td>
         <td>${i.lote}</td>
+        <td>${i.imagem ? `<a class="link" href="${i.imagem}" target="_blank">Ver</a>` : ''}</td>
       </tr>`;
   });
 }
