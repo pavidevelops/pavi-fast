@@ -103,6 +103,14 @@
       box-shadow:0 0 0 4px rgba(16,185,129,.14);
       background:#fff;
     }
+    
+    /* ✅ ESTILO PARA INPUT READONLY */
+    input[readonly] {
+      background:#f0fdf9;
+      color:var(--muted);
+      cursor:not-allowed;
+      border-color:#d1fae5;
+    }
 
     .btn{
       border:none;
@@ -474,17 +482,24 @@
         </div>
       </div>
 
+      <!-- ✅ BLOCO AJUSTADO: RODOVIA | TOTAL | UNIDADE -->
       <div class="row">
         <div>
           <label>Rodovia</label>
           <input id="rodovia" placeholder="Ex.: PR-082" />
-          <div class="hint">Clique para editar, se for necessário</div>
+          <div class="hint">Herdada automaticamente, pode editar se necessário</div>
         </div>
+
         <div>
-          <!-- ✅ AJUSTE: Mudado para for="total" -->
-          <label for="total">Total</label>
+          <label>Total</label>
           <input id="total" inputmode="decimal" placeholder="Ex.: 10,5" />
-          <div class="hint">Use números e vírgula.</div>
+          <div class="hint">Informe apenas o número</div>
+        </div>
+
+        <div>
+          <label>Unidade</label>
+          <input id="unidade" readonly />
+          <div class="hint">Definida pela atividade</div>
         </div>
       </div>
 
@@ -574,8 +589,14 @@ const LS_NAME = 'PAVI_FAST_NAME';
 const LS_LOTE_A = 'PAVI_FAST_LOTE';
 const LS_LOTE_B = 'PAVI_FAST_LOTE_SELECTED';
 
-// ✅ 1️⃣ GUARDAR A UNIDADE SELECIONADA
-let selectedUnit = ''; // unidade da atividade (m, m², un, etc)
+// ✅ CONTROLE DE UNIDADE (OPÇÃO B — READONLY)
+let selectedUnit = '';
+
+function setUnit(u){
+  selectedUnit = String(u || '');
+  const el = document.getElementById('unidade');
+  if(el) el.value = selectedUnit;
+}
 
 /* ==========================================================
    Pré-seleção de Rodovia vinda do poslog.html
@@ -737,20 +758,6 @@ function getSelectedLote(){
   return v ? v.toUpperCase() : '';
 }
 
-// ✅ 4️⃣ CRIAR FUNÇÃO PARA ATUALIZAR O LABEL (visual intacto)
-function updateTotalLabel(){
-  const lbl = document.querySelector('label[for="total"]') 
-           || document.querySelector('label:has(+ #total)');
-
-  if (!lbl) return;
-
-  if (selectedUnit) {
-    lbl.textContent = `Total (${selectedUnit})`;
-  } else {
-    lbl.textContent = 'Total';
-  }
-}
-
 /* ==========================================================
    Drawer
 ========================================================== */
@@ -861,7 +868,7 @@ function saveActivitiesCache(list){
   try{ localStorage.setItem(CACHE_ACTIVITIES_KEY, JSON.stringify(list)); }catch{}
 }
 
-/* ✅ 2️⃣ AJUSTAR O CARREGAMENTO DAS ATIVIDADES (SEM QUEBRAR CACHE) */
+/* ✅ Ajuste no carregamento das atividades (com campo medida) */
 function dedupeActivitiesByName(list){
   const out = [];
   const seen = new Set();
@@ -877,7 +884,6 @@ function dedupeActivitiesByName(list){
     out.push({
       atividade: name,
       rodovia: String(it?.rodovia || '').trim(),
-      // ✅ 2️⃣ ADICIONADO: campo medida
       medida: String(it?.medida || '').trim()
     });
   });
@@ -899,6 +905,27 @@ async function fetchActivities(){
   if(!resp.ok) throw new Error(json?.mensagem || text || ('HTTP '+resp.status));
   if(!json || json.status!=='OK') throw new Error(json?.mensagem || 'Falha ao carregar atividades');
   return json.itens || [];
+}
+
+/* ✅ AJUSTE NO CLICK DA ATIVIDADE */
+function onSelectActivity(it){
+  document.getElementById('atividade').value = it.atividade || '';
+  document.getElementById('rodovia').value = it.rodovia || '';
+  
+  // ✅ Define a unidade no campo readonly
+  setUnit(it.medida || '');
+  
+  // marca selecionada (para esconder a lista depois)
+  selectedAtvKey = normText(it.atividade || '');
+  
+  // após selecionar: esconde a lista
+  hideAtvList();
+  
+  // mantém consistência interna
+  filtered = filterActivities(document.getElementById('atividade').value);
+  document.getElementById('atvCount').textContent = String(filtered.length);
+  
+  document.getElementById('atividade').blur();
 }
 
 function renderAtvList(list){
@@ -933,26 +960,7 @@ function renderAtvList(list){
     div.textContent = (it.atividade || '—');
 
     div.addEventListener('click', ()=>{
-      $('#atividade').value = it.atividade || '';
-
-      // ✅ marca selecionada (para esconder a lista depois)
-      selectedAtvKey = normText(it.atividade || '');
-
-      const rod = it.rodovia || pickRodoviaByAtividade(it.atividade);
-      if(rod) $('#rodovia').value = rod;
-
-      // ✅ 3️⃣ AO CLICAR NA ATIVIDADE → DEFINIR UNIDADE + LABEL
-      selectedUnit = it.medida || '';
-      updateTotalLabel();
-
-      // ✅ após selecionar: esconde a lista (não exibe "nenhuma...")
-      hideAtvList();
-
-      // mantém consistência interna (se alguém voltar a digitar, a lista retorna)
-      filtered = filterActivities($('#atividade').value);
-      $('#atvCount').textContent = String(filtered.length);
-
-      $('#atividade').blur();
+      onSelectActivity(it);
     });
 
     box.appendChild(div);
@@ -1155,7 +1163,7 @@ async function sendOne(rec){
       prazoAte: rec.prazoAte || '',
       total: String(rec.totalBR || rec.total || ''),
       trecho: rec.trecho || '',
-      // ✅ 7️⃣ ENVIAR PARA O BACKEND
+      // ✅ ENVIO — UNIDADE SEGUE JUNTO (sem quebrar backend)
       unidade: rec.unidade || ''
     };
 
@@ -1230,7 +1238,6 @@ async function renderQueue(){
 
     const el = document.createElement('div');
     el.className = 'item';
-    // ✅ 8️⃣ EXIBIR CORRETAMENTE NOS PENDENTES (UX TOP)
     el.innerHTML = `
       <div class="itemTop">
         <div>
@@ -1290,40 +1297,43 @@ $('#btnResend').addEventListener('click', async ()=>{ await resendAll(); await r
 $('#btnRefreshList').addEventListener('click', async ()=>{ await renderQueue(); });
 
 /* ==========================================================
-   Função auxiliar para limpar formulário
+   LIMPAR FORMULÁRIO (ajuste mínimo)
 ========================================================== */
 function limparFormulario(){
-  $('#atividade').value='';
-  selectedAtvKey='';
-  showAtvList();
-  $('#trecho').value='';
-  $('#rodovia').value='';
-  $('#total').value='';
-  $('#prazoDe').value='';
-  $('#prazoAte').value='';
-  capturedDataUrl='';
-  $('#camShot').src='';
-  // ✅ Resetar unidade ao limpar formulário
+  document.getElementById('atividade').value = '';
+  document.getElementById('trecho').value = '';
+  document.getElementById('rodovia').value = '';
+  document.getElementById('total').value = '';
+  document.getElementById('prazoDe').value = '';
+  document.getElementById('prazoAte').value = '';
+  document.getElementById('unidade').value = '';
+  
+  // ✅ Resetar variável de controle
+  selectedAtvKey = '';
   selectedUnit = '';
-  updateTotalLabel();
+  
+  capturedDataUrl = '';
+  document.getElementById('camShot').src = '';
+  
+  showAtvList();
   setCamUI('idle');
   clearCamError();
 }
 
 /* ==========================================================
-   Salvar novo registro (CORRIGIDO - sem duplicação)
+   Salvar novo registro
 ========================================================== */
 $('#btnSalvar').addEventListener('click', async ()=>{
   const usuario = localStorage.getItem(LS_USER) || '';
   const nome = localStorage.getItem(LS_NAME) || usuario;
   const lote = getSelectedLote();
 
-  const atividade = $('#atividade').value.trim();
-  const trecho = $('#trecho').value.trim();
-  const rodovia = $('#rodovia').value.trim();
-  const totalBR = $('#total').value.trim();
-  const prazoDe = $('#prazoDe').value;
-  const prazoAte = $('#prazoAte').value;
+  const atividade = document.getElementById('atividade').value.trim();
+  const trecho = document.getElementById('trecho').value.trim();
+  const rodovia = document.getElementById('rodovia').value.trim();
+  const totalBR = document.getElementById('total').value.trim();
+  const prazoDe = document.getElementById('prazoDe').value;
+  const prazoAte = document.getElementById('prazoAte').value;
   const photoDataUrl = capturedDataUrl;
 
   if(!atividade) return toast('Informe a atividade.');
@@ -1333,8 +1343,8 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   const total = normalizeNumberBR(totalBR);
   if(total === null) return toast('Total inválido. Use número e vírgula.');
 
-  $('#btnSalvar').disabled = true;
-  $('#saveMsg').textContent = 'Enviando...';
+  document.getElementById('btnSalvar').disabled = true;
+  document.getElementById('saveMsg').textContent = 'Enviando...';
 
   const rec = {
     id: crypto?.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random(),
@@ -1345,8 +1355,8 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     atividade, trecho, rodovia,
     prazoDe, prazoAte,
     total, totalBR,
-    // ✅ 6️⃣ ENVIAR A UNIDADE JUNTO NO SUBMIT (sem impacto)
-    unidade: selectedUnit || '',
+    // ✅ AO SALVAR: incluir unidade
+    unidade: selectedUnit,
     photoDataUrl: photoDataUrl || ''
   };
 
@@ -1377,13 +1387,13 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   } catch(err) {
     await alertModal('Erro: ' + err.message, 'Falha');
   } finally {
-    $('#btnSalvar').disabled = false;
-    $('#saveMsg').textContent = '';
+    document.getElementById('btnSalvar').disabled = false;
+    document.getElementById('saveMsg').textContent = '';
   }
 });
 
 /* ==========================================================
-   Init ÚNICO (conforme solicitado)
+   Init
 ========================================================== */
 (async function init(){
 
