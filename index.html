@@ -91,19 +91,6 @@
     .msg.warn{background:var(--warn-bg);color:var(--warn);border:2px solid var(--warn-br)}
     .link{text-align:center;margin-top:20px}
     .link a{color:var(--primary-700);text-decoration:none;font-weight:600}
-    
-    /* Status da rede */
-    .network-status{
-      padding:8px 12px;
-      border-radius:10px;
-      font-size:13px;
-      font-weight:600;
-      margin-bottom:16px;
-      text-align:center;
-      display:none;
-    }
-    .network-status.online{background:var(--ok-bg);color:var(--ok);border:2px solid var(--ok-br)}
-    .network-status.offline{background:var(--warn-bg);color:var(--warn);border:2px solid var(--warn-br)}
   </style>
 </head>
 <body>
@@ -112,8 +99,6 @@
   <div class="logo">
     <img src="logo.png" alt="PAVI Fast">
   </div>
-  
-  <div id="networkStatus" class="network-status"></div>
 
   <h1>Entrar</h1>
   <p class="subtitle" id="subtitle">Acesse sua conta para continuar</p>
@@ -125,7 +110,7 @@
     <label>Senha</label>
     <div class="field">
       <input id="password" type="password" autocomplete="current-password" required placeholder="••••">
-      <button type="button" class="toggle-password">👁️</button>
+      <button type="button" class="toggle-password" aria-label="Mostrar/ocultar senha">👁️</button>
     </div>
 
     <button class="btn" id="submitBtn" type="submit">Entrar</button>
@@ -142,11 +127,27 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
+  // ✅ REGISTRA O SERVICE WORKER (UMA ÚNICA VEZ, NO COMEÇO)
+  // Importante: registrar ANTES do auto-redirect por sessão
+  (function registerSW(){
+    try{
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .register('./sw.js')
+          .then((reg)=>console.log('✅ SW registrado:', reg.scope))
+          .catch((e)=>console.warn('⚠️ SW não registrou:', e));
+      }
+    }catch(e){
+      console.warn('⚠️ Erro ao registrar SW:', e);
+    }
+  })();
+
   // 🔑 CHAVES DE ARMAZENAMENTO
-  const LS_SESSION_V1 = 'PAVI_FAST_SESSION_V1';
+  const LS_SESSION_V1   = 'PAVI_FAST_SESSION_V1';
   const LS_OFFLINE_CACHE = 'PAVI_FAST_OFFLINE_CACHE_V2';
-  const LS_LAST_USER = 'PAVI_FAST_LAST_USER';
-  
+  const LS_LAST_USER    = 'PAVI_FAST_LAST_USER';
+
   const API_URL = "https://script.google.com/macros/s/AKfycbzbUN-2Heaogs0140LZGJEctnNW85aTxHJmGPatf-rTn1Ze_JM6bCA_BsVRvMiYPwuLDA/exec";
 
   const form = document.getElementById('loginForm');
@@ -154,19 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const ok   = document.getElementById('msgOk');
   const err  = document.getElementById('msgErr');
   const warn = document.getElementById('msgWarn');
-  const networkStatus = document.getElementById('networkStatus');
   const subtitle = document.getElementById('subtitle');
 
   const username = document.getElementById('username');
   const password = document.getElementById('password');
 
-  function show(el, txt, type) { 
-    ok.style.display='none'; 
-    err.style.display='none'; 
+  function show(el, txt) {
+    ok.style.display='none';
+    err.style.display='none';
     warn.style.display='none';
-    
+
     if (el) {
-      el.textContent = txt; 
+      el.textContent = txt;
       el.style.display='block';
     }
   }
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
         }
       }
-      
+
       // Se não tem sessão, tenta cache offline
       const cacheRaw = localStorage.getItem(LS_OFFLINE_CACHE);
       if (cacheRaw) {
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.removeItem(LS_OFFLINE_CACHE);
         }
       }
-      
+
       return null;
     } catch(e) {
       console.warn('Erro ao ler sessão:', e);
@@ -212,10 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ✅ 2. SALVAR CACHE OFFLINE
   function saveOfflineCache(sessionData) {
     try {
-      const cache = {
-        timestamp: Date.now(),
-        session: sessionData
-      };
+      const cache = { timestamp: Date.now(), session: sessionData };
       localStorage.setItem(LS_OFFLINE_CACHE, JSON.stringify(cache));
       console.log('✅ Cache offline salvo para:', sessionData.usuario);
     } catch(e) {
@@ -223,94 +220,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ✅ 3. ATUALIZAR STATUS DA REDE
-  function updateNetworkStatus() {
-    if (!navigator.onLine) {
-      networkStatus.textContent = '🔴 Sem conexão - Modo offline disponível';
-      networkStatus.className = 'network-status offline';
-      networkStatus.style.display = 'block';
-      subtitle.textContent = 'Use credenciais do último login online';
-    } else {
-      networkStatus.textContent = '🟢 Online - Conectado';
-      networkStatus.className = 'network-status online';
-      networkStatus.style.display = 'block';
-      subtitle.textContent = 'Acesse sua conta para continuar';
-    }
-  }
-
-  // ✅ 4. AUTO-REDIRECIONAMENTO (online ou offline)
+  // ✅ 3. AUTO-REDIRECIONAMENTO (online ou offline)
   const session = getSession();
   if (session && session.usuario) {
-    // Redireciona imediatamente se já tem sessão válida
     const dest = session.destino || 'poslog.html';
     console.log('🔄 Redirecionando para:', dest);
-    setTimeout(() => location.replace(dest), 100);
-    return; // Interrompe execução do resto
+    setTimeout(() => location.replace(dest), 120);
+    return;
   }
 
-  // ✅ 5. PREENCHER ÚLTIMO USUÁRIO
+  // ✅ 4. PREENCHER ÚLTIMO USUÁRIO
   const lastUser = localStorage.getItem(LS_LAST_USER);
   if (lastUser) {
     username.value = lastUser;
     password.focus();
   }
 
-  // ✅ 6. INICIALIZAR
-  updateNetworkStatus();
-  window.addEventListener('online', updateNetworkStatus);
-  window.addEventListener('offline', updateNetworkStatus);
+  // ✅ 5. Ajusta subtítulo no offline (sem banner)
+  function updateSubtitle() {
+    subtitle.textContent = navigator.onLine
+      ? 'Acesse sua conta para continuar'
+      : 'Use credenciais do último login online';
+  }
+  updateSubtitle();
+  window.addEventListener('online', updateSubtitle);
+  window.addEventListener('offline', updateSubtitle);
 
-  // ✅ 7. TOGGLE PASSWORD
+  // ✅ 6. TOGGLE PASSWORD
   document.querySelector('.toggle-password').onclick = () => {
     password.type = (password.type === 'password') ? 'text' : 'password';
   };
 
-  // ✅ 8. SUBMIT DO FORMULÁRIO
+  // ✅ 7. SUBMIT DO FORMULÁRIO
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    show(null, '', '');
+    show(null, '');
 
     const u = username.value.trim().toLowerCase();
     const s = password.value.trim();
 
-    if(!u || !u.includes("@")) {
-      show(err, "Informe um e-mail válido.", 'err');
-      return;
-    }
-    
-    if(!s) {
-      show(err, "Informe a senha.", 'err');
-      return;
-    }
+    if(!u || !u.includes("@")) return show(err, "Informe um e-mail válido.");
+    if(!s) return show(err, "Informe a senha.");
 
-    // ✅ 9. LOGIN OFFLINE (com cache)
+    // ✅ LOGIN OFFLINE (com cache)
     if (!navigator.onLine) {
       const cachedSession = getSession();
-      
+
       if (cachedSession && cachedSession.usuario.toLowerCase() === u) {
-        // ✅ USUÁRIO CORRESPONDE AO CACHE
-        show(warn, '✓ Modo offline ativado. Redirecionando...', 'warn');
-        
+        show(warn, '✓ Modo offline ativado. Redirecionando...');
+
         // Restaura sessão completa
         localStorage.setItem(LS_SESSION_V1, JSON.stringify({
           ...cachedSession,
           loginAt: Date.now()
         }));
-        
-        // Redireciona
+
         setTimeout(() => {
           const dest = cachedSession.destino || 'poslog.html';
           location.replace(dest);
         }, 800);
         return;
       } else {
-        // ❌ NÃO TEM CACHE OU USUÁRIO DIFERENTE
-        show(err, 'Sem internet e sem cache deste usuário. Conecte-se ao menos uma vez.', 'err');
+        show(err, 'Sem internet e sem cache deste usuário. Conecte-se ao menos uma vez.');
         return;
       }
     }
 
-    // ✅ 10. LOGIN ONLINE
+    // ✅ LOGIN ONLINE
     btn.disabled = true;
     btn.textContent = 'Entrando...';
 
@@ -327,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if(d.status !== 'OK') throw new Error(d.mensagem || 'Login inválido');
 
-      // ✅ 11. SALVAR SESSÃO COMPLETA
+      // ✅ SALVAR SESSÃO COMPLETA
       const sessionData = {
         usuario: d.email || u,
         nome: d.nome || u,
@@ -336,35 +312,27 @@ document.addEventListener('DOMContentLoaded', () => {
         loginAt: Date.now()
       };
 
-      // Salva sessão principal
       localStorage.setItem(LS_SESSION_V1, JSON.stringify(sessionData));
-      
-      // Salva cache offline para uso futuro
       saveOfflineCache(sessionData);
-      
-      // Salva último usuário para autopreenchimento
       localStorage.setItem(LS_LAST_USER, u);
 
-      show(ok, '✓ Login realizado com sucesso!', 'ok');
-      
+      show(ok, '✓ Login realizado com sucesso!');
+
       setTimeout(() => {
         const destino = (d.destino || '').toLowerCase().trim() || 'poslog.html';
         location.replace(destino);
       }, 500);
 
     } catch(e) {
-      show(err, '❌ Não foi possível entrar: ' + e.message, 'err');
+      show(err, '❌ Não foi possível entrar: ' + e.message);
     } finally {
       btn.disabled = false;
       btn.textContent = 'Entrar';
     }
   });
+
 });
 </script>
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(console.warn);
-}
-  
 </body>
 </html>
