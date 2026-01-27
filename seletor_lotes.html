@@ -965,17 +965,11 @@ async function loadActivitiesOnOpen(){
 }
 
 $('#atividade').addEventListener('input', ()=>{
-  // ✅ ao digitar, se mudou do selecionado, libera lista novamente
-  const key = normText($('#atividade').value);
-  if(selectedAtvKey && key !== selectedAtvKey){
-    // o usuário alterou o texto após selecionar -> volta modo busca
-  }
   filtered = filterActivities($('#atividade').value);
   renderAtvList(filtered);
 });
 
 $('#atividade').addEventListener('focus', ()=>{
-  // ✅ ao tocar no campo, mostra lista e filtra (permite trocar)
   filtered = filterActivities($('#atividade').value);
   showAtvList();
   renderAtvList(filtered);
@@ -1149,14 +1143,11 @@ async function sendOne(rec){
       }
     }
 
-    // ✅ CORREÇÃO CRÍTICA: usar URLSearchParams em vez de JSON
-    // Isso evita o preflight OPTIONS que causa "Failed to fetch"
     const body = new URLSearchParams(params);
-    
+
     const resp = await fetch(WEBAPP_URL, {
       method: 'POST',
       body: body
-      // ❌ NÃO usar headers Content-Type (deixa padrão application/x-www-form-urlencoded)
     });
 
     const text = await resp.text();
@@ -1173,7 +1164,7 @@ async function sendOne(rec){
   } catch(err){
     rec.status = 'ERROR';
     rec.errorMsg = err.message || 'Erro';
-    throw err; // deixa o chamador decidir salvar na fila
+    throw err;
   }
 }
 
@@ -1329,7 +1320,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   };
 
   try {
-    // 🔥 ONLINE → TENTA ENVIAR PRIMEIRO
     if (navigator.onLine) {
       try {
         const recToSend = { ...rec };
@@ -1338,10 +1328,9 @@ $('#btnSalvar').addEventListener('click', async ()=>{
         if (recToSend.status === 'SENT') {
           toast('Registro enviado com sucesso.');
           limparFormulario();
-          return; // ⛔ NÃO salva na fila
+          return;
         }
-        
-        // Se chegou aqui, o envio falhou
+
         rec.status = recToSend.status;
         rec.errorMsg = recToSend.errorMsg;
       } catch (err) {
@@ -1350,7 +1339,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
       }
     }
 
-    // ⬇️ OFFLINE OU ERRO → SALVA NA FILA
     await idbPut(rec);
     toast('Registro salvo para envio posterior.');
     limparFormulario();
@@ -1372,7 +1360,6 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     window.location.replace('index.html');
   }
 
-  // 🔑 tenta sessão completa primeiro
   let sess = null;
   try{
     sess = JSON.parse(localStorage.getItem('PAVI_FAST_SESSION_V1'));
@@ -1385,11 +1372,9 @@ $('#btnSalvar').addEventListener('click', async ()=>{
     usuario = sess.usuario;
     nome = sess.nome || sess.usuario;
 
-    // 🔁 garante compatibilidade com HTMLs antigos
     localStorage.setItem('PAVI_FAST_USER', usuario);
     localStorage.setItem('PAVI_FAST_NAME', nome);
   } else {
-    // fallback sessão simples (TST)
     usuario = localStorage.getItem('PAVI_FAST_USER') || '';
     nome = localStorage.getItem('PAVI_FAST_NAME') || usuario;
   }
@@ -1407,20 +1392,18 @@ $('#btnSalvar').addEventListener('click', async ()=>{
   await loadActivitiesOnOpen();
 
 })();
-
 </script>
 
+<!-- ✅ REGISTRO CORRETO DO SERVICE WORKER (dentro de <script>) -->
 <script>
-  // PWA / Offline inteligente
-  // (Espaço para futuras implementações PWA)
+  (function () {
+    if (!('serviceWorker' in navigator)) return;
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js')
+        .catch(console.warn);
+    });
+  })();
 </script>
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(console.warn);
-}
-
-
-
-  
 </body>
 </html>
