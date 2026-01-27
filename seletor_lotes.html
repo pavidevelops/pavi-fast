@@ -326,6 +326,12 @@
       .row > *{ min-width:140px; }
       .atvList{ max-height:220px; }
       .camBtns button{ min-width:0; flex:1; }
+      
+      .badge-medida {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-width: 40px;
+      }
     }
 
     /* ==========================================================
@@ -402,23 +408,64 @@
     #hintNew{ display:none !important; }
 
     /* ==========================================================
-       ✅ ESTILO DO "BADGE" DA MEDIDA
+       ✅ ESTILO DO "BADGE" DA MEDIDA - VERSÃO NA FRENTE + DESTAQUE
     ========================================================== */
     .label-total {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
     }
 
     .badge-medida {
-      background: #ecfdf5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 999px;
+      background: linear-gradient(135deg, #047857, #10b981);
+      color: #ffffff;
+      border: 2px solid #10b981;
+      font-size: 14px;
+      font-weight: 900;
+      padding: 8px 14px;
+      border-radius: 14px;
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35), 
+                  0 2px 6px rgba(0, 0, 0, 0.08);
+      order: -1; /* ✅ COLOCA O BADGE NA FRENTE (antes do texto "Total") */
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 50px;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Efeito de brilho sutil */
+    .badge-medida::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent);
+      border-radius: 16px;
+      z-index: -1;
+      opacity: 0.3;
+    }
+
+    /* Para badges curtos (M², M³) */
+    .badge-medida[data-medida="M²"],
+    .badge-medida[data-medida="M³"],
+    .badge-medida[data-medida="UN"] {
+      min-width: 45px;
+      padding: 8px 10px;
+    }
+
+    /* Para badges longos (hectare, km, etc) */
+    .badge-medida[data-medida="hectare"],
+    .badge-medida[data-medida="quilômetro"],
+    .badge-medida[data-medida="metros"] {
+      min-width: 80px;
     }
   </style>
 </head>
@@ -494,7 +541,7 @@
         </div>
       </div>
 
-      <!-- ✅ BLOCO CORRIGIDO: RODOVIA | TOTAL (COM BADGE) -->
+      <!-- ✅ BLOCO CORRIGIDO: RODOVIA | TOTAL (COM BADGE NA FRENTE E EM DESTAQUE) -->
       <div class="row">
         <div>
           <label>Rodovia</label>
@@ -503,21 +550,22 @@
         </div>
 
         <div>
-          <!-- ✅ NOVO BLOCO DO CAMPO TOTAL -->
+          <!-- ✅ BADGE AGORA NA FRENTE COM DESTAQUE -->
           <div class="field">
-            <label class="label-total">
-              <span id="badgeMedida" class="badge-medida" style="display:none;">M²</span>
-              <span>Total</span>
-            </label>
+            <div class="label-total">
+              <span id="badgeMedida" class="badge-medida" style="display:none; position:relative;"></span>
+              <span style="font-weight: 700; color: var(--text); font-size: 14px;">Total</span>
+            </div>
 
             <input
               type="number"
               id="total"
               inputmode="decimal"
               placeholder="Ex.: 10,5"
+              style="margin-top: 10px;"
             />
 
-            <small>Informe apenas o número</small>
+            <div class="hint" style="margin-top: 8px;">Informe apenas o número</div>
           </div>
 
           <!-- campo oculto que será enviado -->
@@ -626,7 +674,7 @@ function getMedidaByAtividade(nomeAtividade){
   return '';
 }
 
-// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE
+// ✅ FUNÇÃO PARA DEFINIR UNIDADE NO BADGE (COM DATA-ATRIBUTO PARA ESTILOS ESPECÍFICOS)
 function setUnidadeBadge(medida){
   const badge = document.getElementById('badgeMedida');
   const inputUnidade = document.getElementById('unidade');
@@ -635,9 +683,11 @@ function setUnidadeBadge(medida){
     if (medida) {
       badge.textContent = medida;
       badge.style.display = 'inline-flex';
+      badge.setAttribute('data-medida', medida); // ✅ PARA ESTILOS ESPECÍFICOS
       inputUnidade.value = medida;
     } else {
       badge.style.display = 'none';
+      badge.removeAttribute('data-medida');
       inputUnidade.value = '';
     }
   }
