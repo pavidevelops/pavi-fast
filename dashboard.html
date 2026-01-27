@@ -19,100 +19,60 @@
   --muted:#6b7280;
   --border:#dbe3ec;
 }
-
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 body{margin:0;background:var(--bg);color:var(--text)}
 
 header{
-  height:56px;
-  background:var(--blue);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  padding:0 16px;
-  gap:12px;
+  height:56px;background:var(--blue);color:#fff;
+  display:flex;align-items:center;padding:0 16px;gap:12px;
 }
-
 .menu-btn{font-size:22px;cursor:pointer}
 
 .sidebar{
-  position:fixed;
-  top:0;left:-260px;
-  width:260px;height:100%;
-  background:var(--blue-dark);
-  color:#fff;
-  padding-top:56px;
-  transition:.3s;
-  z-index:1000;
+  position:fixed;top:0;left:-260px;width:260px;height:100%;
+  background:var(--blue-dark);color:#fff;padding-top:56px;
+  transition:.3s;z-index:1000;
 }
-
 .sidebar.open{left:0}
-
 .sidebar button,.sidebar a{
-  width:100%;
-  background:none;
-  border:none;
-  color:#fff;
-  text-align:left;
-  padding:14px 20px;
-  font-size:14px;
-  cursor:pointer;
+  width:100%;background:none;border:none;color:#fff;
+  text-align:left;padding:14px 20px;font-size:14px;cursor:pointer;
 }
-
 .sidebar button:hover,.sidebar a:hover{background:#164a7a}
 
 .overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.25);
-  display:none;
-  z-index:900;
+  position:fixed;inset:0;background:rgba(0,0,0,.25);
+  display:none;z-index:900;
 }
 .overlay.show{display:block}
 
 .container{padding:24px;max-width:1400px;margin:auto}
 
 .filters{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:12px;
-  margin-bottom:20px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;margin-bottom:20px;
 }
-
 .filters input,.filters select{
-  padding:10px;
-  border-radius:6px;
-  border:1px solid var(--border);
+  padding:10px;border-radius:6px;border:1px solid var(--border);
 }
 
 .kpis{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:16px;
-  margin-bottom:24px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;margin-bottom:24px;
 }
-
 .kpi{
-  background:#fff;
-  padding:16px;
-  border-radius:10px;
+  background:#fff;padding:16px;border-radius:10px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
-
 .kpi h3{margin:0;font-size:13px;color:var(--muted)}
 .kpi span{font-size:26px;font-weight:700;color:var(--blue)}
 
 .charts{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:20px;
-  margin-bottom:24px;
+  display:grid;grid-template-columns:2fr 1fr;
+  gap:20px;margin-bottom:24px;
 }
-
 .card{
-  background:#fff;
-  border-radius:12px;
-  padding:16px;
+  background:#fff;border-radius:12px;padding:16px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
 
@@ -124,7 +84,7 @@ th{background:var(--blue-light);text-align:left}
 
 <body>
 
-<div class="sidebar" id="sidebar">
+<div id="sidebar" class="sidebar">
   <a onclick="closeMenu()">INÍCIO</a>
   <button onclick="applyFilters();closeMenu()">🔍 Buscar Dados</button>
   <a>ATIVIDADES</a>
@@ -132,7 +92,7 @@ th{background:var(--blue-light);text-align:left}
   <a>LOTES E RODOVIAS</a>
 </div>
 
-<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+<div id="overlay" class="overlay" onclick="closeMenu()"></div>
 
 <header>
   <div class="menu-btn" onclick="openMenu()">☰</div>
@@ -174,13 +134,12 @@ th{background:var(--blue-light);text-align:left}
 </div>
 
 <script>
-const sidebar=sidebarEl=sidebar;
-const overlay=overlayEl=overlay;
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
 
 function openMenu(){sidebar.classList.add('open');overlay.classList.add('show')}
 function closeMenu(){sidebar.classList.remove('open');overlay.classList.remove('show')}
 
-// 🔧 CONVERSÃO DE DATA BR
 function parseBRDate(str){
   if(!str) return null;
   const [d,m,yh]=str.split('/');
@@ -205,11 +164,11 @@ Papa.parse(CSV_URL,{
       total:Number(i.TOTAL||0),
       lote:i.LOTE
     }));
-    init();
+    initFilters();
   }
 });
 
-function init(){
+function initFilters(){
   fill('fAtividade','atividade');
   fill('fRodovia','rodovia');
   fill('fLote','lote');
@@ -239,38 +198,45 @@ function applyFilters(){
   kLotes.innerText=new Set(d.map(i=>i.lote)).size;
   kRod.innerText=new Set(d.map(i=>i.rodovia)).size;
 
-  draw(d);
+  drawCharts(d);
+  drawTable(d);
 }
 
-function draw(d){
+function drawCharts(d){
   const byAct={},byLot={};
   d.forEach(i=>{
     byAct[i.atividade]=(byAct[i.atividade]||0)+i.total;
     byLot[i.lote]=(byLot[i.lote]||0)+i.total;
   });
 
-  barChart?.destroy();pieChart?.destroy();
+  if(barChart) barChart.destroy();
+  if(pieChart) pieChart.destroy();
 
-  barChart=new Chart(barChart||document.getElementById('barChart'),{
+  barChart=new Chart(document.getElementById('barChart'),{
     type:'bar',
     data:{labels:Object.keys(byAct),
       datasets:[{data:Object.values(byAct),backgroundColor:'#0f3d68'}]},
     options:{plugins:{legend:{display:false}}}
   });
 
-  pieChart=new Chart(pieChart||document.getElementById('pieChart'),{
+  pieChart=new Chart(document.getElementById('pieChart'),{
     type:'doughnut',
     data:{labels:Object.keys(byLot),
       datasets:[{data:Object.values(byLot)}]}
   });
+}
 
+function drawTable(d){
   tbody.innerHTML='';
   d.forEach(i=>{
     tbody.innerHTML+=`
       <tr>
-        <td>${i.dataStr}</td><td>${i.nome}</td>
-        <td>${i.atividade}</td><td>${i.rodovia}</td>
-        <td>${i.total}</td><td>${i.lote}</td>
+        <td>${i.dataStr}</td>
+        <td>${i.nome}</td>
+        <td>${i.atividade}</td>
+        <td>${i.rodovia}</td>
+        <td>${i.total}</td>
+        <td>${i.lote}</td>
       </tr>`;
   });
 }
