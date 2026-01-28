@@ -36,6 +36,43 @@
     .logo img{width:100%;height:100%;object-fit:cover}
     .title h1{margin:0;font-size:18px;font-weight:800}
     .title p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+    
+    /* Ícone de sair */
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(209, 250, 229, 0.6);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 1);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: var(--text);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .logout-btn svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0.7;
+    }
+    .logout-btn:hover svg {
+      opacity: 1;
+    }
+    
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;box-shadow:var(--shadow);font-size:12px;white-space:nowrap}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.ok{background:#10b981}
@@ -95,9 +132,19 @@
         </div>
       </div>
 
-      <div class="pill" title="Conexão">
-        <span class="dot off" id="netDot"></span>
-        <span id="netText">Offline</span>
+      <div class="top-controls">
+        <div class="pill" title="Conexão">
+          <span class="dot off" id="netDot"></span>
+          <span id="netText">Offline</span>
+        </div>
+        
+        <!-- Ícone de sair -->
+        <a href="index.html" class="logout-btn" id="logoutBtn" title="Sair e voltar ao login">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.5 3.75a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5V15a.75.75 0 0 0-1.5 0v3.75a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-6a3 3 0 0 0-3 3V9A.75.75 0 1 0 9 9V5.25a1.5 1.5 0 0 1 1.5-1.5h6ZM5.78 8.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 0 0 0 1.06l3 3a.75.75 0 0 0 1.06-1.06l-1.72-1.72H15a.75.75 0 0 0 0-1.5H4.06l1.72-1.72a.75.75 0 0 0 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+          Sair
+        </a>
       </div>
     </div>
 
@@ -172,6 +219,17 @@
     $("modalClose").addEventListener("click", closeModal);
     $("modalOk").addEventListener("click", closeModal);
     $("modalBack").addEventListener("click", (e)=>{ if(e.target === $("modalBack")) closeModal(); });
+
+    // Confirmação de saída
+    $("logoutBtn").addEventListener("click", function(e) {
+      e.preventDefault();
+      openModal("warn", "Confirmar saída", "Deseja realmente sair e voltar à tela de login?", "Os dados não enviados serão perdidos.");
+      
+      // Substitui o botão OK para redirecionar
+      $("modalOk").onclick = function() {
+        window.location.href = "index.html";
+      };
+    });
 
     // Steps (mesmos do seu)
     const steps = [
