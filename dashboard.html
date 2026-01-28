@@ -164,11 +164,10 @@ th{background:var(--blue-light);text-align:left}
 
 <div id="sidebar" class="sidebar">
   <a onclick="closeMenu()">INÍCIO</a>
-  
   <a>ATIVIDADES</a>
   <a>USUÁRIOS</a>
   <a>LOTES E RODOVIAS</a>
-<a>TST – Segurança do Trabalho</a>
+  <a>TST – Segurança do Trabalho</a>
 </div>
 
 <div id="overlay" class="overlay" onclick="closeMenu()"></div>
@@ -198,7 +197,7 @@ th{background:var(--blue-light);text-align:left}
 
   <!-- KPIs -->
   <div class="kpis">
-    <div class="kpi"><h3>Total Executado</h3><span id="kTotal">0</span></div>
+    <div class="kpi"><h3>Total Executado</h3><span id="kTotal">—</span></div>
     <div class="kpi"><h3>Registros</h3><span id="kReg">0</span></div>
     <div class="kpi"><h3>Lotes</h3><span id="kLotes">0</span></div>
     <div class="kpi"><h3>Rodovias</h3><span id="kRod">0</span></div>
@@ -259,6 +258,7 @@ Papa.parse(CSV_URL,{
       atividade:i.ATIVIDADE,
       rodovia:i.RODOVIA,
       total:Number(i.TOTAL||0),
+      unidade:i.UNIDADE,
       lote:i.LOTE,
       imagem:i.IMAGEM
     }));
@@ -300,7 +300,19 @@ function applyFilters(){
     (!fNome.value||i.nome===fNome.value)
   );
 
-  kTotal.innerText=d.reduce((s,i)=>s+i.total,0);
+  // KPI Total Executado (respeitando unidade)
+  if (!fAtividade.value) {
+    kTotal.innerText='—';
+  } else {
+    const unidades=[...new Set(d.map(i=>i.unidade).filter(Boolean))];
+    if (unidades.length===1) {
+      const soma=d.reduce((s,i)=>s+i.total,0);
+      kTotal.innerText=`${soma} ${unidades[0]}`;
+    } else {
+      kTotal.innerText='—';
+    }
+  }
+
   kReg.innerText=d.length;
   kLotes.innerText=new Set(d.map(i=>i.lote)).size;
   kRod.innerText=new Set(d.map(i=>i.rodovia)).size;
@@ -319,19 +331,22 @@ function drawCharts(d){
   if(barChart) barChart.destroy();
   if(pieChart) pieChart.destroy();
 
-  barChart=new Chart(document.getElementById('barChart'),{
+  barChart=new Chart(barChartEl,{
     type:'bar',
     data:{labels:Object.keys(byAct),
       datasets:[{data:Object.values(byAct),backgroundColor:'#0f3d68'}]},
     options:{plugins:{legend:{display:false}}}
   });
 
-  pieChart=new Chart(document.getElementById('pieChart'),{
+  pieChart=new Chart(pieChartEl,{
     type:'doughnut',
     data:{labels:Object.keys(byLot),
       datasets:[{data:Object.values(byLot)}]}
   });
 }
+
+const barChartEl=document.getElementById('barChart');
+const pieChartEl=document.getElementById('pieChart');
 
 function drawTable(d){
   tbody.innerHTML='';
@@ -342,9 +357,9 @@ function drawTable(d){
         <td>${i.nome}</td>
         <td>${i.atividade}</td>
         <td>${i.rodovia}</td>
-        <td>${i.total}</td>
+        <td>${i.total} ${i.unidade||''}</td>
         <td>${i.lote}</td>
-        <td>${i.imagem ? `<a class="link" href="${i.imagem}" target="_blank">Ver</a>` : ''}</td>
+        <td>${i.imagem?`<a class="link" href="${i.imagem}" target="_blank">Ver</a>`:''}</td>
       </tr>`;
   });
 }
