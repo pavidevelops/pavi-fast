@@ -28,6 +28,8 @@
   --card:#fff;
   --border:#dbe3ec;
   --muted:#6b7280;
+  --danger:#dc2626;
+  --warn:#fef3c7;
 }
 
 body{margin:0;background:var(--bg)}
@@ -86,7 +88,7 @@ button{
   gap:16px;
 }
 
-.kpi span{font-size:26px;font-weight:700;color:var(--blue)}
+.kpis span{font-size:26px;font-weight:700;color:var(--blue)}
 
 .charts{
   display:grid;
@@ -101,14 +103,24 @@ button{
   margin-top:8px;
 }
 
-.checks label{font-size:14px}
-
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
 th{background:#eaf2fb}
 
-.edit{cursor:pointer;color:var(--blue)}
-.alert{font-size:20px}
+tr.pendente{background:var(--warn)}
+
+.edit{cursor:pointer;color:var(--blue);font-size:16px}
+
+.alert{
+  font-size:20px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.alert.danger{
+  color:var(--danger);
+  font-weight:700;
+}
 </style>
 </head>
 
@@ -116,7 +128,7 @@ th{background:#eaf2fb}
 
 <header>
   <strong>TST — Dashboard</strong>
-  <div class="alert">🔔 <span id="pendencias">0</span></div>
+  <div class="alert" id="alertBox">🔔 <span id="pendencias">0</span></div>
 </header>
 
 <div class="container">
@@ -206,11 +218,11 @@ function limpar(){
 }
 
 function aplicar(){
-  let d=raw.filter(i=>{
-    return (!fSetor.value||i.SETOR===fSetor.value)&&
-           (!fGrav.value||i.GRAVIDADE===fGrav.value)&&
-           (!fPeriodo.value||i.PERIODO===fPeriodo.value);
-  });
+  let d=raw.filter(i=>
+    (!fSetor.value||i.SETOR===fSetor.value)&&
+    (!fGrav.value||i.GRAVIDADE===fGrav.value)&&
+    (!fPeriodo.value||i.PERIODO===fPeriodo.value)
+  );
 
   kReg.innerText=d.length;
 
@@ -218,10 +230,12 @@ function aplicar(){
   kPend.innerText=pend.length;
   pendencias.innerText=pend.length;
 
-  drawBar("cPeriodo",group(d,"PERIODO"),gPeriodo.checked);
-  drawBar("cGrav",group(d,"GRAVIDADE"),gGravidade.checked);
-  drawBar("cIdade",groupAge(d),gIdade.checked);
-  drawPie("cSetor",group(d,"SETOR"),gSetor.checked);
+  alertBox.classList.toggle("danger", pend.length>0);
+
+  drawBar("cPeriodo",group(d,"PERIODO"),gPeriodo.checked,"Período do Dia");
+  drawBar("cGrav",group(d,"GRAVIDADE"),gGravidade.checked,"Gravidade do Acidente");
+  drawBar("cIdade",groupAge(d),gIdade.checked,"Faixa Etária");
+  drawPie("cSetor",group(d,"SETOR"),gSetor.checked,"Setor");
 
   drawTable(d);
 }
@@ -245,43 +259,56 @@ function groupAge(d){
   return o;
 }
 
-function drawBar(id,data,show){
+function drawBar(id,data,show,title){
   const el=document.getElementById(id);
   el.parentElement.style.display=show?"block":"none";
   if(!show) return;
   charts[id]?.destroy();
-  charts[id]=new Chart(el,{type:"bar",
+  charts[id]=new Chart(el,{
+    type:"bar",
     data:{labels:Object.keys(data),
       datasets:[{data:Object.values(data),backgroundColor:"#0f3d68"}]},
-    options:{plugins:{legend:{display:false}}}
+    options:{
+      plugins:{
+        legend:{display:false},
+        title:{display:true,text:title,font:{size:16,weight:"600"}}
+      }
+    }
   });
 }
 
-function drawPie(id,data,show){
+function drawPie(id,data,show,title){
   const el=document.getElementById(id);
   el.parentElement.style.display=show?"block":"none";
   if(!show) return;
   charts[id]?.destroy();
-  charts[id]=new Chart(el,{type:"doughnut",
+  charts[id]=new Chart(el,{
+    type:"doughnut",
     data:{labels:Object.keys(data),
-      datasets:[{data:Object.values(data)}]}
+      datasets:[{data:Object.values(data)}]},
+    options:{plugins:{title:{display:true,text:title,font:{size:16,weight:"600"}}}}
   });
 }
 
 function drawTable(d){
   tbody.innerHTML="";
-  d.forEach(r=>{
+  d.forEach((r,i)=>{
+    const pend=Object.values(r).some(v=>!v);
     tbody.innerHTML+=`
-    <tr>
+    <tr class="${pend?"pendente":""}">
       <td>${r.DATA_RECEBIMENTO||""}</td>
       <td>${r.NOME||""}</td>
       <td>${r.IDADE||""}</td>
       <td>${r.SETOR||""}</td>
       <td>${r.GRAVIDADE||""}</td>
       <td>${r.PERIODO||""}</td>
-      <td class="edit">✏️</td>
+      <td class="edit" onclick="editar(${i})">✏️</td>
     </tr>`;
   });
+}
+
+function editar(i){
+  alert("Edição será implementada.\n\nRegistro:\n"+JSON.stringify(raw[i],null,2));
 }
 </script>
 
