@@ -5,7 +5,7 @@
 <title>PAVI FAST — Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Anti-cache -->
+<!-- ANTI-CACHE -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -15,26 +15,26 @@
 
 <style>
 /* ==========================================================
-   FUNNEL SANS — LOCAL (GitHub)
+   FIRA SANS — LOCAL (GitHub)
 ========================================================== */
 @font-face{
-  font-family:'FunnelSans';
-  src:url('FunnelSans-Regular.ttf') format('truetype');
+  font-family:'FiraSans';
+  src:url('Fira_Sans/FiraSans-Regular.ttf') format('truetype');
   font-weight:400;font-style:normal;font-display:swap;
 }
 @font-face{
-  font-family:'FunnelSans';
-  src:url('FunnelSans-Medium.ttf') format('truetype');
+  font-family:'FiraSans';
+  src:url('Fira_Sans/FiraSans-Medium.ttf') format('truetype');
   font-weight:500;font-style:normal;font-display:swap;
 }
 @font-face{
-  font-family:'FunnelSans';
-  src:url('FunnelSans-SemiBold.ttf') format('truetype');
+  font-family:'FiraSans';
+  src:url('Fira_Sans/FiraSans-SemiBold.ttf') format('truetype');
   font-weight:600;font-style:normal;font-display:swap;
 }
 @font-face{
-  font-family:'FunnelSans';
-  src:url('FunnelSans-Bold.ttf') format('truetype');
+  font-family:'FiraSans';
+  src:url('Fira_Sans/FiraSans-Bold.ttf') format('truetype');
   font-weight:700;font-style:normal;font-display:swap;
 }
 
@@ -54,7 +54,7 @@
 
 *{
   box-sizing:border-box;
-  font-family:'FunnelSans', Arial, Helvetica, sans-serif;
+  font-family:'FiraSans', Arial, Helvetica, sans-serif;
 }
 
 body{margin:0;background:var(--bg);color:var(--text)}
@@ -70,7 +70,6 @@ header{
 }
 
 header strong{font-weight:600}
-
 .menu-btn{font-size:22px;cursor:pointer}
 
 .sidebar{
@@ -357,14 +356,14 @@ function drawCharts(d){
   if(barChart) barChart.destroy();
   if(pieChart) pieChart.destroy();
 
-  barChart=new Chart(barChart?.ctx||document.getElementById('barChart'),{
+  barChart=new Chart(document.getElementById('barChart'),{
     type:'bar',
     data:{labels:Object.keys(byAct),
       datasets:[{data:Object.values(byAct),backgroundColor:'#0f3d68'}]},
     options:{plugins:{legend:{display:false}}}
   });
 
-  pieChart=new Chart(pieChart?.ctx||document.getElementById('pieChart'),{
+  pieChart=new Chart(document.getElementById('pieChart'),{
     type:'doughnut',
     data:{labels:Object.keys(byLot),
       datasets:[{data:Object.values(byLot)}]}
