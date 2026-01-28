@@ -5,7 +5,7 @@
 <title>PAVI FAST — Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- ANTI-CACHE -->
+<!-- ANTI-CACHE FORÇADO -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -15,26 +15,26 @@
 
 <style>
 /* ==========================================================
-   FIRA SANS — LOCAL (GitHub)
+   FUNNEL SANS — LOCAL (GitHub)
 ========================================================== */
 @font-face{
-  font-family:'FiraSans';
-  src:url('Fira_Sans/FiraSans-Regular.ttf') format('truetype');
+  font-family:'FunnelSans';
+  src:url('FunnelSans-Regular.ttf') format('truetype');
   font-weight:400;font-style:normal;font-display:swap;
 }
 @font-face{
-  font-family:'FiraSans';
-  src:url('Fira_Sans/FiraSans-Medium.ttf') format('truetype');
+  font-family:'FunnelSans';
+  src:url('FunnelSans-Medium.ttf') format('truetype');
   font-weight:500;font-style:normal;font-display:swap;
 }
 @font-face{
-  font-family:'FiraSans';
-  src:url('Fira_Sans/FiraSans-SemiBold.ttf') format('truetype');
+  font-family:'FunnelSans';
+  src:url('FunnelSans-SemiBold.ttf') format('truetype');
   font-weight:600;font-style:normal;font-display:swap;
 }
 @font-face{
-  font-family:'FiraSans';
-  src:url('Fira_Sans/FiraSans-Bold.ttf') format('truetype');
+  font-family:'FunnelSans';
+  src:url('FunnelSans-Bold.ttf') format('truetype');
   font-weight:700;font-style:normal;font-display:swap;
 }
 
@@ -54,7 +54,7 @@
 
 *{
   box-sizing:border-box;
-  font-family:'FiraSans', Arial, Helvetica, sans-serif;
+  font-family:'FunnelSans', Arial, Helvetica, sans-serif;
 }
 
 body{margin:0;background:var(--bg);color:var(--text)}
@@ -72,6 +72,7 @@ header{
 header strong{font-weight:600}
 .menu-btn{font-size:22px;cursor:pointer}
 
+/* SIDEBAR */
 .sidebar{
   position:fixed;
   top:0;left:-260px;
@@ -102,12 +103,14 @@ header strong{font-weight:600}
 }
 .overlay.show{display:block}
 
+/* CONTAINER */
 .container{
   padding:24px;
   max-width:1400px;
   margin:auto;
 }
 
+/* FILTERS */
 .filters{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
@@ -121,6 +124,7 @@ header strong{font-weight:600}
   border:1px solid var(--border);
 }
 
+/* ACTIONS */
 .actions{
   margin:16px 0 24px;
   display:flex;
@@ -150,6 +154,7 @@ header strong{font-weight:600}
 }
 .btn-secondary:hover{background:#d1d5db}
 
+/* KPIS */
 .kpis{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -167,6 +172,7 @@ header strong{font-weight:600}
 .kpi h3{margin:0;font-size:13px;color:var(--muted);font-weight:500}
 .kpi span{font-size:26px;font-weight:700;color:var(--blue)}
 
+/* CHARTS */
 .charts{
   display:grid;
   grid-template-columns:2fr 1fr;
@@ -181,6 +187,7 @@ header strong{font-weight:600}
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
 
+/* TABLE */
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
 th{background:var(--blue-light);text-align:left;font-weight:600}
@@ -195,8 +202,10 @@ th{background:var(--blue-light);text-align:left;font-weight:600}
 
 <body>
 
+<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
   <a onclick="closeMenu()">INÍCIO</a>
+  <a>GESTÃO</a>
   <a>ATIVIDADES</a>
   <a>USUÁRIOS</a>
   <a>LOTES E RODOVIAS</a>
