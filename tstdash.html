@@ -5,6 +5,7 @@
 <title>PAVI FAST — TST Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Anti-cache -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -13,176 +14,274 @@
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
-@font-face{font-family:'FunnelSans';src:url('FunnelSans-Regular.ttf')}
-*{box-sizing:border-box;font-family:'FunnelSans',Arial}
+/* ================= FONT ================= */
+@font-face{font-family:'FunnelSans';src:url('FunnelSans-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:'FunnelSans';src:url('FunnelSans-Medium.ttf') format('truetype');font-weight:500}
+@font-face{font-family:'FunnelSans';src:url('FunnelSans-Bold.ttf') format('truetype');font-weight:700}
 
+*{box-sizing:border-box;font-family:'FunnelSans',Arial,sans-serif}
+
+/* ================= THEME ================= */
 :root{
-  --blue:#0f3d68;--bg:#f5f7fa;--card:#fff;--border:#dbe3ec;
-  --danger:#dc2626;
+  --blue:#0f3d68;
+  --bg:#f5f7fa;
+  --card:#fff;
+  --border:#dbe3ec;
+  --muted:#6b7280;
 }
 
 body{margin:0;background:var(--bg)}
 
 header{
-  height:56px;background:var(--blue);color:#fff;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;
+  height:56px;
+  background:var(--blue);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
 }
 
-.bell{position:relative;font-size:20px;cursor:pointer}
-.bell span{
-  position:absolute;top:-6px;right:-10px;
-  background:var(--danger);color:#fff;
-  border-radius:50%;padding:2px 6px;font-size:11px;
-}
-
-.container{padding:24px;max-width:1500px;margin:auto}
+.container{max-width:1500px;margin:auto;padding:24px}
 
 .card{
-  background:#fff;padding:16px;border-radius:12px;
-  box-shadow:0 6px 14px rgba(0,0,0,.06)
+  background:var(--card);
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 6px 14px rgba(0,0,0,.06);
+  margin-bottom:20px;
 }
 
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid var(--border);font-size:13px}
-th{background:#eaf2fb}
-
-.edit{cursor:pointer}
-
-/* MODAL */
-.modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.4);
-  display:none;align-items:center;justify-content:center;
-}
-.modal.show{display:flex}
-
-.modal-box{
-  background:#fff;width:700px;max-height:90vh;
-  overflow:auto;border-radius:12px;padding:20px;
-}
-
-.modal-box h3{margin-top:0}
-
-.form-grid{
+.filters{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:12px;
 }
 
-.form-grid input{
-  padding:8px;border:1px solid var(--border);border-radius:6px;
+input,select{
+  padding:10px;
+  border-radius:6px;
+  border:1px solid var(--border);
 }
 
-.modal-actions{
-  margin-top:16px;
-  display:flex;justify-content:flex-end;gap:12px;
+.actions{
+  margin-top:12px;
+  display:flex;
+  gap:12px;
+  justify-content:flex-end;
 }
 
-.btn{padding:8px 18px;border:none;border-radius:6px;cursor:pointer}
-.btn.primary{background:var(--blue);color:#fff}
-.btn.secondary{background:#e5e7eb}
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#e5e7eb}
+
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+}
+
+.kpi span{font-size:26px;font-weight:700;color:var(--blue)}
+
+.charts{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+  gap:20px;
+}
+
+.checks{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+
+.checks label{font-size:14px}
+
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
+th{background:#eaf2fb}
+
+.edit{cursor:pointer;color:var(--blue)}
+.alert{font-size:20px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <strong>PAVI FAST — TST Dashboard</strong>
-  <div class="bell">🔔<span id="bellCount">0</span></div>
+  <strong>TST — Dashboard</strong>
+  <div class="alert">🔔 <span id="pendencias">0</span></div>
 </header>
 
 <div class="container">
-  <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Matrícula</th>
-          <th>Nome</th>
-          <th>Setor</th>
-          <th>Gravidade</th>
-          <th>Período</th>
-          <th>Editar</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
+
+<!-- FILTROS -->
+<div class="card">
+  <div class="filters">
+    <input type="date" id="fIni">
+    <input type="date" id="fFim">
+    <select id="fSetor"><option value="">Todos os setores</option></select>
+    <select id="fGrav"><option value="">Todas gravidades</option></select>
+    <select id="fPeriodo"><option value="">Todos períodos</option></select>
+  </div>
+
+  <div class="checks">
+    <label><input type="checkbox" id="gPeriodo" checked> Período do dia</label>
+    <label><input type="checkbox" id="gGravidade" checked> Gravidade</label>
+    <label><input type="checkbox" id="gIdade" checked> Faixa etária</label>
+    <label><input type="checkbox" id="gSetor" checked> Setor</label>
+  </div>
+
+  <div class="actions">
+    <button class="secondary" onclick="limpar()">Limpar</button>
+    <button class="primary" onclick="aplicar()">Buscar</button>
   </div>
 </div>
 
-<!-- MODAL -->
-<div id="modal" class="modal">
-  <div class="modal-box">
-    <h3>Editar Registro TST</h3>
-    <div class="form-grid" id="form"></div>
-    <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn primary" onclick="saveEdit()">Salvar</button>
-    </div>
-  </div>
+<!-- KPIs -->
+<div class="kpis">
+  <div class="card"><h4>Registros</h4><span id="kReg">0</span></div>
+  <div class="card"><h4>Pendências</h4><span id="kPend">0</span></div>
+</div>
+
+<!-- GRÁFICOS -->
+<div class="charts">
+  <div class="card"><canvas id="cPeriodo"></canvas></div>
+  <div class="card"><canvas id="cGrav"></canvas></div>
+  <div class="card"><canvas id="cIdade"></canvas></div>
+  <div class="card"><canvas id="cSetor"></canvas></div>
+</div>
+
+<!-- TABELA -->
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Data</th><th>Nome</th><th>Idade</th><th>Setor</th>
+<th>Gravidade</th><th>Período</th><th>✏️</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
 </div>
 
 <script>
 const SHEET_ID="1Y3hVIfe1YQXgl8VgJEXvJ3VKdWvLZ6IXzPCNQxtJK2U";
 const CSV=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&t=${Date.now()}`;
 
-let raw=[], editIndex=null;
+let raw=[], charts={};
 
 Papa.parse(CSV,{
   download:true,header:true,skipEmptyLines:true,
   complete:r=>{
     raw=r.data;
-    drawTable();
-    updateBell();
+    initSelects();
+    aplicar();
   }
 });
 
-function drawTable(){
+function initSelects(){
+  fill("fSetor","SETOR");
+  fill("fGrav","GRAVIDADE");
+  fill("fPeriodo","PERIODO");
+}
+
+function fill(id,col){
+  const s=document.getElementById(id);
+  [...new Set(raw.map(i=>i[col]).filter(Boolean))]
+    .sort().forEach(v=>s.innerHTML+=`<option>${v}</option>`);
+}
+
+function limpar(){
+  fIni.value=fFim.value=fSetor.value=fGrav.value=fPeriodo.value="";
+  aplicar();
+}
+
+function aplicar(){
+  let d=raw.filter(i=>{
+    return (!fSetor.value||i.SETOR===fSetor.value)&&
+           (!fGrav.value||i.GRAVIDADE===fGrav.value)&&
+           (!fPeriodo.value||i.PERIODO===fPeriodo.value);
+  });
+
+  kReg.innerText=d.length;
+
+  const pend=d.filter(i=>Object.values(i).some(v=>!v));
+  kPend.innerText=pend.length;
+  pendencias.innerText=pend.length;
+
+  drawBar("cPeriodo",group(d,"PERIODO"),gPeriodo.checked);
+  drawBar("cGrav",group(d,"GRAVIDADE"),gGravidade.checked);
+  drawBar("cIdade",groupAge(d),gIdade.checked);
+  drawPie("cSetor",group(d,"SETOR"),gSetor.checked);
+
+  drawTable(d);
+}
+
+function group(d,col){
+  const o={};
+  d.forEach(i=>o[i[col]]=(o[i[col]]||0)+1);
+  return o;
+}
+
+function groupAge(d){
+  const o={"18-25":0,"26-35":0,"36-45":0,"46-55":0,"56+":0};
+  d.forEach(i=>{
+    const a=Number(i.IDADE||0);
+    if(a<=25)o["18-25"]++;
+    else if(a<=35)o["26-35"]++;
+    else if(a<=45)o["36-45"]++;
+    else if(a<=55)o["46-55"]++;
+    else o["56+"]++;
+  });
+  return o;
+}
+
+function drawBar(id,data,show){
+  const el=document.getElementById(id);
+  el.parentElement.style.display=show?"block":"none";
+  if(!show) return;
+  charts[id]?.destroy();
+  charts[id]=new Chart(el,{type:"bar",
+    data:{labels:Object.keys(data),
+      datasets:[{data:Object.values(data),backgroundColor:"#0f3d68"}]},
+    options:{plugins:{legend:{display:false}}}
+  });
+}
+
+function drawPie(id,data,show){
+  const el=document.getElementById(id);
+  el.parentElement.style.display=show?"block":"none";
+  if(!show) return;
+  charts[id]?.destroy();
+  charts[id]=new Chart(el,{type:"doughnut",
+    data:{labels:Object.keys(data),
+      datasets:[{data:Object.values(data)}]}
+  });
+}
+
+function drawTable(d){
   tbody.innerHTML="";
-  raw.forEach((r,i)=>{
+  d.forEach(r=>{
     tbody.innerHTML+=`
-      <tr>
-        <td>${r.DATA_RECEBIMENTO||""}</td>
-        <td>${r.MATRICULA||""}</td>
-        <td>${r.NOME||""}</td>
-        <td>${r.SETOR||""}</td>
-        <td>${r.GRAVIDADE||""}</td>
-        <td>${r.PERIODO||""}</td>
-        <td class="edit" onclick="openModal(${i})">✏️</td>
-      </tr>`;
+    <tr>
+      <td>${r.DATA_RECEBIMENTO||""}</td>
+      <td>${r.NOME||""}</td>
+      <td>${r.IDADE||""}</td>
+      <td>${r.SETOR||""}</td>
+      <td>${r.GRAVIDADE||""}</td>
+      <td>${r.PERIODO||""}</td>
+      <td class="edit">✏️</td>
+    </tr>`;
   });
-}
-
-function updateBell(){
-  const pend=raw.filter(r=>Object.values(r).some(v=>!v)).length;
-  bellCount.innerText=pend;
-}
-
-function openModal(i){
-  editIndex=i;
-  form.innerHTML="";
-  Object.keys(raw[i]).forEach(k=>{
-    form.innerHTML+=`
-      <div>
-        <label>${k}</label>
-        <input value="${raw[i][k]||""}" data-key="${k}">
-      </div>`;
-  });
-  modal.classList.add("show");
-}
-
-function closeModal(){
-  modal.classList.remove("show");
-}
-
-function saveEdit(){
-  const inputs=[...form.querySelectorAll("input")];
-  inputs.forEach(inp=>{
-    raw[editIndex][inp.dataset.key]=inp.value;
-  });
-  closeModal();
-  drawTable();
-  updateBell();
 }
 </script>
 
