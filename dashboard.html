@@ -2,19 +2,45 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<title>PAVI FAST — Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- 🔒 ANTI-CACHE ABSOLUTO PARA O DASHBOARD -->
+<!-- Anti-cache -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-
-<title>PAVI FAST — Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
+/* ==========================================================
+   FUNNEL SANS — LOCAL (GitHub)
+========================================================== */
+@font-face{
+  font-family:'FunnelSans';
+  src:url('FunnelSans-Regular.ttf') format('truetype');
+  font-weight:400;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'FunnelSans';
+  src:url('FunnelSans-Medium.ttf') format('truetype');
+  font-weight:500;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'FunnelSans';
+  src:url('FunnelSans-SemiBold.ttf') format('truetype');
+  font-weight:600;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'FunnelSans';
+  src:url('FunnelSans-Bold.ttf') format('truetype');
+  font-weight:700;font-style:normal;font-display:swap;
+}
+
+/* ==========================================================
+   THEME
+========================================================== */
 :root{
   --blue:#0f3d68;
   --blue-dark:#0c2f52;
@@ -26,7 +52,11 @@
   --border:#dbe3ec;
 }
 
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+*{
+  box-sizing:border-box;
+  font-family:'FunnelSans', Arial, Helvetica, sans-serif;
+}
+
 body{margin:0;background:var(--bg);color:var(--text)}
 
 header{
@@ -39,7 +69,39 @@ header{
   gap:12px;
 }
 
+header strong{font-weight:600}
+
 .menu-btn{font-size:22px;cursor:pointer}
+
+.sidebar{
+  position:fixed;
+  top:0;left:-260px;
+  width:260px;height:100%;
+  background:var(--blue-dark);
+  color:#fff;
+  padding-top:56px;
+  transition:.3s;
+  z-index:1000;
+}
+.sidebar.open{left:0}
+
+.sidebar a{
+  display:block;
+  padding:14px 20px;
+  color:#fff;
+  text-decoration:none;
+  font-size:14px;
+}
+.sidebar a:hover{background:#164a7a}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.25);
+  display:none;
+  z-index:900;
+}
+.overlay.show{display:block}
 
 .container{
   padding:24px;
@@ -76,6 +138,7 @@ header{
   font-size:14px;
   cursor:pointer;
 }
+.btn-primary:hover{background:#0b3256}
 
 .btn-secondary{
   background:#e5e7eb;
@@ -86,6 +149,7 @@ header{
   font-size:14px;
   cursor:pointer;
 }
+.btn-secondary:hover{background:#d1d5db}
 
 .kpis{
   display:grid;
@@ -101,7 +165,7 @@ header{
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
 
-.kpi h3{margin:0;font-size:13px;color:var(--muted)}
+.kpi h3{margin:0;font-size:13px;color:var(--muted);font-weight:500}
 .kpi span{font-size:26px;font-weight:700;color:var(--blue)}
 
 .charts{
@@ -120,7 +184,7 @@ header{
 
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
-th{background:var(--blue-light);text-align:left}
+th{background:var(--blue-light);text-align:left;font-weight:600}
 
 .link{
   color:var(--blue);
@@ -132,8 +196,18 @@ th{background:var(--blue-light);text-align:left}
 
 <body>
 
+<div id="sidebar" class="sidebar">
+  <a onclick="closeMenu()">INÍCIO</a>
+  <a>ATIVIDADES</a>
+  <a>USUÁRIOS</a>
+  <a>LOTES E RODOVIAS</a>
+  <a>TST – Segurança do Trabalho</a>
+</div>
+
+<div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
 <header>
-  <div class="menu-btn">☰</div>
+  <div class="menu-btn" onclick="openMenu()">☰</div>
   <strong>PAVI FAST — Dashboard</strong>
 </header>
 
@@ -157,10 +231,7 @@ th{background:var(--blue-light);text-align:left}
 
   <!-- KPIs -->
   <div class="kpis">
-    <div class="kpi">
-      <h3>Total Executado</h3>
-      <span id="kTotal">0</span>
-    </div>
+    <div class="kpi"><h3>Total Executado</h3><span id="kTotal">0</span></div>
     <div class="kpi"><h3>Registros</h3><span id="kReg">0</span></div>
     <div class="kpi"><h3>Lotes</h3><span id="kLotes">0</span></div>
     <div class="kpi"><h3>Rodovias</h3><span id="kRod">0</span></div>
@@ -182,7 +253,6 @@ th{background:var(--blue-light);text-align:left}
           <th>Atividade</th>
           <th>Rodovia</th>
           <th>Total</th>
-          <th>Unidade</th>
           <th>Lote</th>
           <th>Imagem</th>
         </tr>
@@ -194,18 +264,29 @@ th{background:var(--blue-light);text-align:left}
 </div>
 
 <script>
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
+function openMenu(){sidebar.classList.add('open');overlay.classList.add('show')}
+function closeMenu(){sidebar.classList.remove('open');overlay.classList.remove('show')}
+
+function parseBRDate(str){
+  if(!str) return null;
+  const [d,m,yh]=str.split('/');
+  const [y]=yh.split(' ');
+  return new Date(`${y}-${m}-${d}`);
+}
+
 const SHEET_ID='1L3HcV7vRoiiIkfqFoFTedfaEuMDHLxZrUZly36_QLWI';
-const CSV_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&v=${Date.now()}`;
+const CSV_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&t=${Date.now()}`;
 
 let raw=[], barChart, pieChart;
 
 Papa.parse(CSV_URL,{
-  download:true,
-  header:true,
-  skipEmptyLines:true,
+  download:true,header:true,skipEmptyLines:true,
   complete:r=>{
     raw=r.data.map(i=>({
-      data:i.DATA,
+      data:parseBRDate(i.DATA),
+      dataStr:i.DATA,
       nome:i.NOME,
       atividade:i.ATIVIDADE,
       rodovia:i.RODOVIA,
@@ -239,27 +320,25 @@ function limparFiltros(){
   fRodovia.value='';
   fLote.value='';
   fNome.value='';
+  applyFilters();
 }
 
 function applyFilters(){
+  const di=fDataIni.value?new Date(fDataIni.value):null;
+  const df=fDataFim.value?new Date(fDataFim.value):null;
+
   const d=raw.filter(i=>
+    (!di||i.data>=di)&&(!df||i.data<=df)&&
     (!fAtividade.value||i.atividade===fAtividade.value)&&
     (!fRodovia.value||i.rodovia===fRodovia.value)&&
     (!fLote.value||i.lote===fLote.value)&&
     (!fNome.value||i.nome===fNome.value)
   );
 
-  const total=d.reduce((s,i)=>s+i.total,0);
   const unidades=[...new Set(d.map(i=>i.unidade).filter(Boolean))];
+  const total=d.reduce((s,i)=>s+i.total,0);
 
-  if(unidades.length===1){
-    kTotal.innerText=`${total} ${unidades[0]}`;
-  }else if(unidades.length>1){
-    kTotal.innerText=`${total} (múltiplas unidades)`;
-  }else{
-    kTotal.innerText=total;
-  }
-
+  kTotal.innerText=unidades.length===1 ? `${total} ${unidades[0]}` : total;
   kReg.innerText=d.length;
   kLotes.innerText=new Set(d.map(i=>i.lote)).size;
   kRod.innerText=new Set(d.map(i=>i.rodovia)).size;
@@ -269,8 +348,7 @@ function applyFilters(){
 }
 
 function drawCharts(d){
-  const byAct={}, byLot={};
-
+  const byAct={},byLot={};
   d.forEach(i=>{
     byAct[i.atividade]=(byAct[i.atividade]||0)+i.total;
     byLot[i.lote]=(byLot[i.lote]||0)+i.total;
@@ -279,39 +357,31 @@ function drawCharts(d){
   if(barChart) barChart.destroy();
   if(pieChart) pieChart.destroy();
 
-  barChart=new Chart(barChartEl,{
+  barChart=new Chart(barChart?.ctx||document.getElementById('barChart'),{
     type:'bar',
-    data:{
-      labels:Object.keys(byAct),
-      datasets:[{data:Object.values(byAct),backgroundColor:'#0f3d68'}]
-    },
+    data:{labels:Object.keys(byAct),
+      datasets:[{data:Object.values(byAct),backgroundColor:'#0f3d68'}]},
     options:{plugins:{legend:{display:false}}}
   });
 
-  pieChart=new Chart(pieChartEl,{
+  pieChart=new Chart(pieChart?.ctx||document.getElementById('pieChart'),{
     type:'doughnut',
-    data:{
-      labels:Object.keys(byLot),
-      datasets:[{data:Object.values(byLot)}]
-    }
+    data:{labels:Object.keys(byLot),
+      datasets:[{data:Object.values(byLot)}]}
   });
 }
-
-const barChartEl=document.getElementById('barChart');
-const pieChartEl=document.getElementById('pieChart');
 
 function drawTable(d){
   tbody.innerHTML='';
   d.forEach(i=>{
     tbody.innerHTML+=`
       <tr>
-        <td>${i.data}</td>
+        <td>${i.dataStr}</td>
         <td>${i.nome}</td>
         <td>${i.atividade}</td>
         <td>${i.rodovia}</td>
-        <td>${i.total}</td>
-        <td>${i.unidade||''}</td>
-        <td>${i.lote||''}</td>
+        <td>${i.total} ${i.unidade||''}</td>
+        <td>${i.lote}</td>
         <td>${i.imagem?`<a class="link" href="${i.imagem}" target="_blank">Ver</a>`:''}</td>
       </tr>`;
   });
