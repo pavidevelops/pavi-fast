@@ -5,7 +5,6 @@
 <title>PAVI FAST — TST Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Anti-cache -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -14,20 +13,17 @@
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
-/* ================= FONT ================= */
 @font-face{font-family:'FunnelSans';src:url('FunnelSans-Regular.ttf') format('truetype');font-weight:400}
 @font-face{font-family:'FunnelSans';src:url('FunnelSans-Medium.ttf') format('truetype');font-weight:500}
 @font-face{font-family:'FunnelSans';src:url('FunnelSans-Bold.ttf') format('truetype');font-weight:700}
 
 *{box-sizing:border-box;font-family:'FunnelSans',Arial,sans-serif}
 
-/* ================= THEME ================= */
 :root{
   --blue:#0f3d68;
   --bg:#f5f7fa;
   --card:#fff;
   --border:#dbe3ec;
-  --muted:#6b7280;
   --danger:#dc2626;
   --warn:#fef3c7;
 }
@@ -39,8 +35,8 @@ header{
   background:var(--blue);
   color:#fff;
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   padding:0 20px;
 }
 
@@ -54,73 +50,58 @@ header{
   margin-bottom:20px;
 }
 
-.filters{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:12px;
-}
-
-input,select{
-  padding:10px;
-  border-radius:6px;
-  border:1px solid var(--border);
-}
-
-.actions{
-  margin-top:12px;
-  display:flex;
-  gap:12px;
-  justify-content:flex-end;
-}
-
-button{
-  padding:10px 20px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-}
-.primary{background:var(--blue);color:#fff}
-.secondary{background:#e5e7eb}
-
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:16px;
-}
-
-.kpis span{font-size:26px;font-weight:700;color:var(--blue)}
-
-.charts{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
-  gap:20px;
-}
-
-.checks{
-  display:flex;
-  gap:20px;
-  flex-wrap:wrap;
-  margin-top:8px;
-}
+.alert{font-size:20px}
+.alert.danger{color:var(--danger);font-weight:700}
 
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
 th{background:#eaf2fb}
 
 tr.pendente{background:var(--warn)}
-
 .edit{cursor:pointer;color:var(--blue);font-size:16px}
 
-.alert{
-  font-size:20px;
-  display:flex;
+/* ===== MODAL ===== */
+.modal-bg{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
   align-items:center;
-  gap:6px;
+  justify-content:center;
+  z-index:999;
 }
-.alert.danger{
-  color:var(--danger);
-  font-weight:700;
+.modal{
+  background:#fff;
+  width:90%;
+  max-width:800px;
+  border-radius:14px;
+  padding:20px;
 }
+.modal h3{margin-top:0}
+.modal-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+.modal-grid label{font-size:12px;font-weight:600}
+.modal-grid input{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid var(--border);
+}
+.modal-grid input.pendente{
+  background:var(--warn);
+  border-color:#f59e0b;
+}
+.modal-actions{
+  margin-top:16px;
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+}
+button{padding:10px 18px;border:none;border-radius:8px;cursor:pointer}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#e5e7eb}
 </style>
 </head>
 
@@ -128,49 +109,11 @@ tr.pendente{background:var(--warn)}
 
 <header>
   <strong>TST — Dashboard</strong>
-  <div class="alert" id="alertBox">🔔 <span id="pendencias">0</span></div>
+  <div class="alert danger">🔔 <span id="pendencias">0</span></div>
 </header>
 
 <div class="container">
 
-<!-- FILTROS -->
-<div class="card">
-  <div class="filters">
-    <input type="date" id="fIni">
-    <input type="date" id="fFim">
-    <select id="fSetor"><option value="">Todos os setores</option></select>
-    <select id="fGrav"><option value="">Todas gravidades</option></select>
-    <select id="fPeriodo"><option value="">Todos períodos</option></select>
-  </div>
-
-  <div class="checks">
-    <label><input type="checkbox" id="gPeriodo" checked> Período do dia</label>
-    <label><input type="checkbox" id="gGravidade" checked> Gravidade</label>
-    <label><input type="checkbox" id="gIdade" checked> Faixa etária</label>
-    <label><input type="checkbox" id="gSetor" checked> Setor</label>
-  </div>
-
-  <div class="actions">
-    <button class="secondary" onclick="limpar()">Limpar</button>
-    <button class="primary" onclick="aplicar()">Buscar</button>
-  </div>
-</div>
-
-<!-- KPIs -->
-<div class="kpis">
-  <div class="card"><h4>Registros</h4><span id="kReg">0</span></div>
-  <div class="card"><h4>Pendências</h4><span id="kPend">0</span></div>
-</div>
-
-<!-- GRÁFICOS -->
-<div class="charts">
-  <div class="card"><canvas id="cPeriodo"></canvas></div>
-  <div class="card"><canvas id="cGrav"></canvas></div>
-  <div class="card"><canvas id="cIdade"></canvas></div>
-  <div class="card"><canvas id="cSetor"></canvas></div>
-</div>
-
-<!-- TABELA -->
 <div class="card">
 <table>
 <thead>
@@ -185,114 +128,36 @@ tr.pendente{background:var(--warn)}
 
 </div>
 
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Editar Registro TST</h3>
+    <div class="modal-grid" id="modalForm"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="fecharModal()">Cancelar</button>
+      <button class="primary" onclick="salvarEdicao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SHEET_ID="1Y3hVIfe1YQXgl8VgJEXvJ3VKdWvLZ6IXzPCNQxtJK2U";
 const CSV=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&t=${Date.now()}`;
 
-let raw=[], charts={};
+let raw=[], editIndex=null;
 
 Papa.parse(CSV,{
-  download:true,header:true,skipEmptyLines:true,
+  download:true,header:true,
   complete:r=>{
     raw=r.data;
-    initSelects();
-    aplicar();
+    renderTable();
+    pendencias.innerText=raw.filter(i=>Object.values(i).some(v=>!v)).length;
   }
 });
 
-function initSelects(){
-  fill("fSetor","SETOR");
-  fill("fGrav","GRAVIDADE");
-  fill("fPeriodo","PERIODO");
-}
-
-function fill(id,col){
-  const s=document.getElementById(id);
-  [...new Set(raw.map(i=>i[col]).filter(Boolean))]
-    .sort().forEach(v=>s.innerHTML+=`<option>${v}</option>`);
-}
-
-function limpar(){
-  fIni.value=fFim.value=fSetor.value=fGrav.value=fPeriodo.value="";
-  aplicar();
-}
-
-function aplicar(){
-  let d=raw.filter(i=>
-    (!fSetor.value||i.SETOR===fSetor.value)&&
-    (!fGrav.value||i.GRAVIDADE===fGrav.value)&&
-    (!fPeriodo.value||i.PERIODO===fPeriodo.value)
-  );
-
-  kReg.innerText=d.length;
-
-  const pend=d.filter(i=>Object.values(i).some(v=>!v));
-  kPend.innerText=pend.length;
-  pendencias.innerText=pend.length;
-
-  alertBox.classList.toggle("danger", pend.length>0);
-
-  drawBar("cPeriodo",group(d,"PERIODO"),gPeriodo.checked,"Período do Dia");
-  drawBar("cGrav",group(d,"GRAVIDADE"),gGravidade.checked,"Gravidade do Acidente");
-  drawBar("cIdade",groupAge(d),gIdade.checked,"Faixa Etária");
-  drawPie("cSetor",group(d,"SETOR"),gSetor.checked,"Setor");
-
-  drawTable(d);
-}
-
-function group(d,col){
-  const o={};
-  d.forEach(i=>o[i[col]]=(o[i[col]]||0)+1);
-  return o;
-}
-
-function groupAge(d){
-  const o={"18-25":0,"26-35":0,"36-45":0,"46-55":0,"56+":0};
-  d.forEach(i=>{
-    const a=Number(i.IDADE||0);
-    if(a<=25)o["18-25"]++;
-    else if(a<=35)o["26-35"]++;
-    else if(a<=45)o["36-45"]++;
-    else if(a<=55)o["46-55"]++;
-    else o["56+"]++;
-  });
-  return o;
-}
-
-function drawBar(id,data,show,title){
-  const el=document.getElementById(id);
-  el.parentElement.style.display=show?"block":"none";
-  if(!show) return;
-  charts[id]?.destroy();
-  charts[id]=new Chart(el,{
-    type:"bar",
-    data:{labels:Object.keys(data),
-      datasets:[{data:Object.values(data),backgroundColor:"#0f3d68"}]},
-    options:{
-      plugins:{
-        legend:{display:false},
-        title:{display:true,text:title,font:{size:16,weight:"600"}}
-      }
-    }
-  });
-}
-
-function drawPie(id,data,show,title){
-  const el=document.getElementById(id);
-  el.parentElement.style.display=show?"block":"none";
-  if(!show) return;
-  charts[id]?.destroy();
-  charts[id]=new Chart(el,{
-    type:"doughnut",
-    data:{labels:Object.keys(data),
-      datasets:[{data:Object.values(data)}]},
-    options:{plugins:{title:{display:true,text:title,font:{size:16,weight:"600"}}}}
-  });
-}
-
-function drawTable(d){
+function renderTable(){
   tbody.innerHTML="";
-  d.forEach((r,i)=>{
+  raw.forEach((r,i)=>{
     const pend=Object.values(r).some(v=>!v);
     tbody.innerHTML+=`
     <tr class="${pend?"pendente":""}">
@@ -308,7 +173,37 @@ function drawTable(d){
 }
 
 function editar(i){
-  alert("Edição será implementada.\n\nRegistro:\n"+JSON.stringify(raw[i],null,2));
+  editIndex=i;
+  modalForm.innerHTML="";
+  const r=raw[i];
+
+  Object.keys(r).forEach(k=>{
+    const v=r[k]||"";
+    modalForm.innerHTML+=`
+      <div>
+        <label>${k}</label>
+        <input value="${v}" data-key="${k}" class="${v===""?"pendente":""}">
+      </div>`;
+  });
+
+  modalBg.style.display="flex";
+}
+
+function fecharModal(){
+  modalBg.style.display="none";
+}
+
+function salvarEdicao(){
+  const inputs=document.querySelectorAll("#modalForm input");
+  inputs.forEach(i=>{
+    raw[editIndex][i.dataset.key]=i.value.trim();
+  });
+
+  fecharModal();
+  renderTable();
+  pendencias.innerText=raw.filter(i=>Object.values(i).some(v=>!v)).length;
+
+  alert("Edição concluída (ainda não salva no Sheets)");
 }
 </script>
 
