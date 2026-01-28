@@ -5,11 +5,12 @@
 <title>PAVI FAST — TST Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Anti-cache -->
+<!-- Anti-cache forte -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
@@ -21,9 +22,6 @@
 @font-face{font-family:'FunnelSans';src:url('FunnelSans-SemiBold.ttf') format('truetype');font-weight:600}
 @font-face{font-family:'FunnelSans';src:url('FunnelSans-Bold.ttf') format('truetype');font-weight:700}
 
-/* ==========================================================
-   THEME
-========================================================== */
 :root{
   --blue:#0f3d68;
   --blue-dark:#0c2f52;
@@ -35,25 +33,40 @@
   --border:#dbe3ec;
 }
 
-*{box-sizing:border-box;font-family:'FunnelSans',Arial,Helvetica,sans-serif}
+*{
+  box-sizing:border-box;
+  font-family:'FunnelSans', Arial, Helvetica, sans-serif;
+}
+
 body{margin:0;background:var(--bg);color:var(--text)}
 
 header{
-  height:56px;background:var(--blue);color:#fff;
-  display:flex;align-items:center;padding:0 16px;gap:12px;
+  height:56px;
+  background:var(--blue);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:12px;
 }
 
-.menu-btn{font-size:22px;cursor:pointer}
-
-.container{padding:24px;max-width:1500px;margin:auto}
+.container{
+  padding:24px;
+  max-width:1500px;
+  margin:auto;
+}
 
 .kpis{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:16px;margin-bottom:24px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+  margin-bottom:24px;
 }
 
 .kpi{
-  background:#fff;padding:16px;border-radius:10px;
+  background:#fff;
+  padding:16px;
+  border-radius:10px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
 }
 
@@ -61,53 +74,78 @@ header{
 .kpi span{font-size:26px;font-weight:700;color:var(--blue)}
 
 .card{
-  background:#fff;border-radius:12px;padding:16px;
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
   box-shadow:0 6px 14px rgba(0,0,0,.06);
+  margin-bottom:24px;
 }
 
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px}
+th,td{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+}
 th{background:var(--blue-light);text-align:left;font-weight:600}
 
 .edit-btn{
-  cursor:pointer;font-size:16px;
+  cursor:pointer;
+  font-size:16px;
 }
 
-/* ==========================================================
-   MODAL
-========================================================== */
+/* MODAL */
 .modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.4);
-  display:none;align-items:center;justify-content:center;
-  z-index:2000;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
 }
+
 .modal.show{display:flex}
 
 .modal-box{
-  background:#fff;width:90%;max-width:900px;
-  border-radius:12px;padding:20px;
-  max-height:90vh;overflow:auto;
+  background:#fff;
+  width:100%;
+  max-width:900px;
+  border-radius:12px;
+  padding:20px;
 }
 
 .modal-box h2{margin-top:0}
 
 .form-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:12px;
 }
 
-.form-grid input{
-  padding:10px;border-radius:6px;border:1px solid var(--border);
+.form-grid input,
+.form-grid textarea{
+  width:100%;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid var(--border);
 }
 
 .modal-actions{
-  display:flex;justify-content:flex-end;gap:12px;margin-top:16px;
+  margin-top:16px;
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
 }
 
 .btn{
-  padding:10px 22px;border:none;border-radius:8px;
-  cursor:pointer;font-size:14px;
+  padding:10px 18px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
 }
+
 .btn-primary{background:var(--blue);color:#fff}
 .btn-secondary{background:#e5e7eb}
 </style>
@@ -116,7 +154,6 @@ th{background:var(--blue-light);text-align:left;font-weight:600}
 <body>
 
 <header>
-  <div class="menu-btn">☰</div>
   <strong>PAVI FAST — TST Dashboard</strong>
 </header>
 
@@ -125,8 +162,9 @@ th{background:var(--blue-light);text-align:left;font-weight:600}
   <!-- KPIs -->
   <div class="kpis">
     <div class="kpi"><h3>Registros</h3><span id="kReg">0</span></div>
-    <div class="kpi"><h3>Graves</h3><span id="kGrave">0</span></div>
-    <div class="kpi"><h3>Com Afastamento</h3><span id="kAfast">0</span></div>
+    <div class="kpi"><h3>Gravidades</h3><span id="kGrav">0</span></div>
+    <div class="kpi"><h3>Setores</h3><span id="kSet">0</span></div>
+    <div class="kpi"><h3>Regiões</h3><span id="kRegiao">0</span></div>
   </div>
 
   <!-- TABELA -->
@@ -134,13 +172,14 @@ th{background:var(--blue-light);text-align:left;font-weight:600}
     <table>
       <thead>
         <tr>
-          <th>Data Acidente</th>
+          <th>Data</th>
+          <th>Matrícula</th>
           <th>Nome</th>
           <th>Função</th>
           <th>Gravidade</th>
-          <th>Período</th>
-          <th>Lesão</th>
-          <th>Ações</th>
+          <th>Setor</th>
+          <th>Região</th>
+          <th>✏️</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -153,60 +192,60 @@ th{background:var(--blue-light);text-align:left;font-weight:600}
 <div id="modal" class="modal">
   <div class="modal-box">
     <h2>Editar Registro TST</h2>
-    <div class="form-grid" id="form"></div>
+
+    <div class="form-grid" id="formGrid"></div>
 
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary">Salvar Alterações</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Salvar</button>
     </div>
   </div>
 </div>
 
 <script>
-const SHEET_ID = '1Y3hVIfe1YQXgl8VgJEXvJ3VKdWvLZ6IXzPCNQxtJK2U';
-const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&t=${Date.now()}`;
+const SHEET_ID='1Y3hVIfe1YQXgl8VgJEXvJ3VKdWvLZ6IXzPCNQxtJK2U';
+const CSV_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&t=${Date.now()}`;
 
-let raw=[], current={};
+let raw=[], currentEdit=null;
 
 Papa.parse(CSV_URL,{
   download:true,header:true,skipEmptyLines:true,
   complete:r=>{
     raw=r.data;
-    renderKPIs();
-    renderTable();
+    render();
   }
 });
 
-function renderKPIs(){
-  kReg.innerText=raw.length;
-  kGrave.innerText=raw.filter(r=>r.GRAVIDADE==='SÉRIO').length;
-  kAfast.innerText=raw.filter(r=>r.AFASTAMENTO).length;
-}
-
-function renderTable(){
+function render(){
   tbody.innerHTML='';
   raw.forEach(r=>{
     tbody.innerHTML+=`
       <tr>
         <td>${r.DATA_ACIDENTE||''}</td>
+        <td>${r.MATRICULA||''}</td>
         <td>${r.NOME||''}</td>
-        <td>${r.FUNÇÃO||''}</td>
+        <td>${r.FUNCAO||''}</td>
         <td>${r.GRAVIDADE||''}</td>
-        <td>${r['PERÍODO DO DIA']||''}</td>
-        <td>${r['TIPO LESÃO']||''}</td>
-        <td><span class="edit-btn" onclick='openModal(${JSON.stringify(r)})'>✏️</span></td>
+        <td>${r.SETOR||''}</td>
+        <td>${r.REGIAO||''}</td>
+        <td><span class="edit-btn" onclick='openEdit(${JSON.stringify(r)})'>✏️</span></td>
       </tr>`;
   });
+
+  kReg.innerText=raw.length;
+  kGrav.innerText=new Set(raw.map(i=>i.GRAVIDADE).filter(Boolean)).size;
+  kSet.innerText=new Set(raw.map(i=>i.SETOR).filter(Boolean)).size;
+  kRegiao.innerText=new Set(raw.map(i=>i.REGIAO).filter(Boolean)).size;
 }
 
-function openModal(row){
-  current=row;
-  form.innerHTML='';
+function openEdit(row){
+  currentEdit=row;
+  formGrid.innerHTML='';
   Object.keys(row).forEach(k=>{
-    form.innerHTML+=`
+    formGrid.innerHTML+=`
       <div>
         <label>${k}</label>
-        <input value="${row[k]||''}" oninput="current['${k}']=this.value">
+        <input value="${row[k]||''}" data-key="${k}">
       </div>`;
   });
   modal.classList.add('show');
@@ -214,6 +253,16 @@ function openModal(row){
 
 function closeModal(){
   modal.classList.remove('show');
+}
+
+function saveEdit(){
+  const data={};
+  document.querySelectorAll('#formGrid input').forEach(i=>{
+    data[i.dataset.key]=i.value;
+  });
+
+  alert("Pronto para enviar via update_tst\\nCLIENT_UID: "+data.CLIENT_UID);
+  closeModal();
 }
 </script>
 
