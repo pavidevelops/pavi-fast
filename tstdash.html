@@ -120,18 +120,51 @@ input:focus,select:focus{
   box-shadow:0 0 0 3px rgba(15,61,104,0.1);
 }
 
-.actions{
+/* CONTROLE DE FILTROS E GRÁFICOS */
+.controls-container{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-top:16px;
   flex-wrap:wrap;
+  gap:16px;
+}
+
+.chart-controls{
+  display:flex;
+  flex-wrap:wrap;
   gap:12px;
+  align-items:center;
+}
+
+.chart-toggle{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+  padding:8px 12px;
+  background:#f8fafc;
+  border-radius:6px;
+  border:1px solid var(--border);
+  transition:all 0.2s;
+  font-size:13px;
+}
+.chart-toggle:hover{background:#e5e7eb}
+.chart-toggle.active{background:var(--blue);color:white}
+
+.chart-checkbox{
+  display:none;
 }
 
 /* BOTÕES */
+.button-group{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
 button{
-  padding:12px 24px;
+  padding:10px 20px;
   border:none;
   border-radius:8px;
   cursor:pointer;
@@ -140,7 +173,7 @@ button{
   transition:all 0.2s;
   display:inline-flex;
   align-items:center;
-  gap:8px;
+  gap:6px;
 }
 button:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
 button:active{transform:translateY(0)}
@@ -164,6 +197,11 @@ button:active{transform:translateY(0)}
   border:1px solid #fca5a5;
 }
 .btn-danger:hover{background:#fecaca}
+
+.btn-small{
+  padding:8px 12px;
+  font-size:12px;
+}
 
 /* KPIs */
 .kpis{
@@ -197,36 +235,6 @@ button:active{transform:translateY(0)}
 .kpi-icon{
   font-size:24px;
   margin-bottom:8px;
-}
-
-/* CONTROLE DE GRÁFICOS */
-.chart-controls{
-  display:flex;
-  flex-wrap:wrap;
-  gap:16px;
-  margin-bottom:20px;
-  padding:16px;
-  background:#f8fafc;
-  border-radius:8px;
-  border:1px solid var(--border);
-}
-
-.chart-toggle{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  cursor:pointer;
-  padding:8px 12px;
-  background:white;
-  border-radius:6px;
-  border:1px solid var(--border);
-  transition:all 0.2s;
-}
-.chart-toggle:hover{background:#f1f5f9}
-.chart-toggle.active{background:var(--blue);color:white}
-
-.chart-checkbox{
-  display:none;
 }
 
 /* GRÁFICOS */
@@ -427,6 +435,16 @@ tr.pendente{
 .empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}
 
 /* RESPONSIVIDADE */
+@media (max-width:1200px){
+  .controls-container{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .chart-controls, .button-group{
+    justify-content:center;
+  }
+}
+
 @media (max-width:768px){
   .container{padding:16px}
   .charts{grid-template-columns:1fr}
@@ -434,6 +452,18 @@ tr.pendente{
   .filters{grid-template-columns:1fr}
   header{padding:0 16px}
   .logo h1{font-size:16px}
+  .controls-container{
+    flex-direction:column;
+    gap:12px;
+  }
+  .chart-controls{
+    order:1;
+  }
+  .button-group{
+    order:2;
+    width:100%;
+    justify-content:space-between;
+  }
 }
 </style>
 </head>
@@ -482,13 +512,36 @@ tr.pendente{
       </select>
     </div>
   </div>
-  <div class="actions">
-    <button class="btn-secondary" onclick="limparFiltros()">
-      <span>↻</span> Limpar Filtros
-    </button>
-    <button class="btn-primary" onclick="aplicarFiltros()">
-      <span>🔍</span> Buscar
-    </button>
+  
+  <!-- CONTROLE DE FILTROS E GRÁFICOS -->
+  <div class="controls-container">
+    <div class="chart-controls">
+      <div class="chart-toggle active" data-chart="cPeriodo">
+        <input type="checkbox" class="chart-checkbox" id="togglePeriodo" checked>
+        📅 Período
+      </div>
+      <div class="chart-toggle active" data-chart="cGrav">
+        <input type="checkbox" class="chart-checkbox" id="toggleGrav" checked>
+        ⚠️ Gravidade
+      </div>
+      <div class="chart-toggle active" data-chart="cIdade">
+        <input type="checkbox" class="chart-checkbox" id="toggleIdade" checked>
+        👥 Idade
+      </div>
+      <div class="chart-toggle active" data-chart="cSetor">
+        <input type="checkbox" class="chart-checkbox" id="toggleSetor" checked>
+        🏭 Setor
+      </div>
+    </div>
+    
+    <div class="button-group">
+      <button class="btn-secondary" onclick="limparFiltros()">
+        <span>↻</span> Limpar Filtros
+      </button>
+      <button class="btn-primary" onclick="aplicarFiltros()">
+        <span>🔍</span> Buscar
+      </button>
+    </div>
   </div>
 </div>
 
@@ -513,29 +566,6 @@ tr.pendente{
     <div class="kpi-icon">⚡</div>
     <div class="kpi-value" id="kGraves">0</div>
     <div class="kpi-label">Acidentes Graves/Fatais</div>
-  </div>
-</div>
-
-<!-- CONTROLE DE GRÁFICOS -->
-<div class="card">
-  <h2 style="margin-bottom:16px;color:var(--blue);">Gráficos</h2>
-  <div class="chart-controls">
-    <div class="chart-toggle active" data-chart="cPeriodo">
-      <input type="checkbox" class="chart-checkbox" id="togglePeriodo" checked>
-      📅 Período do Dia
-    </div>
-    <div class="chart-toggle active" data-chart="cGrav">
-      <input type="checkbox" class="chart-checkbox" id="toggleGrav" checked>
-      ⚠️ Gravidade
-    </div>
-    <div class="chart-toggle active" data-chart="cIdade">
-      <input type="checkbox" class="chart-checkbox" id="toggleIdade" checked>
-      👥 Faixa Etária
-    </div>
-    <div class="chart-toggle active" data-chart="cSetor">
-      <input type="checkbox" class="chart-checkbox" id="toggleSetor" checked>
-      🏭 Setor
-    </div>
   </div>
 </div>
 
